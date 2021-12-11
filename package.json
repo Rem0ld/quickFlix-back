@@ -1,0 +1,26 @@
+{
+  "name": "quickflix-back",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Pierre Lovergne",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.16.4",
+    "dotenv": "^10.0.0",
+    "eslint": "^8.3.0",
+    "express": "^4.17.1",
+    "mime": "^3.0.0",
+    "mongoose": "^6.0.13",
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.15",
+    "winston": "^3.3.3"
+  },
+  "scripts": {
+    "clean": "rm -fr dist",
+    "build": "yarn clean && yarn transpile",
+    "start": "yarn build && nodemon dist/index.js",
+    "transpile": "babel index.js -d dist; babel -d ./dist/src ./src"
+  }
+}
