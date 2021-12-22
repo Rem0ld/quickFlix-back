@@ -2,6 +2,7 @@ import fs, {access, constants} from 'fs'
 import path from 'path'
 import mime from 'mime'
 import { findSubtitles } from '../../utils/extractSubtitles';
+import { findFiles } from '../../utils/fileManipulation';
 
 export default class ApiController {
   stream = async (req, res, next) => {
@@ -20,7 +21,6 @@ export default class ApiController {
         return res.sendStatus(416);
       }
 
-      console.log('here')
       findSubtitles(pathMovie)
       
       // Chunk logic here
@@ -43,7 +43,7 @@ export default class ApiController {
       });
 
        // Streaming video here
-      const stream = fs
+      fs
         .createReadStream(pathMovie, { start: start, end: end, autoClose: true })
 
         .on("end", function () {
