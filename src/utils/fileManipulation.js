@@ -1,5 +1,4 @@
 import { accessSync, constants, readdirSync } from 'fs'
-import path from 'path';
 
 export function subtitleExists(subPath) {
   // const extension = ['.srt', '.vtt']
@@ -8,7 +7,7 @@ export function subtitleExists(subPath) {
   //   fs.access(path + element, mode, callback)
   // })
   try {
-   accessSync(path.resolve(`./public/${subPath}.vtt`), constants.R_OK); 
+   accessSync(subPath + '.vtt', constants.R_OK);
   } catch (error) {
     return false
   }
@@ -19,4 +18,3 @@ export function subtitleExists(subPath) {
 export async function findFiles(dir) {
   return readdirSync(dir, {withFileTypes: true})
 }
-

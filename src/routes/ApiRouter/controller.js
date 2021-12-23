@@ -10,18 +10,18 @@ export default class ApiController {
     const pathMovie = path.resolve("./public/" + req.params.filename);
 
     // Check if the file exists in the current directory.
-    access(pathMovie, constants.F_OK, (err) => {
+    access(pathMovie, constants.F_OK, async (err) => {
       console.log(`${pathMovie} ${err ? 'does not exist' : 'exists'}`);
     });
 
-    fs.stat(pathMovie, function (err, stats) {
+    fs.stat(pathMovie, async function (err, stats) {
       var range = req.headers.range;
       
       if (!range) {
         return res.sendStatus(416);
       }
 
-      findSubtitles(pathMovie)
+      await findSubtitles(pathMovie)
       
       // Chunk logic here
       const positions = range.replace(/bytes=/, "").split("-");

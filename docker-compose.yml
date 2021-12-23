@@ -2,7 +2,7 @@
 version: "3.1"
 
 services:
-  mongo:
+  quickflix:
     image: mongo
     restart: always
     environment:
@@ -12,7 +12,7 @@ services:
     ports:
       - 27017:27017
 
-  mongo-express:
+  quickflix-express:
     image: mongo-express
     restart: always
     ports:
