@@ -8,6 +8,7 @@ export default class ApiController {
   stream = async (req, res, next) => {
     const params = req.params;
     const pathMovie = path.resolve("./public/" + req.params.filename);
+    console.log(pathMovie)
 
     // Check if the file exists in the current directory.
     access(pathMovie, constants.F_OK, async (err) => {
