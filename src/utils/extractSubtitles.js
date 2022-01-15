@@ -10,8 +10,6 @@ export function extractSubtitleTrack(inputFile, streamInfo, outputFile) {
        // console.log("Start: ", command)
        // console.log("=======================")
       })
-      // .noAudio()
-      // .noVideo()
       .outputOptions(
         `-map 0:${streamInfo.index}`
         // '-c:s:0',
@@ -32,7 +30,12 @@ export function extractSubtitleTrack(inputFile, streamInfo, outputFile) {
 export async function findSubtitles(movie) {
   // Finding subtitles
   ffmpeg.ffprobe(movie, (err, metadata) => {
-    const title = metadata.format.tags.title
+    let title
+    if(metadata.format.tags.title) {
+      title = metadata.format.tags.title
+    }else {
+      title = path.parse(movie).name
+    }
     const languages = {}
 
     for (const stream of metadata.streams) {

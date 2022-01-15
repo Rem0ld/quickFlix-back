@@ -9,7 +9,7 @@ class Video {
     this.name = basename
     this.ext = ext.match(matchExt)[0] || ext
     this.subtitles = {}
-    this.path = path
+    this.path = path.dirname(path)
   }
 
   addSubtitles(name, ext, lng) {
@@ -19,8 +19,10 @@ class Video {
     this.subtitles[lng].push({
       name: name,
       ext,
+      path: path.dirname(this.path)
     })
   }
+
 }
 export default class DiscoverController {
   async discover() {

@@ -1,4 +1,5 @@
 import { Schema } from "mongoose"
+import Subtitles from "./Subtitles"
 
 const Video = new Schema({
   name: String,
@@ -13,7 +14,7 @@ const Video = new Schema({
   stars: String,
   location: String,
   trailer: String,
-  subtitles: [String],
+  subtitles: [Subtitles],
 })
 
 export default Video
