@@ -28,19 +28,26 @@ export function extractSubtitleTrack(inputFile, streamInfo, outputFile) {
 }
 
 export async function findSubtitles(movie) {
+  console.log('=================')
+  console.log('=================')
+  console.log(movie)
+  console.log('=================')
+  console.log('=================')
   // Finding subtitles
   ffmpeg.ffprobe(movie, (err, metadata) => {
     let title
-    if(metadata.format.tags.title) {
+    if(metadata && metadata.format && metadata.format.tags && metadata.format.tags.title) {
       title = metadata.format.tags.title
     }else {
       title = path.parse(movie).name
     }
     const languages = {}
+      console.log({movie})
+      console.log({metadata})
 
     for (const stream of metadata.streams) {
       if (stream.codec_name.includes("subrip")) {
-        let language = stream.tags.language
+        let {language} = stream.tags
         if(!language) {
           language = 'eng'
         }
