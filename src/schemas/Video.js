@@ -1,20 +1,26 @@
-import { Schema } from "mongoose"
-import Subtitles from "./Subtitles"
+import { model, Schema } from "mongoose"
+import { subtitleModel } from "./Subtitles"
 
-const Video = new Schema({
-  name: String,
-  baseName: String,
-  type: String,
-  date: Date,
-  score: Number,
-  length: Date,
-  resume: String,
-  director: String,
-  writers: String,
-  stars: String,
-  location: String,
-  trailer: String,
-  subtitles: [Subtitles],
-})
+const schemaVideo = new Schema(
+  {
+    name: String,
+    baseName: String,
+    type: String,
+    date: Date,
+    score: Number,
+    length: Number,
+    resume: String,
+    director: String,
+    writers: String,
+    stars: String,
+    location: String,
+    trailer: String,
+    subtitles: [{ ref: subtitleModel }],
+  },
+  {
+    timestamps: true,
+  }
+)
 
-export default Video
+export const videoModel = model("video", schemaVideo)
+export default schemaVideo

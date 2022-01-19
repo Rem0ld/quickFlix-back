@@ -1,7 +1,9 @@
-import ApiRouter from "./ApiRouter";
-import DiscoverRouter from './DiscoverRouter'
+import ApiRouter from "./ApiRouter"
+import DiscoverRouter from "./DiscoverRouter"
+import VideoRouter from "./VideosRouter"
 
 export default {
   "/api": ApiRouter,
-  "/discover": DiscoverRouter
-};
+  "/discover": DiscoverRouter,
+  "/video": VideoRouter,
+}

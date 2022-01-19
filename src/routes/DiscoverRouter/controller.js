@@ -36,7 +36,19 @@ export default class DiscoverController {
     const subDirectories = []
     const basePath = path.resolve("./public/")
     const files = await findFiles(basePath)
-    const excludedExtension = ["DS_Store", "nfo", "txt", "html", "7z", "zip", "doc", "db", 'jpg', 'jpeg', 'png']
+    const excludedExtension = [
+      "DS_Store",
+      "nfo",
+      "txt",
+      "html",
+      "7z",
+      "zip",
+      "doc",
+      "db",
+      "jpg",
+      "jpeg",
+      "png",
+    ]
 
     const goThrough = async (files, extraPath = "") => {
       for (const file of files) {
@@ -93,7 +105,7 @@ export default class DiscoverController {
     await goThrough(files)
     // console.log({ videos, subtitles, subDirectories })
     const json = JSON.stringify(videos)
-    writeFile('movies.json', json, 'utf-8', () => {
+    writeFile("movies.json", json, "utf-8", () => {
       res.json(`Success, we found ${count} videos`)
     })
   }

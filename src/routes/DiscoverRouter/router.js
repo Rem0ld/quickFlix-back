@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router } from "express"
 
-export default (controller ) => {
-  const router = Router();
+export default controller => {
+  const router = Router()
 
-  router.get("/", controller.discover);
-  return router;
+  router.get("/", controller.discover)
+  return router
 }

@@ -1,9 +1,16 @@
-import { Schema } from "mongoose";
+import { model, Schema } from "mongoose"
 
-const Subtitles = new Schema({
-  name: String,
-  ext: String,
-  path: String
-})
+const schemaSubtitle = new Schema(
+  {
+    name: String,
+    ext: String,
+    path: String,
+  },
+  {
+    timestamps: true,
+  }
+)
 
-export default Subtitles
+export const subtitleModel = model("subtitle", schemaSubtitle)
+
+export default schemaSubtitle

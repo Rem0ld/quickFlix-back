@@ -1,8 +1,15 @@
-import { Schema } from "mongoose";
+import { model, Schema } from "mongoose"
 
-const User = new Schema({
-  pseudo: String,
-  email: String
-})
+const schemaUser = new Schema(
+  {
+    pseudo: String,
+    email: String,
+  },
+  {
+    timestamps: true,
+  }
+)
 
-export default User;
+export const userModel = model("user", schemaUser)
+
+export default schemaUser

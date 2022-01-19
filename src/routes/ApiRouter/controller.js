@@ -21,8 +21,6 @@ export default class ApiController {
       if (!range) {
         return res.sendStatus(416);
       }
-
-      await findSubtitles(pathMovie)
       
       // Chunk logic here
       const positions = range.replace(/bytes=/, "").split("-");
