@@ -26,5 +26,10 @@
     "start": "yarn build && nodemon dist/index.js",
     "transpile": "babel index.js -d dist; babel -d ./dist/src ./src",
     "dev": "nodemon --exec babel-node index.js"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1"
   }
 }
