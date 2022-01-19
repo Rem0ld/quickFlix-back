@@ -1,4 +1,4 @@
-import { Schema, ObjectId } from "mongoose"
+import mongoose, { Schema } from "mongoose"
 import { videoModel } from "../routes/VideosRouter/controller"
 import { userModel } from "./User"
 
@@ -8,8 +8,8 @@ const schemaWatched = new Schema(
     lastTimeWatched: Date,
     finished: Boolean,
     stoppedAt: Number,
-    video: { type: ObjectId, ref: videoModel },
-    user: { type: ObjectId, ref: userModel },
+    video: { type: mongoose.ObjectId, ref: videoModel },
+    user: { type: mongoose.ObjectId, ref: userModel },
   },
   {
     timestamps: true,

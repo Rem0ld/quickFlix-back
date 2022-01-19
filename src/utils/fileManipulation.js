@@ -1,4 +1,4 @@
-import { accessSync, constants, readdirSync } from 'fs'
+import { accessSync, constants, readdirSync } from "fs"
 
 export function subtitleExists(subPath) {
   // const extension = ['.srt', '.vtt']
@@ -7,7 +7,7 @@ export function subtitleExists(subPath) {
   //   fs.access(path + element, mode, callback)
   // })
   try {
-   accessSync(subPath + '.vtt', constants.R_OK);
+    accessSync(subPath + ".vtt", constants.R_OK)
   } catch (error) {
     return false
   }
@@ -16,5 +16,5 @@ export function subtitleExists(subPath) {
 }
 
 export async function findFiles(dir) {
-  return readdirSync(dir, {withFileTypes: true})
+  return readdirSync(dir, { withFileTypes: true })
 }

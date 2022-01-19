@@ -2,8 +2,14 @@ import { model, Schema } from "mongoose"
 
 const schemaUser = new Schema(
   {
-    pseudo: String,
-    email: String,
+    pseudo: { type: String, required: true },
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ["simple", "admin"],
+      default: "simple",
+    },
   },
   {
     timestamps: true,

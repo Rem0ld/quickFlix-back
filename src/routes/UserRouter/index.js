@@ -1,7 +1,7 @@
-import ApiController from "./controller"
+import UserController from "./controller"
 import router from "./router"
 
-const controller = new ApiController()
+const controller = new UserController()
 const routes = router(controller)
 
 export default routes

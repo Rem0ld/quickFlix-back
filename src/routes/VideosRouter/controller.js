@@ -14,6 +14,7 @@ export default class VideoController {
       stars = "",
       location = "",
       trailer = "",
+      ext,
     } = req.body
     if (!name) {
       next(new Error("missing name"))
@@ -28,6 +29,7 @@ export default class VideoController {
       director,
       writers,
       stars,
+      ext,
       location,
       trailer,
     })
@@ -83,5 +85,11 @@ export default class VideoController {
     }
 
     res.json(video)
+  }
+
+  async deleteAll(req, res, next) {
+    const videos = await videoModel.deleteMany()
+
+    res.json(`${videos.deletedCount} removed`)
   }
 }

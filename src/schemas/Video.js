@@ -1,11 +1,16 @@
-import { model, Schema } from "mongoose"
+import mongoose, { model, Schema } from "mongoose"
 import { subtitleModel } from "./Subtitles"
 
 const schemaVideo = new Schema(
   {
     name: String,
-    baseName: String,
-    type: String,
+    basename: String,
+    filename: String,
+    ext: String,
+    location: String,
+    type: [{ type: String, enum: ["movie", "tv"] }],
+    episode: String,
+    season: String,
     date: Date,
     score: Number,
     length: Number,
@@ -13,9 +18,8 @@ const schemaVideo = new Schema(
     director: String,
     writers: String,
     stars: String,
-    location: String,
     trailer: String,
-    subtitles: [{ ref: subtitleModel }],
+    subtitles: [{ type: mongoose.ObjectId, ref: subtitleModel }],
   },
   {
     timestamps: true,
