@@ -6,11 +6,15 @@ import { videoModel } from "../../schemas/Video"
 export default class ApiController {
   async stream(req, res, next) {
     const { id } = req.params
+    if (!id) next(new Error("An id is required"))
+
     const video = await videoModel.findById(id)
 
     // Check if the file exists in the current directory.
     access(video.location, constants.F_OK, async err => {
+      // TODO: log here with file name and location
       console.log(`${video.name} ${err ? "does not exist" : "exists"}`)
+      next(new Error("Cannot access this patch"))
     })
 
     fs.stat(video.location, async function (err, stats) {

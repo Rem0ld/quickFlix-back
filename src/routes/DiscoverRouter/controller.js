@@ -12,7 +12,7 @@ dotenv.config()
 
 const matchExt = /(\w+)$/i
 const matchLng = /(\w+).\w+$/
-const regExBasename = /([ .\w']+?)($|mp3|\.[s|S].*|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/
+const regExBasename = /([ .\w']+?)($|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/
 const movieDbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${process.env.API_MOVIEDB}&page=1&include_adult=false&language=en-US&query=`
 const regexTvShow = /(s\d{1,2})(e\d{1,2})/i
 const regexIsSubtitle = /(vtt|srt|sfv)/i
@@ -65,6 +65,7 @@ export default class DiscoverController {
 
           if (!basename) {
             console.error("Something wrong has happened")
+            // TODO: log here with filename
             console.error(filename)
           }
 
@@ -77,19 +78,23 @@ export default class DiscoverController {
 
           // check if already exists
           const existInDb = await videoModel.find({ name })
-          if (existInDb.length > 0) continue
-
-          const location = path.resolve(absolutePath + "/" + file.name)
-          const video = await videoModel.create({
-            filename,
-            basename,
-            name,
-            ext,
-            location,
-            type: isTvShow ? "tv" : "movie",
-          })
-          console.log("{video} created")
-          console.log({ video })
+          let video
+          if (!existInDb.length) {
+            const location = path.resolve(absolutePath + "/" + file.name)
+            video = await videoModel.create({
+              filename,
+              basename,
+              name,
+              ext,
+              location,
+              type: isTvShow ? "tv" : "movie",
+            })
+            console.log("{video} created")
+            // TODO: log here which video has been created with name and location
+            console.log({ video })
+          } else {
+            video = existInDb[0]
+          }
 
           if (isTvShow) {
             const seasonNumber = season.match(/(\d+)/)[0]
@@ -97,8 +102,6 @@ export default class DiscoverController {
             console.log("{season, episode}")
             console.log({ season, episode })
             let tvShow = await tvShowModel.findOne({ name: basename })
-            console.log("{tvshow}")
-            console.log({ tvShow })
 
             if (!tvShow) {
               tvShow = await tvShowModel.create({
@@ -111,27 +114,43 @@ export default class DiscoverController {
                 ],
               })
               console.log("tvshow created")
+              // TODO: log here which tvShow has been created with name and location
               console.log({ tvShow })
             } else {
               const { seasons } = tvShow
-              const newSeasons = seasons.map(el => {
-                if (+el.number === +seasonNumber) {
-                  const episodeExists = el.episodes.filter(el => +el.number === +episodeNumber)
-
-                  if (!episodeExists) {
-                    el.episodes.push({
-                      number: episodeNumber,
-                      ref: video._id,
-                    })
-                  }
-                }
-                return el
+              const seasonIsPresent = seasons.findIndex(el => {
+                console.log("is season present", +el.number, +seasonNumber)
+                return +el.number === +seasonNumber
               })
 
-              console.log({ newSeasons })
+              console.log({ seasonIsPresent })
+              if (seasonIsPresent === -1) {
+                seasons.push({
+                  number: seasonNumber,
+                  episodes: [{ number: episodeNumber, ref: video._id }],
+                })
+              } else {
+                const modifiedSeason = seasons.splice(seasonIsPresent, 1)
+                const episodeIsPresent = modifiedSeason[0].episodes.findIndex(
+                  el => +el.number === +episodeNumber
+                )
+                if (episodeIsPresent === -1) {
+                  modifiedSeason[0].episodes.push({
+                    number: episodeNumber,
+                    ref: video._id,
+                  })
+                  seasons.push(modifiedSeason[0])
+                  tvShow.seasons = seasons
+                }
+              }
+
               await tvShow.save()
               console.log("tvshow updated")
+              // TODO: log here which tvshow has been update with name and data
               console.log({ tvShow, seasons: tvShow.seasons })
+              if (tvShow?.seasons[0]?.episodes?.length) {
+                console.log({ episodes: tvShow.seasons[0].episodes })
+              }
             }
           }
 

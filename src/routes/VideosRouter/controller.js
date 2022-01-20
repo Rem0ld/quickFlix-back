@@ -40,14 +40,27 @@ export default class VideoController {
   }
 
   async find(req, res) {
-    const videos = await videoModel.find()
+    const { limit = 20, skip = 0 } = req.query
+    const count = await videoModel.countDocuments()
 
-    res.json(videos)
+    if (+limit === -1) res.json(await videoModel.find())
+
+    const videos = await videoModel
+      .find()
+      .skip(+skip)
+      .limit(+limit)
+
+    res.json({
+      total: count,
+      limit: +limit,
+      skip: +skip,
+      data: videos,
+    })
   }
 
   async findById(req, res, next) {
-    const { _id } = req.body
-    const video = await videoModel.findById(_id)
+    const { id } = req.params
+    const video = await videoModel.findById(id)
 
     if (!video) {
       next(new Error("Movie doesnt exists"))

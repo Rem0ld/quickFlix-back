@@ -7,7 +7,12 @@ export default class TvShowController {
 
     res.json(tvshows)
   }
-  async get(req, res, next) {}
+  async get(req, res, next) {
+    const { id } = req.params
+    const tvShow = await tvShowModel.findById(id)
+
+    res.json(tvShow)
+  }
   async patch(req, res, next) {}
   async delete(req, res, next) {}
   async deleteAll(req, res, next) {
