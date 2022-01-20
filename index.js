@@ -15,6 +15,12 @@ mongoose.connect(
     : "mongodb://localhost:27017/db_quickFlix",
   () => {
     console.log("connected")
+    console.log(process.env.NODE_ENV)
+    if (process.env.NODE_ENV === "development") {
+      console.log(process.env.DB_CONNECTION_STRING)
+    } else {
+      console.log("mongodb://localhost:27017/db_quickFlix")
+    }
   }
 )
 const server = new Server(app)
