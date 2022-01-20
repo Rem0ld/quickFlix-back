@@ -12,14 +12,16 @@ dotenv.config()
 
 const matchExt = /(\w+)$/i
 const matchLng = /(\w+).\w+$/
-const regExBasename = /([ .\w']+?)($|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/
-const movieDbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${process.env.API_MOVIEDB}&page=1&include_adult=false&language=en-US&query=`
 const regexTvShow = /(s\d{1,2})(e\d{1,2})/i
+const regExBasename = /([ .\w']+?)($|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/
 const regexIsSubtitle = /(vtt|srt|sfv)/i
+const movieDbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${process.env.API_MOVIEDB}&page=1&include_adult=false&language=en-US&query=`
 
 export default class DiscoverController {
-  async discover(req, res) {
-    let count = 0
+  async discover(_, res) {
+    let countCreatedVideo = 0,
+      countCreatedTvShow = 0,
+      countUpdatedTvShow = 0
     const subDirectories = []
     const basePath = path.resolve("./public/")
     const files = await findFiles(basePath)
@@ -89,9 +91,10 @@ export default class DiscoverController {
               location,
               type: isTvShow ? "tv" : "movie",
             })
+
+            countCreatedVideo++
             console.log("{video} created")
             // TODO: log here which video has been created with name and location
-            console.log({ video })
           } else {
             video = existInDb[0]
           }
@@ -99,8 +102,6 @@ export default class DiscoverController {
           if (isTvShow) {
             const seasonNumber = season.match(/(\d+)/)[0]
             const episodeNumber = episode.match(/(\d+)/)[0]
-            console.log("{season, episode}")
-            console.log({ season, episode })
             let tvShow = await tvShowModel.findOne({ name: basename })
 
             if (!tvShow) {
@@ -114,26 +115,30 @@ export default class DiscoverController {
                 ],
               })
               console.log("tvshow created")
+              countCreatedTvShow++
               // TODO: log here which tvShow has been created with name and location
-              console.log({ tvShow })
             } else {
               const { seasons } = tvShow
               const seasonIsPresent = seasons.findIndex(el => {
-                console.log("is season present", +el.number, +seasonNumber)
                 return +el.number === +seasonNumber
               })
 
-              console.log({ seasonIsPresent })
               if (seasonIsPresent === -1) {
                 seasons.push({
                   number: seasonNumber,
                   episodes: [{ number: episodeNumber, ref: video._id }],
                 })
+                tvShow.seasons = seasons
+                await tvShow.save()
+                console.log("tvshow updated - new season")
+                countUpdatedTvShow++
+                continue
               } else {
                 const modifiedSeason = seasons.splice(seasonIsPresent, 1)
                 const episodeIsPresent = modifiedSeason[0].episodes.findIndex(
                   el => +el.number === +episodeNumber
                 )
+                console.log(video.name, episodeIsPresent)
                 if (episodeIsPresent === -1) {
                   modifiedSeason[0].episodes.push({
                     number: episodeNumber,
@@ -141,21 +146,16 @@ export default class DiscoverController {
                   })
                   seasons.push(modifiedSeason[0])
                   tvShow.seasons = seasons
+                  await tvShow.save()
+                  console.log("tvshow updated - new episode")
+                  countUpdatedTvShow++
+                  continue
                 }
               }
 
-              await tvShow.save()
-              console.log("tvshow updated")
               // TODO: log here which tvshow has been update with name and data
-              console.log({ tvShow, seasons: tvShow.seasons })
-              if (tvShow?.seasons[0]?.episodes?.length) {
-                console.log({ episodes: tvShow.seasons[0].episodes })
-              }
             }
           }
-
-          count++
-          continue
         }
       }
 
@@ -166,7 +166,11 @@ export default class DiscoverController {
     }
     await goThrough(files)
 
-    res.json(`${count} were added to db`)
+    res.json({
+      countCreatedVideo,
+      countCreatedTvShow,
+      countUpdatedTvShow,
+    })
   }
 
   discoverSubtitles() {

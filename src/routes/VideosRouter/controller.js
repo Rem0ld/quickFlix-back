@@ -1,4 +1,5 @@
 import { videoModel } from "../../schemas/Video"
+import { defaultLimit } from "../../config/defaultConfig"
 
 export default class VideoController {
   async create(req, res, next) {
@@ -40,12 +41,12 @@ export default class VideoController {
   }
 
   async find(req, res) {
-    const { limit = 20, skip = 0 } = req.query
+    const { limit = defaultLimit, skip = 0 } = req.query
     const count = await videoModel.countDocuments()
 
     if (+limit === -1) res.json(await videoModel.find())
 
-    const videos = await videoModel
+    const data = await videoModel
       .find()
       .skip(+skip)
       .limit(+limit)
@@ -54,7 +55,7 @@ export default class VideoController {
       total: count,
       limit: +limit,
       skip: +skip,
-      data: videos,
+      data,
     })
   }
 
@@ -71,11 +72,12 @@ export default class VideoController {
 
   async findOneByName(req, res, next) {
     const { name } = req.body
+
+    if (!name) next(new Error("Please enter a name"))
+
     const video = await videoModel.findOne({ name })
 
-    if (!video) {
-      next(new Error("Movie doesnt exists"))
-    }
+    if (!video) next(new Error("Movie doesn't exists"))
 
     res.json(video)
   }
