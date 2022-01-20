@@ -16,6 +16,26 @@ const regexTvShow = /(s\d{1,2})(e\d{1,2})/i
 const regExBasename = /([ .\w']+?)($|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/
 const regexIsSubtitle = /(vtt|srt|sfv)/i
 const movieDbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${process.env.API_MOVIEDB}&page=1&include_adult=false&language=en-US&query=`
+const imageDbUrl = `https://image.tmdb.org/t/p/w500`
+
+// Need to add id after tv/ then add the remaining of the URL
+const detailDbUrl = `https://api.themoviedb.org/3/` // tv | movie / {id}
+const apikeyTvShowUrl = `?api_key=${process.env.API_MOVIEDB}&language=en-US`
+
+const basePath = path.resolve("./public/")
+const excludedExtension = [
+  "DS_Store",
+  "nfo",
+  "txt",
+  "html",
+  "7z",
+  "zip",
+  "doc",
+  "db",
+  "jpg",
+  "jpeg",
+  "png",
+]
 
 export default class DiscoverController {
   async discover(_, res) {
@@ -23,21 +43,7 @@ export default class DiscoverController {
       countCreatedTvShow = 0,
       countUpdatedTvShow = 0
     const subDirectories = []
-    const basePath = path.resolve("./public/")
     const files = await findFiles(basePath)
-    const excludedExtension = [
-      "DS_Store",
-      "nfo",
-      "txt",
-      "html",
-      "7z",
-      "zip",
-      "doc",
-      "db",
-      "jpg",
-      "jpeg",
-      "png",
-    ]
 
     const goThrough = async (files, extraPath = "") => {
       for (const file of files) {
@@ -152,7 +158,6 @@ export default class DiscoverController {
                   continue
                 }
               }
-
               // TODO: log here which tvshow has been update with name and data
             }
           }
@@ -173,43 +178,100 @@ export default class DiscoverController {
     })
   }
 
-  discoverSubtitles() {
-    const isSubtitle = regexIsSubtitle.test(ext)
+  async discoverSubtitles(_, res) {
+    let countSubtitleCreated = 0
+    const subDirectories = []
+    const files = await findFiles(basePath)
 
-    if (ext.includes("srt")) {
-      createReadStream(absolutePath + file.name)
-        .pipe(srt2vtt())
-        .pipe(createWriteStream(`${absolutePath}${filename}.vtt`))
-    }
-    // need to remove srt file
-    console.log("===========")
-    console.log("file to remove", absolutePath + file.name)
-    console.log("===========")
-    //rm(absolutePath + file.name)
+    const goThrough = async (files, extraPath = "") => {
+      for (const file of files) {
+        const ext = path.extname(file.name)
+        const isSubtitle = regexIsSubtitle.test(ext)
 
-    subtitleModel.create(
-      {
-        ext,
-        path: absolutePath,
-        name: filename,
-      },
-      (err, data) => {
-        if (err) {
-          console.error(err)
+        const exclude = excludedExtension.some(ext => file.name.includes(ext))
+
+        if (exclude) continue
+
+        if (file.isDirectory() || file.isSymbolicLink()) {
+          //          console.log({file}, 'is directory')
+          const sub = await findFiles(basePath + "/" + extraPath + "/" + file.name)
+          subDirectories.push({
+            directory: extraPath + "/" + file.name,
+            content: sub.filter(el => !el.name.includes("DS_Store")),
+          })
+          continue
         }
-        console.log("success", data)
+
+        // Here we need to work the file
+        const filename = path.basename(file.name, ext)
+        const absolutePath = path.resolve(basePath + "/" + extraPath + "/")
+
+        if (isSubtitle) {
+          if (ext.includes("srt")) {
+            createReadStream(absolutePath + "/" + file.name)
+              .pipe(srt2vtt())
+              .pipe(createWriteStream(`${absolutePath}/${filename}.vtt`))
+
+            // need to remove srt file
+            console.log("===========")
+            // TODO: log here to keep track of what we delete
+            console.log("file to remove", absolutePath + "/" + file.name)
+            console.log("===========")
+            rm(absolutePath + "/" + file.name, () => {}) // trick to avoid error
+          }
+          subtitleModel.create(
+            {
+              ext,
+              path: absolutePath,
+              name: filename,
+            },
+            (err, data) => {
+              if (err) {
+                console.error(err)
+              }
+              console.log("success", data)
+            }
+          )
+          countSubtitleCreated++
+          continue
+        }
       }
-    )
+
+      while (subDirectories.length > 0) {
+        const subDirectory = subDirectories.shift()
+        await goThrough(subDirectory.content, subDirectory.directory)
+      }
+    }
+    await goThrough(files)
+
+    res.json({
+      countSubtitleCreated,
+    })
   }
 
   discoverDetails() {
-    if (false) {
-      console.log("============")
-      console.log({ basename })
-      console.log("============")
-      // const response = await fetch(movieDbUrl + basename)
-      // const result = await response.json()
-      // console.log({ result })
-    }
+    /**
+     * To get info on TvShow or movies I need to first look on base movideDbUrl to get the id,
+     * then we can do a more specific search on tvShowDbUrl to get seasons, episodes etc
+     * we can also get trailer with:
+     * https://api.themoviedb.org/3/tv/${id}/videos?api_key=${process.env.API_MOVIEDB}&language=en-US
+     * Shape of the results :
+     * {
+     *  "id": 60574,
+     *  "results": [
+     *    {
+     *      "iso_639_1": "en",
+     *      "iso_3166_1": "US",
+     *      "name": "Nick Cave And The Bad Seeds - Red Right Hand (Peaky Blinders OST)",
+     *      "key": "KGD2N5hJ2e0", WE WANT THIS
+     *      "site": "YouTube", AND THIS
+     *      "size": 1080,
+     *      "type": "Featurette",
+     *      "official": false,
+     *      "published_at": "2013-10-01T17:24:31.000Z",
+     *      "id": "610684c8a76ac500735d39b1"
+     *    },
+     *  }
+     */
   }
 }

@@ -3,6 +3,7 @@ import { subtitleModel } from "./Subtitles"
 
 const schemaVideo = new Schema(
   {
+    idMovieDb: String,
     name: String,
     basename: String,
     filename: String,
@@ -20,6 +21,8 @@ const schemaVideo = new Schema(
     stars: String,
     trailer: String,
     subtitles: [{ type: mongoose.ObjectId, ref: subtitleModel }],
+    trailerYtCode: String,
+    posterPath: String,
   },
   {
     timestamps: true,

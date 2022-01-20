@@ -3,6 +3,7 @@ import { videoModel } from "./Video"
 
 const schemaTvShow = new Schema(
   {
+    idMovieDb: String,
     name: String,
     numberSeason: Number,
     numberEpisode: Number,
@@ -13,9 +14,12 @@ const schemaTvShow = new Schema(
       },
     ],
     ongoing: Boolean,
+    originCountry: String,
+    posterPath: String,
     resume: String,
     score: Number,
     date: Date,
+    trailerYtCode: String,
   },
   {
     timestamps: true,

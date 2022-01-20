@@ -9,9 +9,14 @@ dotenv.config()
 
 const port = process.env.PORT
 const app = Express()
-mongoose.connect("mongodb://localhost:27018/db_quickFlix", () => {
-  console.log("connected")
-})
+mongoose.connect(
+  process.env.NODE_ENV === "development"
+    ? process.env.DB_CONNECTION_STRING
+    : "mongodb://localhost:27017/db_quickFlix",
+  () => {
+    console.log("connected")
+  }
+)
 const server = new Server(app)
 
 server.middlewares(middlewares)

@@ -14,7 +14,7 @@ export default class ApiController {
     access(video.location, constants.F_OK, async err => {
       // TODO: log here with file name and location
       console.log(`${video.name} ${err ? "does not exist" : "exists"}`)
-      next(new Error("Cannot access this patch"))
+      if (err) next(new Error("Cannot access this patch"))
     })
 
     fs.stat(video.location, async function (err, stats) {
