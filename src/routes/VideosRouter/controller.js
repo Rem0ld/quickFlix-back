@@ -42,7 +42,13 @@ export default class VideoController {
 
   async find(req, res) {
     const { limit = defaultLimit, skip = 0 } = req.query
-    const count = await videoModel.countDocuments()
+    let count = []
+
+    try {
+      count = await videoModel.countDocuments()
+    } catch (error) {
+      res.json([])
+    }
 
     if (+limit === -1) res.json(await videoModel.find())
 
