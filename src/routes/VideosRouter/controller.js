@@ -1,5 +1,5 @@
-import { videoModel } from "../../schemas/Video"
-import { defaultLimit } from "../../config/defaultConfig"
+import { videoModel } from "../../schemas/Video";
+import { defaultLimit } from "../../config/defaultConfig";
 
 export default class VideoController {
   async create(req, res, next) {
@@ -16,10 +16,10 @@ export default class VideoController {
       location = "",
       trailer = "",
       ext,
-    } = req.body
+    } = req.body;
 
     if (!name) {
-      next(new Error("missing name"))
+      next(new Error("missing name"));
     }
     const video = await videoModel.create({
       name,
@@ -34,84 +34,78 @@ export default class VideoController {
       ext,
       location,
       trailer,
-    })
+    });
 
     res.json({
       video,
-    })
+    });
   }
 
   async find(req, res) {
-    const { limit = defaultLimit, skip = 0 } = req.query
-    let count = []
+    const { limit = defaultLimit, skip = 0 } = req.query;
+    let count = await videoModel.countDocuments();
 
-    try {
-      count = await videoModel.countDocuments()
-    } catch (error) {
-      count = []
-    }
-
-    if (+limit === -1) res.json(await videoModel.find())
+    if (+limit === -1) res.json(await videoModel.find());
 
     const data = await videoModel
       .find()
       .skip(+skip)
-      .limit(+limit)
+      .limit(+limit);
 
     res.json({
       total: count,
       limit: +limit,
       skip: +skip,
       data,
-    })
+    });
   }
 
   async findById(req, res, next) {
-    const { id } = req.params
-    const video = await videoModel.findById(id)
+    const { id } = req.params;
+    const video = await videoModel.findById(id);
 
     if (!video) {
-      next(new Error("Movie doesnt exists"))
+      next(new Error("Movie doesnt exists"));
     }
 
-    res.json(video)
+    res.json(video);
   }
 
   async findOneByName(req, res, next) {
-    const { name } = req.body
+    const { name } = req.body;
 
-    if (!name) next(new Error("Please enter a name"))
+    if (!name) next(new Error("Please enter a name"));
 
-    const video = await videoModel.findOne({ name })
+    const video = await videoModel.findOne({ name });
 
-    if (!video) next(new Error("Movie doesn't exists"))
+    if (!video) next(new Error("Movie doesn't exists"));
 
-    res.json(video)
+    res.json(video);
   }
 
   async update(req, res, next) {
     await videoModel.updateOne(req.body, (err, result) => {
       if (err) {
-        next(err)
+        next(err);
       }
-      res.json(result)
-    })
+      res.json(result);
+    });
   }
 
   async delete(req, res, next) {
-    const { _id } = req.body
-    const video = await videoModel.findByIdAndDelete(_id)
+    const { _id } = req.body;
+    const video = await videoModel.findByIdAndDelete(_id);
 
     if (!video) {
-      next(new Error("Couldnt remove movie"))
+      next(new Error("Couldnt remove movie"));
     }
 
-    res.json(video)
+    res.json(video);
   }
 
   async deleteAll(req, res, next) {
-    const videos = await videoModel.deleteMany()
+    const videos = await videoModel.deleteMany();
 
-    res.json(`${videos.deletedCount} removed`)
+    res.json(`${videos.deletedCount} removed`);
   }
 }
