@@ -12,14 +12,14 @@ const app = Express()
 mongoose.connect(
   process.env.NODE_ENV === "development"
     ? process.env.DB_CONNECTION_STRING
-    : "mongodb://localhost:27017/db_quickFlix",
+    : "mongodb://amdin:1234@localhost:27017/db_quickFlix",
   () => {
     console.log("connected")
     console.log(process.env.NODE_ENV)
     if (process.env.NODE_ENV === "development") {
       console.log(process.env.DB_CONNECTION_STRING)
     } else {
-      console.log("mongodb://localhost:27017/db_quickFlix")
+      console.log("mongodb://amdin:1234@localhost:27017/db_quickFlix")
     }
   }
 )

@@ -39,6 +39,7 @@ const excludedExtension = [
 
 export default class DiscoverController {
   async discover(_, res) {
+    console.log("Starting discovering")
     let countCreatedVideo = 0,
       countCreatedTvShow = 0,
       countUpdatedTvShow = 0
@@ -171,6 +172,7 @@ export default class DiscoverController {
     }
     await goThrough(files)
 
+    console.log("Ending discovering")
     res.json({
       countCreatedVideo,
       countCreatedTvShow,

@@ -17,6 +17,7 @@ export default class VideoController {
       trailer = "",
       ext,
     } = req.body
+
     if (!name) {
       next(new Error("missing name"))
     }
@@ -47,7 +48,7 @@ export default class VideoController {
     try {
       count = await videoModel.countDocuments()
     } catch (error) {
-      res.json([])
+      count = []
     }
 
     if (+limit === -1) res.json(await videoModel.find())
