@@ -47,6 +47,7 @@ export default class VideoController {
     if (+limit === -1) {
       const videos = await videoModel.find();
       res.json(videos);
+      return;
     }
 
     let count = await videoModel.countDocuments();
