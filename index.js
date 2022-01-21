@@ -12,15 +12,13 @@ const app = Express()
 mongoose.connect(
   process.env.NODE_ENV === "development"
     ? process.env.DB_CONNECTION_STRING
-    : "mongodb://amdin:1234@localhost:27017/db_quickFlix",
-  () => {
-    console.log("connected")
-    console.log(process.env.NODE_ENV)
-    if (process.env.NODE_ENV === "development") {
-      console.log(process.env.DB_CONNECTION_STRING)
-    } else {
-      console.log("mongodb://amdin:1234@localhost:27017/db_quickFlix")
-    }
+    : "mongodb://localhost:27017/db_quickFlix --username amdin --password 1234",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  },
+  error => {
+    console.log(error)
   }
 )
 const server = new Server(app)
