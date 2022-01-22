@@ -1,20 +1,18 @@
 import path from "path";
-import { findFiles } from "../../utils/fileManipulation";
-import { videoModel } from "../../schemas/Video";
-import srt2vtt from "srt-to-vtt";
-import { createReadStream, createWriteStream, rm } from "fs";
-import { subtitleModel } from "../../schemas/Subtitles";
-import { tvShowModel } from "../../schemas/TvShow";
-import fetch from "node-fetch";
 import dotenv from "dotenv";
+import srt2vtt from "srt-to-vtt";
+import fetch from "node-fetch";
+import { createReadStream, createWriteStream, rm } from "fs";
+import { videoModel } from "../../schemas/Video";
+import { tvShowModel } from "../../schemas/TvShow";
+import { findFiles } from "../../utils/fileManipulation";
+import { subtitleModel } from "../../schemas/Subtitles";
+import { regexIsSubtitle, regExBasename, regexTvShow } from "../../utils/regexes";
+import { parseBasename } from "../../utils/stringManipulation";
+import VideoService from "../VideosRouter/service";
 
 dotenv.config();
 
-const matchExt = /(\w+)$/i;
-const matchLng = /(\w+).\w+$/;
-const regexTvShow = /(s\d{1,2})(e\d{1,2})/i;
-const regExBasename = /([ .\w']+?)($|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/;
-const regexIsSubtitle = /(vtt|srt|sfv)/i;
 const movieDbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${process.env.API_MOVIEDB}&page=1&include_adult=false&language=en-US&query=`;
 const imageDbUrl = `https://image.tmdb.org/t/p/w500`;
 
@@ -78,26 +76,45 @@ export default class DiscoverController {
             console.error(filename);
           }
 
-          basename = basename[1].replaceAll(".", " ").trim().toLowerCase();
+          basename = parseBasename(basename[1]);
 
           const isTvShow = filename.match(regexTvShow);
-          const season = isTvShow && isTvShow[1].toLowerCase();
-          const episode = isTvShow && isTvShow[2].toLowerCase();
-          const name = isTvShow ? `${basename} ${season}${episode}` : basename;
+          const season = isTvShow && (isTvShow[1] || isTvShow[3]);
+          const episode = isTvShow && (isTvShow[2] || isTvShow[4]);
+          const name = isTvShow ? `${basename} s${season}e${episode}` : basename;
 
           // check if already exists
           const existInDb = await videoModel.find({ name });
           let video;
           if (!existInDb.length) {
             const location = path.resolve(absolutePath + "/" + file.name);
-            video = await videoModel.create({
-              filename,
-              basename,
-              name,
-              ext,
-              location,
-              type: isTvShow ? "tv" : "movie",
-            });
+            try {
+              video = await videoModel.create({
+                filename,
+                basename,
+                name,
+                ext,
+                location,
+                type: isTvShow ? "tv" : "movie",
+                episode: isTvShow ? +episode : "",
+                season: isTvShow ? +season : "",
+              });
+              if (basename.includes("game of thrones") && season == 1) {
+                console.log(video);
+              }
+            } catch (error) {
+              console.log({
+                filename,
+                basename,
+                name,
+                ext,
+                location,
+                type: isTvShow ? "tv" : "movie",
+                episode: isTvShow ? +episode : "",
+                season: isTvShow ? +season : "",
+              });
+              console.error(error);
+            }
 
             countCreatedVideo++;
             console.log("{video} created");
@@ -107,8 +124,6 @@ export default class DiscoverController {
           }
 
           if (isTvShow) {
-            const seasonNumber = season.match(/(\d+)/)[0];
-            const episodeNumber = episode.match(/(\d+)/)[0];
             let tvShow = await tvShowModel.findOne({ name: basename });
 
             if (!tvShow) {
@@ -116,8 +131,8 @@ export default class DiscoverController {
                 name: basename,
                 seasons: [
                   {
-                    number: seasonNumber,
-                    episodes: [{ number: episodeNumber, ref: video._id }],
+                    number: +season,
+                    episodes: [{ number: +episode, ref: video._id }],
                   },
                 ],
               });
@@ -127,13 +142,13 @@ export default class DiscoverController {
             } else {
               const { seasons } = tvShow;
               const seasonIsPresent = seasons.findIndex(el => {
-                return +el.number === +seasonNumber;
+                return +el.number === +episode;
               });
 
               if (seasonIsPresent === -1) {
                 seasons.push({
-                  number: seasonNumber,
-                  episodes: [{ number: episodeNumber, ref: video._id }],
+                  number: +season,
+                  episodes: [{ number: +episode, ref: video._id }],
                 });
                 tvShow.seasons = seasons;
                 await tvShow.save();
@@ -143,12 +158,12 @@ export default class DiscoverController {
               } else {
                 const modifiedSeason = seasons.splice(seasonIsPresent, 1);
                 const episodeIsPresent = modifiedSeason[0].episodes.findIndex(
-                  el => +el.number === +episodeNumber
+                  el => +el.number === +episode
                 );
-                console.log(video.name, episodeIsPresent);
+
                 if (episodeIsPresent === -1) {
                   modifiedSeason[0].episodes.push({
-                    number: episodeNumber,
+                    number: +episode,
                     ref: video._id,
                   });
                   seasons.push(modifiedSeason[0]);
@@ -195,7 +210,6 @@ export default class DiscoverController {
         if (exclude) continue;
 
         if (file.isDirectory() || file.isSymbolicLink()) {
-          //          console.log({file}, 'is directory')
           const sub = await findFiles(basePath + "/" + extraPath + "/" + file.name);
           subDirectories.push({
             directory: extraPath + "/" + file.name,
@@ -207,33 +221,55 @@ export default class DiscoverController {
         // Here we need to work the file
         const filename = path.basename(file.name, ext);
         const absolutePath = path.resolve(basePath + "/" + extraPath + "/");
+        let basename = filename.match(regExBasename);
+
+        basename = parseBasename(basename[1]);
 
         if (isSubtitle) {
+          const subExists = await subtitleModel.find({ name: filename });
+          if (subExists.length > 0) continue;
+
           if (ext.includes("srt")) {
             createReadStream(absolutePath + "/" + file.name)
               .pipe(srt2vtt())
               .pipe(createWriteStream(`${absolutePath}/${filename}.vtt`));
 
-            // need to remove srt file
-            console.log("===========");
             // TODO: log here to keep track of what we delete
-            console.log("file to remove", absolutePath + "/" + file.name);
-            console.log("===========");
             // rm(absolutePath + "/" + file.name, () => {}); // trick to avoid error
           }
-          subtitleModel.create(
-            {
-              ext,
-              path: absolutePath,
-              name: filename,
-            },
-            (err, data) => {
-              if (err) {
-                console.error(err);
-              }
-              console.log("success", data);
+
+          const isTvShow = filename.match(regexTvShow);
+          console.log({ isTvShow });
+          const season = isTvShow && (isTvShow[1] || isTvShow[3]);
+          const episode = isTvShow && (isTvShow[2] || isTvShow[4]);
+
+          const data = await subtitleModel.create({
+            ext: ".vtt",
+            path: absolutePath,
+            name: filename,
+          });
+
+          if (isTvShow) {
+            console.log({ basename, episode, season });
+            const video = await VideoService.findByFields({
+              name: basename,
+              episode: +episode,
+              season: +season,
+            });
+            console.log(video);
+          } else {
+            console.log(filename);
+            const video = await VideoService.findByFields({
+              name: basename,
+              episode: +episode,
+              season: +season,
+            });
+
+            if (video.length) {
+              video[0].subtitles.push(data._id);
             }
-          );
+          }
+
           countSubtitleCreated++;
           continue;
         }

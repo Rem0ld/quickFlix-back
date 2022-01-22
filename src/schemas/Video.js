@@ -1,5 +1,5 @@
-import mongoose, { model, Schema } from "mongoose"
-import { subtitleModel } from "./Subtitles"
+import mongoose, { model, Schema } from "mongoose";
+import { subtitleModel } from "./Subtitles";
 
 const schemaVideo = new Schema(
   {
@@ -9,7 +9,7 @@ const schemaVideo = new Schema(
     filename: String,
     ext: String,
     location: String,
-    type: [{ type: String, enum: ["movie", "tv"] }],
+    type: { type: String, enum: ["movie", "tv"] },
     episode: String,
     season: String,
     date: Date,
@@ -27,7 +27,7 @@ const schemaVideo = new Schema(
   {
     timestamps: true,
   }
-)
+);
 
-export const videoModel = model("video", schemaVideo)
-export default schemaVideo
+export const videoModel = model("video", schemaVideo);
+export default schemaVideo;

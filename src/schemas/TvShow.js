@@ -1,5 +1,5 @@
-import mongoose, { model, Schema } from "mongoose"
-import { videoModel } from "./Video"
+import mongoose, { model, Schema } from "mongoose";
+import { videoModel } from "./Video";
 
 const schemaTvShow = new Schema(
   {
@@ -24,8 +24,8 @@ const schemaTvShow = new Schema(
   {
     timestamps: true,
   }
-)
+);
 
-export const tvShowModel = model("season", schemaTvShow)
+export const tvShowModel = model("season", schemaTvShow);
 
-export default schemaTvShow
+export default schemaTvShow;

@@ -1,13 +1,14 @@
-import { Router } from "express"
+import { Router } from "express";
 
 export default controller => {
-  const router = Router()
+  const router = Router();
 
-  router.get("/", controller.find)
-  router.get("/:id", controller.findById)
-  router.post("/by-name", controller.findOneByName)
-  router.post("/", controller.create)
-  router.delete("/:id", controller.delete)
-  router.delete("/", controller.deleteAll)
-  return router
-}
+  router.get("/", controller.find);
+  router.get("/:id", controller.findById);
+  router.post("/by-name", controller.findOneByName);
+  router.post("/by-fields", controller.findByFields);
+  router.post("/", controller.create);
+  router.delete("/:id", controller.delete);
+  router.delete("/", controller.deleteAll);
+  return router;
+};

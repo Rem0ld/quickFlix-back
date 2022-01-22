@@ -1,5 +1,6 @@
 import { videoModel } from "../../schemas/Video";
 import { defaultLimit } from "../../config/defaultConfig";
+import VideoService from "./service";
 
 export default class VideoController {
   async create(req, res, next) {
@@ -41,28 +42,36 @@ export default class VideoController {
     });
   }
 
-  async find(req, res) {
-    const { limit = defaultLimit, skip = 0 } = req.query;
+  async find(req, res, next) {
+    const { limit = defaultLimit, skip = 0, movie = false } = req.query;
+    const request = {};
+
+    if (movie) {
+      request.type = "movie";
+    }
 
     if (+limit === -1) {
-      const videos = await videoModel.find();
-      res.json(videos);
+      const data = await videoModel.find(request);
+      res.json(data);
       return;
     }
 
-    let count = await videoModel.countDocuments();
+    try {
+      const count = await videoModel.countDocuments();
+      const data = await videoModel
+        .find(request)
+        .skip(+skip)
+        .limit(+limit);
 
-    const data = await videoModel
-      .find()
-      .skip(+skip)
-      .limit(+limit);
-
-    res.json({
-      total: count,
-      limit: +limit,
-      skip: +skip,
-      data,
-    });
+      res.json({
+        total: count,
+        limit: +limit,
+        skip: +skip,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 
   async findById(req, res, next) {
@@ -70,7 +79,7 @@ export default class VideoController {
     const video = await videoModel.findById(id);
 
     if (!video) {
-      next(new Error("Movie doesnt exists"));
+      next(new Error("Video doesn't exists"));
     }
 
     res.json(video);
@@ -81,11 +90,23 @@ export default class VideoController {
 
     if (!name) next(new Error("Please enter a name"));
 
-    const video = await videoModel.findOne({ name });
+    const re = new RegExp(`${name}`, "i");
+
+    const video = await videoModel.find({ name: re });
 
     if (!video) next(new Error("Movie doesn't exists"));
 
     res.json(video);
+  }
+
+  async findByFields(req, res, next) {
+    try {
+      const result = await VideoService.findByFields(req.body);
+
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
   }
 
   async update(req, res, next) {
@@ -108,7 +129,7 @@ export default class VideoController {
     res.json(video);
   }
 
-  async deleteAll(req, res, next) {
+  async deleteAll(req, res) {
     const videos = await videoModel.deleteMany();
 
     res.json(`${videos.deletedCount} removed`);
