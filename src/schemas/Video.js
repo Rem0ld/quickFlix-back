@@ -25,6 +25,7 @@ const schemaVideo = new Schema(
     posterPath: String,
     flags: {
       wrongFormat: Boolean,
+      needSubtitles: Boolean,
     },
   },
   {
