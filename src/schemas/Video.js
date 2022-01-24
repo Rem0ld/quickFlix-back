@@ -23,6 +23,9 @@ const schemaVideo = new Schema(
     subtitles: [{ type: mongoose.ObjectId, ref: subtitleModel }],
     trailerYtCode: String,
     posterPath: String,
+    flags: {
+      wrongFormat: Boolean,
+    },
   },
   {
     timestamps: true,
@@ -31,3 +34,6 @@ const schemaVideo = new Schema(
 
 export const videoModel = model("video", schemaVideo);
 export default schemaVideo;
+// TODO: If wrongFormat
+// creation of a new collection with videos we need to download with a different format
+// which links to the video so we can delete it when we have the new one
