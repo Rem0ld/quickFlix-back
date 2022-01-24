@@ -1,1 +1,1 @@
-export const defaultLimit = 20
+export const defaultLimit = 20;
