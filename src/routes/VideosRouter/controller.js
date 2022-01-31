@@ -76,23 +76,30 @@ export default class VideoController {
 
   async findById(req, res, next) {
     const { id } = req.params;
-    const video = await videoModel.findById(id);
 
-    if (!video) {
-      next(new Error("Video doesn't exists"));
+    try {
+      const video = await videoModel.findById(id);
+
+      if (!video) {
+        throw new Error("Video doesn't exists");
+      }
+
+      res.json(video);
+    } catch (error) {
+      next(error);
     }
-
-    res.json(video);
   }
 
   async findOneByName(req, res, next) {
     const { name } = req.body;
 
-    if (!name) next(new Error("Please enter a name"));
+    if (!name) next(new Error("missing name"));
 
     const re = new RegExp(`${name}`, "i");
 
+    console.log(re);
     const video = await videoModel.find({ name: re });
+    console.log(video);
 
     if (!video) next(new Error("Movie doesn't exists"));
 
@@ -123,7 +130,7 @@ export default class VideoController {
     const video = await videoModel.findByIdAndDelete(_id);
 
     if (!video) {
-      next(new Error("Couldnt remove movie"));
+      next(new Error("Internal Server Error"));
     }
 
     res.json(video);

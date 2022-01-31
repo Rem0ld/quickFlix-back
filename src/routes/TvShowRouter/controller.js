@@ -23,6 +23,8 @@ export default class TvShowController {
         data = await tvShowModel.find();
       }
 
+      if (!data) throw new Error("Internal Server Error");
+
       res.json(data);
       return;
     }
@@ -52,6 +54,8 @@ export default class TvShowController {
           .limit(+limit);
       }
 
+      if (!data) throw new Error("Internal Server Error");
+
       res.json({
         total: count,
         limit: +limit,
@@ -77,7 +81,7 @@ export default class TvShowController {
   async findOneByName(req, res, next) {
     const { name } = req.body;
 
-    if (!name) next(new Error("Please enter a name"));
+    if (!name) next(new Error("missing name"));
 
     const tvShow = await tvShowModel.findOne({ name });
 

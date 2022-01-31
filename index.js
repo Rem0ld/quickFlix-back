@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import middlewares from "./src/config/middlewares";
 import routes from "./src/routes";
 import mongoose from "mongoose";
+import errorHandler from "./src/services/errorHandler";
 
 dotenv.config();
 
@@ -28,4 +29,5 @@ const server = new Server(app);
 
 server.middlewares(middlewares);
 server.routes(routes);
+server.errorHandler(errorHandler);
 server.start(port);
