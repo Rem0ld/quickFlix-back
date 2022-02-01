@@ -37,7 +37,7 @@ const excludedExtension = [
 
 export default class DiscoverController {
   async discover(_, res) {
-    console.log("Starting discovering");
+    console.log("Starts discovering");
     let countCreatedVideo = 0,
       countCreatedTvShow = 0,
       countUpdatedTvShow = 0;
@@ -67,8 +67,17 @@ export default class DiscoverController {
         const absolutePath = path.resolve(basePath + "/" + extraPath + "/");
 
         if (!regexIsSubtitle.test(ext)) {
-          // It's a video we need to check if already exists in db first
-          let basename = filename.match(regExBasename);
+          const parentFolder = extraPath.split(path.sep);
+          const currentFile = parentFolder[parentFolder.length - 1];
+          const isRoot =
+            currentFile === "Vidéos" || currentFile === "Series" || currentFile.includes("Saison");
+          let basename = "";
+
+          if (isRoot) {
+            basename = filename.match(regExBasename);
+          } else {
+            basename = currentFile.match(regExBasename);
+          }
 
           if (!basename) {
             console.error("Something wrong has happened");
@@ -99,9 +108,6 @@ export default class DiscoverController {
                 episode: isTvShow ? +episode : "",
                 season: isTvShow ? +season : "",
               });
-              if (basename.includes("game of thrones") && season == 1) {
-                console.log(video);
-              }
             } catch (error) {
               console.log({
                 filename,
@@ -117,7 +123,6 @@ export default class DiscoverController {
             }
 
             countCreatedVideo++;
-            console.log("{video} created");
             // TODO: log here which video has been created with name and location
           } else {
             video = existInDb[0];
@@ -136,13 +141,12 @@ export default class DiscoverController {
                   },
                 ],
               });
-              console.log("tvshow created");
               countCreatedTvShow++;
               // TODO: log here which tvShow has been created with name and location
             } else {
               const { seasons } = tvShow;
               const seasonIsPresent = seasons.findIndex(el => {
-                return +el.number === +episode;
+                return +el.number === +season;
               });
 
               if (seasonIsPresent === -1) {
@@ -152,7 +156,6 @@ export default class DiscoverController {
                 });
                 tvShow.seasons = seasons;
                 await tvShow.save();
-                console.log("tvshow updated - new season");
                 countUpdatedTvShow++;
                 continue;
               } else {
@@ -169,7 +172,6 @@ export default class DiscoverController {
                   seasons.push(modifiedSeason[0]);
                   tvShow.seasons = seasons;
                   await tvShow.save();
-                  console.log("tvshow updated - new episode");
                   countUpdatedTvShow++;
                   continue;
                 }
@@ -187,7 +189,7 @@ export default class DiscoverController {
     };
     await goThrough(files);
 
-    console.log("Ending discovering");
+    console.log("Ends discovering");
     res.json({
       countCreatedVideo,
       countCreatedTvShow,

@@ -95,20 +95,24 @@ export default class VideoController {
 
     if (!name) next(new Error("missing name"));
 
-    const re = new RegExp(`${name}`, "i");
+    try {
+      const re = new RegExp(`${name}`, "i");
 
-    console.log(re);
-    const video = await videoModel.find({ name: re });
-    console.log(video);
+      const video = await videoModel.find({ name: re });
 
-    if (!video) next(new Error("Movie doesn't exists"));
+      if (!video) throw new Error("Movie doesn't exists");
 
-    res.json(video);
+      res.json(video);
+    } catch (error) {
+      next(error);
+    }
   }
 
   async findByFields(req, res, next) {
     try {
       const result = await VideoService.findByFields(req.body);
+
+      if (!result) throw new Error("Internal Server Error");
 
       res.json(result);
     } catch (error) {
