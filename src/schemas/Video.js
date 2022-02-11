@@ -22,7 +22,7 @@ const schemaVideo = new Schema(
     trailer: String,
     subtitles: [{ type: mongoose.ObjectId, ref: subtitleModel }],
     trailerYtCode: String,
-    posterPath: String,
+    posterPath: [String],
     flags: {
       wrongFormat: Boolean,
       needSubtitles: Boolean,

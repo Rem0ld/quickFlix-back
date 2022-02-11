@@ -4,38 +4,11 @@ import VideoService from "./service";
 
 export default class VideoController {
   async create(req, res, next) {
-    const {
-      name,
-      type = "movie",
-      date,
-      length = 0,
-      score = 0,
-      resume = "",
-      director = "",
-      writers = "",
-      stars = "",
-      location = "",
-      trailer = "",
-      ext,
-    } = req.body;
-
-    if (!name) {
+    if (!req.body.name) {
       next(new Error("missing name"));
     }
-    const video = await videoModel.create({
-      name,
-      type,
-      length,
-      date,
-      score,
-      resume,
-      director,
-      writers,
-      stars,
-      ext,
-      location,
-      trailer,
-    });
+
+    const video = await VideoService.create(req.body, { movieJob: true });
 
     res.json({
       video,
@@ -131,7 +104,7 @@ export default class VideoController {
 
   async delete(req, res, next) {
     const { _id } = req.body;
-    const video = await videoModel.findByIdAndDelete(_id);
+    const video = await VideoService.deleteOneById(_id);
 
     if (!video) {
       next(new Error("Internal Server Error"));
@@ -141,8 +114,8 @@ export default class VideoController {
   }
 
   async deleteAll(req, res) {
-    const videos = await videoModel.deleteMany();
+    const result = await VideoService.deleteAll();
 
-    res.json(`${videos.deletedCount} removed`);
+    res.json(`${result} removed`);
   }
 }

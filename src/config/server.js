@@ -14,6 +14,10 @@ export default class Server {
   routes = (routes) => {
     for (const route in routes) {
       console.log(`Route: ${route} active`)
+      routes[route].stack.forEach(layer => {
+        console.log(`  ${Object.keys(layer.route.methods)[0].toLocaleUpperCase()} ${layer.route.path}`)
+      })
+      console.log('================')
       this.#http.use(route, routes[route]);
     }
   };

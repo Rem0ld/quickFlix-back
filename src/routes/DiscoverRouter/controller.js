@@ -10,6 +10,7 @@ import { subtitleModel } from "../../schemas/Subtitles";
 import { regexIsSubtitle, regExBasename, regexTvShow } from "../../utils/regexes";
 import { parseBasename } from "../../utils/stringManipulation";
 import VideoService from "../VideosRouter/service";
+import { findSubtitles } from "../../utils/extractSubtitles";
 
 dotenv.config();
 
@@ -98,16 +99,19 @@ export default class DiscoverController {
           if (!existInDb.length) {
             const location = path.resolve(absolutePath + "/" + file.name);
             try {
-              video = await videoModel.create({
-                filename,
-                basename,
-                name,
-                ext,
-                location,
-                type: isTvShow ? "tv" : "movie",
-                episode: isTvShow ? +episode : "",
-                season: isTvShow ? +season : "",
-              });
+              video = await VideoService.create(
+                {
+                  filename,
+                  basename,
+                  name,
+                  ext,
+                  location,
+                  type: isTvShow ? "tv" : "movie",
+                  episode: isTvShow ? +episode : "",
+                  season: isTvShow ? +season : "",
+                },
+                { movieJob: true }
+              );
             } catch (error) {
               console.log({
                 filename,
@@ -227,6 +231,10 @@ export default class DiscoverController {
 
         basename = parseBasename(basename[1]);
 
+        const isTvShow = filename.match(regexTvShow);
+        const season = isTvShow && (isTvShow[1] || isTvShow[3]);
+        const episode = isTvShow && (isTvShow[2] || isTvShow[4]);
+
         if (isSubtitle) {
           const subExists = await subtitleModel.find({ name: filename });
           if (subExists.length > 0) continue;
@@ -235,15 +243,7 @@ export default class DiscoverController {
             createReadStream(absolutePath + "/" + file.name)
               .pipe(srt2vtt())
               .pipe(createWriteStream(`${absolutePath}/${filename}.vtt`));
-
-            // TODO: log here to keep track of what we delete
-            // rm(absolutePath + "/" + file.name, () => {}); // trick to avoid error
           }
-
-          const isTvShow = filename.match(regexTvShow);
-          console.log({ isTvShow });
-          const season = isTvShow && (isTvShow[1] || isTvShow[3]);
-          const episode = isTvShow && (isTvShow[2] || isTvShow[4]);
 
           const data = await subtitleModel.create({
             ext: ".vtt",
@@ -251,29 +251,38 @@ export default class DiscoverController {
             name: filename,
           });
 
+          let video;
+
           if (isTvShow) {
-            console.log({ basename, episode, season });
-            const video = await VideoService.findByFields({
+            video = await VideoService.findByFields({
               name: basename,
               episode: +episode,
               season: +season,
             });
-            console.log(video);
           } else {
-            console.log(filename);
-            const video = await VideoService.findByFields({
+            video = await VideoService.findByFields({
               name: basename,
-              episode: +episode,
-              season: +season,
             });
 
             if (video.length) {
               video[0].subtitles.push(data._id);
+              await video[0].save();
             }
           }
 
           countSubtitleCreated++;
           continue;
+        } else {
+          // It's a video let's look into container for text streams
+
+          const result = await findSubtitles(
+            absolutePath + "/" + file.name,
+            basename,
+            isTvShow,
+            season,
+            episode
+          );
+          // console.log(result);
         }
       }
 

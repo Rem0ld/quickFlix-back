@@ -1,7 +1,7 @@
-import VideoController from "./controller"
-import router from "./router"
+import VideoController from "./controller";
+import router from "./router";
 
-const controller = new VideoController()
-const routes = router(controller)
+const controller = new VideoController();
+const routes = router(controller);
 
-export default routes
+export default routes;
