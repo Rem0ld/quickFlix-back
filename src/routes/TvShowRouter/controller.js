@@ -92,9 +92,4 @@ export default class TvShowController {
 
   async patch(req, res, next) {}
   async delete(req, res, next) {}
-  async deleteAll(req, res, next) {
-    const tvShows = await tvShowModel.deleteMany();
-
-    res.json(`${tvShows.deletedCount} removed`);
-  }
 }

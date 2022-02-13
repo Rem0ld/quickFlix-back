@@ -1,4 +1,5 @@
 import { movieDbJobModel } from "../../schemas/MovieDbJob";
+import { tvShowModel } from "../../schemas/TvShow";
 import { videoModel } from "../../schemas/Video";
 import MovieDbJobService from "../MovieDbJobRouter/service";
 
@@ -23,18 +24,16 @@ class VideoService {
     return videos;
   }
 
-  async patch(video, data) {
-    try {
-      const video = await this.findByFields(video);
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  async patch(id, data) {}
 
   async create(data, params) {
     const video = await videoModel.create(data);
 
-    if (!video) return new Error("Something wrong has happened");
+    if (!video) {
+      console.log("Something wrong has happened");
+      console.log(video);
+      return video;
+    }
 
     if (params.movieJob) {
       await MovieDbJobService.create(video._id);
@@ -48,19 +47,26 @@ class VideoService {
 
     if (!video) return -1;
 
-    const movieJob = await MovieDbJobService.deleteOneById(id);
+    await MovieDbJobService.deletOneByVideoId(id);
 
     return video;
   }
 
   /**
-   * @returns number of videos deleted
+   * Removes all videos, tvshows and movieJobs
+   *
+   * @returns the count of any removed
    */
   async deleteAll() {
     const videos = await videoModel.deleteMany();
-    await movieDbJobModel.deleteMany();
+    const movieJob = await movieDbJobModel.deleteMany();
+    const tvShow = await tvShowModel.deleteMany();
 
-    return videos.deletedCount;
+    return {
+      videos: videos.deletedCount,
+      tvshows: tvShow.deletedCount,
+      movieJobs: movieJob.deletedCount,
+    };
   }
 }
 

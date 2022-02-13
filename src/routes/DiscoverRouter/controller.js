@@ -11,6 +11,8 @@ import { regexIsSubtitle, regExBasename, regexTvShow } from "../../utils/regexes
 import { parseBasename } from "../../utils/stringManipulation";
 import VideoService from "../VideosRouter/service";
 import { findSubtitles } from "../../utils/extractSubtitles";
+import MovieDbJobsService from "../MovieDbJobRouter/service";
+import TvShowService from "../TvShowRouter/service";
 
 dotenv.config();
 
@@ -19,7 +21,7 @@ const imageDbUrl = `https://image.tmdb.org/t/p/w500`;
 
 // Need to add id after tv/ then add the remaining of the URL
 const detailDbUrl = `https://api.themoviedb.org/3/`; // tv | movie / {id}
-const apikeyTvShowUrl = `?api_key=${process.env.API_MOVIEDB}&language=en-US`;
+const apikeyUrl = `?api_key=${process.env.API_MOVIEDB}&language=en-US`;
 
 const basePath = path.resolve("./public/");
 const excludedExtension = [
@@ -34,6 +36,7 @@ const excludedExtension = [
   "jpg",
   "jpeg",
   "png",
+  "completed",
 ];
 
 export default class DiscoverController {
@@ -41,7 +44,8 @@ export default class DiscoverController {
     console.log("Starts discovering");
     let countCreatedVideo = 0,
       countCreatedTvShow = 0,
-      countUpdatedTvShow = 0;
+      countUpdatedTvShow = 0,
+      countCreatedMovieJob = 0;
     const subDirectories = [];
     const files = await findFiles(basePath);
 
@@ -69,15 +73,23 @@ export default class DiscoverController {
 
         if (!regexIsSubtitle.test(ext)) {
           const parentFolder = extraPath.split(path.sep);
-          const currentFile = parentFolder[parentFolder.length - 1];
-          const isRoot =
-            currentFile === "Vidéos" || currentFile === "Series" || currentFile.includes("Saison");
+          const currentFolder = parentFolder[parentFolder.length - 1];
+          const lowerCurrentFile = currentFolder.toLowerCase();
+          const isRoot = lowerCurrentFile.includes("videos") || lowerCurrentFile.includes("series");
           let basename = "";
 
           if (isRoot) {
             basename = filename.match(regExBasename);
           } else {
-            basename = currentFile.match(regExBasename);
+            // Saison || Season folder name
+            const isMissNamed =
+              lowerCurrentFile.includes("season") || lowerCurrentFile.includes("saison");
+
+            if (isMissNamed) {
+              basename = parentFolder[parentFolder.length - 2].match(regExBasename);
+            } else {
+              basename = currentFolder.match(regExBasename);
+            }
           }
 
           if (!basename) {
@@ -89,9 +101,13 @@ export default class DiscoverController {
           basename = parseBasename(basename[1]);
 
           const isTvShow = filename.match(regexTvShow);
-          const season = isTvShow && (isTvShow[1] || isTvShow[3]);
-          const episode = isTvShow && (isTvShow[2] || isTvShow[4]);
+          const season = isTvShow && (isTvShow[1] || isTvShow[3] || isTvShow[5]);
+          const episode = isTvShow && (isTvShow[2] || isTvShow[4] || isTvShow[6]);
           const name = isTvShow ? `${basename} s${season}e${episode}` : basename;
+
+          // if (basename.includes("thrones")) {
+          //   console.log(isTvShow);
+          // }
 
           // check if already exists
           const existInDb = await videoModel.find({ name });
@@ -110,7 +126,9 @@ export default class DiscoverController {
                   episode: isTvShow ? +episode : "",
                   season: isTvShow ? +season : "",
                 },
-                { movieJob: true }
+                // Only creating for movies
+                // if tvshow it's next condition
+                { movieJob: isTvShow ? false : true }
               );
             } catch (error) {
               console.log({
@@ -127,25 +145,43 @@ export default class DiscoverController {
             }
 
             countCreatedVideo++;
+
+            if (!isTvShow) {
+              countCreatedMovieJob++;
+            }
             // TODO: log here which video has been created with name and location
           } else {
             video = existInDb[0];
           }
 
           if (isTvShow) {
-            let tvShow = await tvShowModel.findOne({ name: basename });
+            const re = new RegExp(`${basename}`, "i");
+            let tvShow = await tvShowModel.findOne({ name: re });
+
+            // To get root Tv Show folder it should always be parentFolder[2]
+            const location = `${basePath}/${parentFolder[1]}/${
+              parentFolder[2] ? parentFolder[2] : ""
+            }`;
 
             if (!tvShow) {
-              tvShow = await tvShowModel.create({
-                name: basename,
-                seasons: [
-                  {
-                    number: +season,
-                    episodes: [{ number: +episode, ref: video._id }],
-                  },
-                ],
-              });
+              tvShow = await TvShowService.create(
+                {
+                  name: basename,
+                  location,
+                  seasons: [
+                    {
+                      number: +season,
+                      episodes: [{ number: +episode, ref: video._id }],
+                    },
+                  ],
+                },
+                {
+                  movieJob: true,
+                  id: video._id,
+                }
+              );
               countCreatedTvShow++;
+              countCreatedMovieJob++;
               // TODO: log here which tvShow has been created with name and location
             } else {
               const { seasons } = tvShow;
@@ -176,6 +212,7 @@ export default class DiscoverController {
                   seasons.push(modifiedSeason[0]);
                   tvShow.seasons = seasons;
                   await tvShow.save();
+
                   countUpdatedTvShow++;
                   continue;
                 }
@@ -198,6 +235,7 @@ export default class DiscoverController {
       countCreatedVideo,
       countCreatedTvShow,
       countUpdatedTvShow,
+      countCreatedMovieJob,
     });
   }
 
@@ -298,12 +336,29 @@ export default class DiscoverController {
     });
   }
 
-  discoverDetails() {
+  async discoverDetails() {
     /**
-     * To get info on TvShow or movies I need to first look on base movideDbUrl to get the id,
-     * then we can do a more specific search on tvShowDbUrl to get seasons, episodes etc
-     * we can also get trailer with:
-     * https://api.themoviedb.org/3/tv/${id}/videos?api_key=${process.env.API_MOVIEDB}&language=en-US
+     * We need to do 2 calls: Movies and Tvshows, we have distinction in movieJob
+     * For Movies:
+     * first we call on multi -> [0]
+     *    we get id, overview, poster_path, release_date, vote_average
+     * then we call on  `https://api.themoviedb.org/3/movie/${movieId}${apiKey}`
+     *    we get genres...
+     * then we call on `https://api.themoviedb.org/3/movie/${movieId}/videos${apiKey}
+     *    we get youtube key teaser (5 first)
+     *
+     *
+     * For TvShows:
+     * first we call on multi -> [0]
+     *    we get id, overview, poster_path, first_air_date, vote_average, origin_country
+     * then we call on `https://api.themoviedb.org/3/tv/${movieId}${apiKey}`
+     *    we get genres, number_of_episodes, number_of_seasons, in_production
+     * then we call on `https://api.themoviedb.org/3/tv/${movieId}/videos${apiKey}`
+     *
+     */
+
+    /**
+     * look for teaser, trailer in type and get key
      * Shape of the results :
      * {
      *  "id": 60574,
@@ -322,5 +377,7 @@ export default class DiscoverController {
      *    },
      *  }
      */
+
+    const movieJobs = MovieDbJobsService.findActive();
   }
 }

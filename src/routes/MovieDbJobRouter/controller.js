@@ -4,7 +4,7 @@ import { defaultLimit } from "../../config/defaultConfig";
 
 export default class MovieDbJobController {
   async find(req, res, next) {
-    const { limit = defaultLimit, skip = 0 } = req.query;
+    const { limit = defaultLimit, skip = 0, populate = false } = req.query;
 
     if (+limit === -1) {
       const data = await movieDbJobModel.find();
@@ -17,6 +17,7 @@ export default class MovieDbJobController {
       const data = await movieDbJobService.find({
         limit,
         skip,
+        populate,
       });
 
       res.json({

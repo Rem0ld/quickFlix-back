@@ -104,6 +104,11 @@ export default class VideoController {
 
   async delete(req, res, next) {
     const { _id } = req.body;
+
+    if (!_id) {
+      next(new Error("Missing Id"));
+    }
+
     const video = await VideoService.deleteOneById(_id);
 
     if (!video) {
@@ -116,6 +121,6 @@ export default class VideoController {
   async deleteAll(req, res) {
     const result = await VideoService.deleteAll();
 
-    res.json(`${result} removed`);
+    res.json(result);
   }
 }
