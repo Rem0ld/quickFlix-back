@@ -2,12 +2,12 @@ import path from "path";
 import dotenv from "dotenv";
 import srt2vtt from "srt-to-vtt";
 import fetch from "node-fetch";
-import { createReadStream, createWriteStream, rm } from "fs";
+import { accessSync, createReadStream, createWriteStream, rm } from "fs";
 import { videoModel } from "../../schemas/Video";
 import { tvShowModel } from "../../schemas/TvShow";
-import { findFiles } from "../../utils/fileManipulation";
+import { downloadImage, fileExists, findFiles } from "../../utils/fileManipulation";
 import { subtitleModel } from "../../schemas/Subtitles";
-import { regexIsSubtitle, regExBasename, regexTvShow } from "../../utils/regexes";
+import { regexIsSubtitle, regExBasename, regexTvShow, regexYearDate } from "../../utils/regexes";
 import { parseBasename } from "../../utils/stringManipulation";
 import VideoService from "../VideosRouter/service";
 import { findSubtitles } from "../../utils/extractSubtitles";
@@ -20,7 +20,7 @@ const movieDbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${process.
 const imageDbUrl = `https://image.tmdb.org/t/p/w500`;
 
 // Need to add id after tv/ then add the remaining of the URL
-const detailDbUrl = `https://api.themoviedb.org/3/`; // tv | movie / {id}
+const detailDbUrl = `https://api.themoviedb.org/3`; // tv | movie / {id}
 const apikeyUrl = `?api_key=${process.env.API_MOVIEDB}&language=en-US`;
 
 const basePath = path.resolve("./public/");
@@ -37,6 +37,7 @@ const excludedExtension = [
   "jpeg",
   "png",
   "completed",
+  "url",
 ];
 
 export default class DiscoverController {
@@ -114,6 +115,7 @@ export default class DiscoverController {
           let video;
           if (!existInDb.length) {
             const location = path.resolve(absolutePath + "/" + file.name);
+            const year = filename.match(regexYearDate);
             try {
               video = await VideoService.create(
                 {
@@ -122,6 +124,7 @@ export default class DiscoverController {
                   name,
                   ext,
                   location,
+                  year: year?.length ? new Date(year[0]) : undefined,
                   type: isTvShow ? "tv" : "movie",
                   episode: isTvShow ? +episode : "",
                   season: isTvShow ? +season : "",
@@ -336,48 +339,241 @@ export default class DiscoverController {
     });
   }
 
-  async discoverDetails() {
-    /**
-     * We need to do 2 calls: Movies and Tvshows, we have distinction in movieJob
-     * For Movies:
-     * first we call on multi -> [0]
-     *    we get id, overview, poster_path, release_date, vote_average
-     * then we call on  `https://api.themoviedb.org/3/movie/${movieId}${apiKey}`
-     *    we get genres...
-     * then we call on `https://api.themoviedb.org/3/movie/${movieId}/videos${apiKey}
-     *    we get youtube key teaser (5 first)
-     *
-     *
-     * For TvShows:
-     * first we call on multi -> [0]
-     *    we get id, overview, poster_path, first_air_date, vote_average, origin_country
-     * then we call on `https://api.themoviedb.org/3/tv/${movieId}${apiKey}`
-     *    we get genres, number_of_episodes, number_of_seasons, in_production
-     * then we call on `https://api.themoviedb.org/3/tv/${movieId}/videos${apiKey}`
-     *
-     */
+  /**
+   * We need to do 2 calls: Movies and Tvshows, we have distinction in movieJob
+   * For Movies:
+   * first we call on multi -> [0]
+   *    we get id, overview, poster_path, release_date, vote_average, poster_path
+   * then we call on  `https://api.themoviedb.org/3/movie/${movieId}${apiKey}`
+   *    we get genres...
+   * then we call on `https://api.themoviedb.org/3/movie/${movieId}/videos${apiKey}
+   *    we get youtube key teaser (5 first)
+   *
+   * For TvShows:
+   * first we call on multi -> [0]
+   *    we get id, overview, poster_path, first_air_date, vote_average, origin_country
+   * then we call on `https://api.themoviedb.org/3/tv/${movieId}${apiKey}`
+   *    we get genres, number_of_episodes, number_of_seasons, in_production
+   * then we call on `https://api.themoviedb.org/3/tv/${movieId}/videos${apiKey}`
+   *
+   */
+  async discoverDetails(_, res) {
+    let count = 0,
+      errorCount = 0;
 
-    /**
-     * look for teaser, trailer in type and get key
-     * Shape of the results :
-     * {
-     *  "id": 60574,
-     *  "results": [
-     *    {
-     *      "iso_639_1": "en",
-     *      "iso_3166_1": "US",
-     *      "name": "Nick Cave And The Bad Seeds - Red Right Hand (Peaky Blinders OST)",
-     *      "key": "KGD2N5hJ2e0", WE WANT THIS
-     *      "site": "YouTube", AND THIS
-     *      "size": 1080,
-     *      "type": "Featurette",
-     *      "official": false,
-     *      "published_at": "2013-10-01T17:24:31.000Z",
-     *      "id": "610684c8a76ac500735d39b1"
-     *    },
-     *  }
-     */
+    // Movies
+    const movieJobs = await MovieDbJobsService.findActive({ type: "movie" });
 
-    const movieJobs = MovieDbJobsService.findActive();
+    for (const job of movieJobs) {
+      const video = await videoModel.findById(job.video);
+      const yearMovie = new Date(video.year).getFullYear();
+      let status = "done";
+
+      // API Call
+      const response = await fetch(movieDbUrl + video.basename);
+      const { results } = await response.json();
+
+      if (!results.length) {
+        console.log(`No result for ${video.basename}`);
+        continue;
+      }
+
+      let result;
+
+      // In case of several movie with the same name we look for the release date
+      // not bullet proof but will do the job
+      if (yearMovie) {
+        for (const el of results) {
+          const yearResult = new Date(el.release_date).getFullYear();
+
+          if (yearMovie === yearResult) {
+            result = el;
+            break;
+          }
+        }
+
+        // In the case dates are not correct
+        // See Bac Nord 2020 on file 2021 on themoviedb
+        if (!result) {
+          result = results[0];
+        }
+      } else {
+        result = results[0];
+      }
+
+      // Checking if image already exists or it will be downloaded
+      const image = await getImages(result?.poster_path);
+
+      if (image) {
+        video.posterPath.push(image);
+      }
+
+      console.log(result);
+      // Making the new video object
+      video.idMovieDb = result.id;
+      video.resume = result.overview;
+      video.releaseDate = result.release_date;
+      video.score = result.vote_average;
+      video.genres = await getGenres(result.id, "movie");
+      video.trailerYtCode = await getVideoPath(result.id, "movie");
+
+      try {
+        await video.save();
+      } catch (error) {
+        console.error("not saved", error);
+        status = "error";
+        job.error.push(error);
+        errorCount++;
+      }
+
+      MovieDbJobsService.update(job._id, { status, error: job.error });
+      count++;
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    // TvShows
+    const tvJobs = await MovieDbJobsService.findActive({ type: "tv" });
+
+    for (const job of tvJobs) {
+      const tvShow = await TvShowService.findByName(job.video.basename);
+      let status = "done";
+
+      const response = await fetch(movieDbUrl + tvShow.name);
+      const { results } = await response.json();
+
+      if (!results.length) {
+        console.error(`No result for ${tvShow}`);
+        continue;
+      }
+
+      let result = results[0];
+
+      // Check image
+      const image = await getImages(result.poster_path);
+
+      if (image) {
+        tvShow.posterPath.push(image);
+      }
+
+      tvShow.idMovieDb = result.id;
+      tvShow.resume = result.overview;
+      tvShow.score = result.vote_average;
+      tvShow.firstAirDate = result.first_air_date;
+      tvShow.trailerYtCode = await getVideoPath(result.id, "tv");
+
+      const { genres, ongoing, originCountry, numberEpisode, numberSeason } =
+        await getTvShowDetails(result.id);
+
+      tvShow.genres = genres || [];
+      tvShow.ongoing = ongoing || undefined;
+      tvShow.originCountry = originCountry || [];
+      tvShow.numberSeason = numberSeason || undefined;
+      tvShow.numberEpisode = numberEpisode || undefined;
+
+      try {
+        await tvShow.save();
+      } catch (error) {
+        console.error("not saved", error);
+        status = "error";
+        job.error.push(error);
+        errorCount++;
+      }
+
+      MovieDbJobsService.update(job._id, { status, error: job.error });
+      count++;
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    res.json({
+      errorCount,
+      count,
+    });
   }
+}
+
+/**
+ * Fetch details for a tvShow
+ * @param {String} id TheMovieDb id
+ * @returns Object {genres, ongoing, numberSeason, numberEpisode, originCountry}
+ */
+export async function getTvShowDetails(id) {
+  try {
+    const response = await fetch(`${detailDbUrl}/tv/${id}${apikeyUrl}`);
+    const result = await response.json();
+    if (!result) return {};
+
+    return {
+      genres: result.genres.map(el => el.name),
+      ongoing: result.in_production,
+      numberSeason: result.number_of_seasons,
+      numberEpisode: result.number_of_episodes,
+      originCountry: result.origin_country,
+    };
+  } catch (error) {
+    return {};
+  }
+}
+
+/**
+ * Fetch genres for a movie
+ * @param {String} id of the video on TheMovieDBApi
+ * @returns genres of the video
+ */
+export async function getGenres(id) {
+  try {
+    const response = await fetch(`${detailDbUrl}/movie/${id}${apikeyUrl}`);
+    const result = await response.json();
+    if (!result) return [];
+
+    return result.genres.map(genre => genre.name);
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Fetch trailers and teasers youtube key for a video
+ * @param {String} id of the video on theMovieDBApi
+ * @param {String} type enum tv | movie
+ * @returns String[] of youtube key
+ */
+export async function getVideoPath(id, type) {
+  try {
+    const response = await fetch(`${detailDbUrl}/${type}/${id}/videos${apikeyUrl}`);
+    const { results } = await response.json();
+    if (!results) return [];
+
+    let result = [],
+      i = 0;
+
+    while (i < results.length && result.length < 5) {
+      if (results[i].type.includes("Teaser") || results[i].type.includes("Trailer")) {
+        result.push(results[i].key);
+      }
+      i++;
+    }
+
+    return result;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Check if an image already exists
+ * Download the image if doesn't exists
+ * @param {String} filepath name of the file + extension
+ * @returns the path of the image or undefined
+ */
+export async function getImages(filepath) {
+  if (!filepath) return -1;
+  const basePath = path.resolve("./public/images");
+  const imagePath = `${basePath}${filepath}`;
+
+  if (!fileExists(imagePath)) {
+    const image = await downloadImage(imageDbUrl + filepath, imagePath);
+    return image;
+  }
+
+  return undefined;
 }

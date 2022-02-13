@@ -12,6 +12,7 @@ const schemaVideo = new Schema(
     type: { type: String, enum: ["movie", "tv"] },
     episode: String,
     season: String,
+    year: Date,
     releaseDate: Date, // release_date
     score: Number, // vote_average
     length: Number, // runtime - in minutes

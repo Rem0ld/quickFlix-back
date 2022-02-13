@@ -16,7 +16,7 @@ const schemaTvShow = new Schema(
     ],
     ongoing: Boolean, // in_production
     originCountry: [String], // origin_country
-    posterPath: String, // see if I can dl it poster_path
+    posterPath: [String], // see if I can dl it poster_path
     resume: String, // overview
     score: Number, // vote_average
     genres: [String], // genre

@@ -1,6 +1,16 @@
 import { accessSync, constants, createWriteStream, readdirSync } from "fs";
 import client from "https";
 
+export function fileExists(filepath) {
+  try {
+    accessSync(filepath, constants.R_OK);
+  } catch (error) {
+    return false;
+  }
+
+  return true;
+}
+
 export function subtitleExists(subPath) {
   // const extension = ['.srt', '.vtt']
 

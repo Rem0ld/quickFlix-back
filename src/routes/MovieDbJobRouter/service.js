@@ -26,16 +26,27 @@ class MovieDbJobService {
     });
   }
 
-  async findActive() {
-    return movieDbJobModel.find({
-      status: "todo",
-    });
+  async findActive(params) {
+    const data = await movieDbJobModel
+      .find({
+        status: "todo",
+        type: params.type,
+      })
+      .populate({
+        path: "video",
+      });
+
+    return data;
   }
 
   async create(id) {
     movieDbJobModel.create({
       video: id,
     });
+  }
+
+  async update(id, data) {
+    return movieDbJobModel.findByIdAndUpdate(id, data);
   }
 
   async deleteOneById(id) {

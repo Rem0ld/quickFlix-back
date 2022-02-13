@@ -6,3 +6,4 @@ export const regexTvShow =
 export const regExBasename =
   /([ .\w']+?)(Season|$|-|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/;
 export const regexIsSubtitle = /(vtt|srt|sfv)/i;
+export const regexYearDate = /\d{4}(?!p)/;

@@ -1,5 +1,6 @@
 import { tvShowModel } from "../../schemas/TvShow";
 import { defaultLimit } from "../../config/defaultConfig";
+import TvShowService from "./service";
 
 export default class TvShowController {
   async create(req, res, next) {}
@@ -83,9 +84,12 @@ export default class TvShowController {
 
     if (!name) next(new Error("missing name"));
 
-    const tvShow = await tvShowModel.findOne({ name });
+    const tvShow = await TvShowService.findByName(name);
 
-    if (!tvShow) next(new Error("TvShow doesn't exists"));
+    if (!tvShow) {
+      next(new Error("TvShow doesn't exists"));
+      return;
+    }
 
     res.json(tvShow);
   }
