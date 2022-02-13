@@ -51,8 +51,6 @@ export default class DiscoverController {
     const files = await findFiles(basePath);
 
     const goThrough = async (files, extraPath = "") => {
-      console.log(basePath);
-      console.log(files);
       for (const file of files) {
         const ext = path.extname(file.name);
 
@@ -95,8 +93,6 @@ export default class DiscoverController {
             }
           }
 
-          console.log(basename);
-
           if (!basename) {
             console.error("Something wrong has happened");
             // TODO: log here with filename
@@ -116,7 +112,6 @@ export default class DiscoverController {
 
           // check if already exists
           const existInDb = await videoModel.find({ name });
-          console.log(existInDb);
           let video;
           if (!existInDb.length) {
             const location = path.resolve(absolutePath + "/" + file.name);
@@ -139,7 +134,7 @@ export default class DiscoverController {
                 { movieJob: isTvShow ? false : true }
               );
             } catch (error) {
-              console.log({
+              console.error({
                 filename,
                 basename,
                 name,
@@ -165,7 +160,6 @@ export default class DiscoverController {
           if (isTvShow) {
             const re = new RegExp(`${basename}`, "i");
             let tvShow = await tvShowModel.findOne({ name: re });
-            console.log(tvShow);
 
             // To get root Tv Show folder it should always be parentFolder[2]
             const location = `${basePath}/${parentFolder[1]}/${
@@ -232,12 +226,16 @@ export default class DiscoverController {
         }
       }
 
+      if (process.env.NODE_ENV !== "DEV") {
+        await new Promise(r => setTimeout(r, 1000));
+      }
+
       while (subDirectories.length > 0) {
         const subDirectory = subDirectories.shift();
-        console.log("============");
-        console.log(subDirectory);
-        console.log("============");
         await goThrough(subDirectory.content, subDirectory.directory);
+      }
+      if (process.env.NODE_ENV !== "DEV") {
+        await new Promise(r => setTimeout(r, 1000));
       }
     };
     await goThrough(files);
