@@ -51,6 +51,8 @@ export default class DiscoverController {
     const files = await findFiles(basePath);
 
     const goThrough = async (files, extraPath = "") => {
+      console.log(basePath);
+      console.log(files);
       for (const file of files) {
         const ext = path.extname(file.name);
 
