@@ -3,23 +3,25 @@ import { videoModel } from "./Video";
 
 const schemaTvShow = new Schema(
   {
-    idMovieDb: String,
+    idMovieDb: String, // id
     name: String,
-    numberSeason: Number,
-    numberEpisode: Number,
+    location: String,
+    numberSeason: Number, // number_of_episodes
+    numberEpisode: Number, // number_of_seasons
     seasons: [
       {
         number: String,
         episodes: [{ number: String, ref: { type: mongoose.ObjectId, ref: videoModel } }],
       },
     ],
-    ongoing: Boolean,
-    originCountry: String,
-    posterPath: String,
-    resume: String,
-    score: Number,
-    date: Date,
-    trailerYtCode: String,
+    ongoing: Boolean, // in_production
+    originCountry: [String], // origin_country
+    posterPath: String, // see if I can dl it poster_path
+    resume: String, // overview
+    score: Number, // vote_average
+    genres: [String], // genre
+    firstAirDate: Date, // first_air_date
+    trailerYtCode: [String],
   },
   {
     timestamps: true,

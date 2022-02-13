@@ -3,7 +3,7 @@ import { subtitleModel } from "./Subtitles";
 
 const schemaVideo = new Schema(
   {
-    idMovieDb: String,
+    idMovieDb: String, // id
     name: String,
     basename: String,
     filename: String,
@@ -12,17 +12,18 @@ const schemaVideo = new Schema(
     type: { type: String, enum: ["movie", "tv"] },
     episode: String,
     season: String,
-    date: Date,
-    score: Number,
-    length: Number,
-    resume: String,
+    releaseDate: Date, // release_date
+    score: Number, // vote_average
+    length: Number, // runtime - in minutes
+    resume: String, // overview
     director: String,
     writers: String,
     stars: String,
     trailer: String,
+    genres: [String], // genres
     subtitles: [{ type: mongoose.ObjectId, ref: subtitleModel }],
-    trailerYtCode: String,
-    posterPath: [String],
+    trailerYtCode: [String],
+    posterPath: [String], // poster_path
     flags: {
       wrongFormat: Boolean,
       needSubtitles: Boolean,
