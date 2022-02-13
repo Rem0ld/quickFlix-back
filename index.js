@@ -25,6 +25,7 @@ mongoose.connect(
     }
   }
 );
+console.log(process.env.NODE_ENV);
 const server = new Server(app);
 
 server.middlewares(middlewares);
