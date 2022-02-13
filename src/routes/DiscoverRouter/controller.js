@@ -93,6 +93,8 @@ export default class DiscoverController {
             }
           }
 
+          console.log(basename);
+
           if (!basename) {
             console.error("Something wrong has happened");
             // TODO: log here with filename
@@ -112,6 +114,7 @@ export default class DiscoverController {
 
           // check if already exists
           const existInDb = await videoModel.find({ name });
+          console.log(existInDb);
           let video;
           if (!existInDb.length) {
             const location = path.resolve(absolutePath + "/" + file.name);
@@ -160,6 +163,7 @@ export default class DiscoverController {
           if (isTvShow) {
             const re = new RegExp(`${basename}`, "i");
             let tvShow = await tvShowModel.findOne({ name: re });
+            console.log(tvShow);
 
             // To get root Tv Show folder it should always be parentFolder[2]
             const location = `${basePath}/${parentFolder[1]}/${
@@ -228,6 +232,9 @@ export default class DiscoverController {
 
       while (subDirectories.length > 0) {
         const subDirectory = subDirectories.shift();
+        console.log("============");
+        console.log(subDirectory);
+        console.log("============");
         await goThrough(subDirectory.content, subDirectory.directory);
       }
     };
