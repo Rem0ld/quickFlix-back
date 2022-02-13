@@ -23,7 +23,7 @@ const imageDbUrl = `https://image.tmdb.org/t/p/w500`;
 const detailDbUrl = `https://api.themoviedb.org/3`; // tv | movie / {id}
 const apikeyUrl = `?api_key=${process.env.API_MOVIEDB}&language=en-US`;
 
-const basePath = path.resolve("./public/");
+const basePath = path.resolve("./public");
 const excludedExtension = [
   "DS_Store",
   "nfo",
