@@ -1,6 +1,6 @@
-import mongoose, { Schema } from "mongoose"
-import { videoModel } from "../routes/VideosRouter/controller"
-import { userModel } from "./User"
+import mongoose, { Schema } from "mongoose";
+import { videoModel } from "../routes/VideosRouter/controller";
+import { userModel } from "./User";
 
 const schemaWatched = new Schema(
   {
@@ -14,6 +14,6 @@ const schemaWatched = new Schema(
   {
     timestamps: true,
   }
-)
+);
 
-export default schemaWatched
+export default schemaWatched;
