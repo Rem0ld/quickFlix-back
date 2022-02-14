@@ -5,6 +5,7 @@ import SubtitleRouter from "./SubtitleRouter";
 import UserRouter from "./UserRouter";
 import TvShowRouter from "./TvShowRouter";
 import MovieJobRouter from "./MovieDbJobRouter";
+import ImageRouter from "./ImagesRouter";
 
 export default {
   "/api": ApiRouter,
@@ -14,4 +15,5 @@ export default {
   "/subtitle": SubtitleRouter,
   "/tv-show": TvShowRouter,
   "/movie-job": MovieJobRouter,
+  "/images": ImageRouter,
 };
