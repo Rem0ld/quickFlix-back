@@ -30,12 +30,15 @@ export default class MovieDbJobController {
       next(error);
     }
   }
+
   async findById(req, res, next) {
     const { id } = req.params;
 
     if (!id) next(new Error("Requires an id"));
 
-    return movieDbJobService.findById(id);
+    const data = movieDbJobService.findById(id);
+
+    res.json(data);
   }
 
   async findByVideoId(req, res, next) {
@@ -43,6 +46,25 @@ export default class MovieDbJobController {
 
     if (!id) next(new Error("Requires an id"));
 
-    return movieDbJobService.findByVideoId(id);
+    const data = movieDbJobService.findByVideoId(id);
+
+    res.json(data);
+  }
+
+  async patch(req, res, next) {
+    const { type } = req.body;
+
+    console.log(type);
+
+    if (type === "reset") {
+      await movieDbJobModel.updateMany(
+        { status: "done" },
+        {
+          status: "todo",
+        }
+      );
+    }
+
+    res.json("ok");
   }
 }

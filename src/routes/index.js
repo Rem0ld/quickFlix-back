@@ -6,6 +6,7 @@ import UserRouter from "./UserRouter";
 import TvShowRouter from "./TvShowRouter";
 import MovieJobRouter from "./MovieDbJobRouter";
 import ImageRouter from "./ImagesRouter";
+import WatchedRouter from "./WatchedRouter";
 
 export default {
   "/api": ApiRouter,
@@ -16,4 +17,5 @@ export default {
   "/tv-show": TvShowRouter,
   "/movie-job": MovieJobRouter,
   "/images": ImageRouter,
+  "/watched": WatchedRouter,
 };

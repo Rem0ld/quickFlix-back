@@ -390,6 +390,7 @@ export default class DiscoverController {
 
       if (image) {
         video.posterPath.push(image);
+        await video.save();
       }
 
       // Making the new video object

@@ -79,12 +79,12 @@ export async function getVideoPath(id, type) {
  */
 export async function getImages(filepath) {
   if (!filepath) return -1;
-  const basePath = path.resolve("./public/images");
+  const basePath = "./public/images";
   const imagePath = `${basePath}${filepath}`;
 
   if (!fileExists(imagePath)) {
-    const image = await downloadImage(imageDbUrl + filepath, imagePath);
-    return `/public/images/${filepath}`;
+    await downloadImage(imageDbUrl + filepath, imagePath);
+    return path.basename(imagePath);
   }
 
   return undefined;

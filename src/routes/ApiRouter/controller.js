@@ -19,7 +19,10 @@ export default class ApiController {
       if (err) next(new Error("Cannot access this patch"));
     });
 
-    fs.stat(video.location, async function (err, stats) {
+    // Making path here as location only contains the location without the filename
+    const videoPath = video.location + path.sep + video.filename;
+
+    fs.stat(videoPath, async function (err, stats) {
       var range = req.headers.range;
 
       if (!range) {
@@ -48,7 +51,7 @@ export default class ApiController {
       });
 
       // Streaming video here
-      fs.createReadStream(video.location, { start: start, end: end, autoClose: true })
+      fs.createReadStream(videoPath, { start: start, end: end, autoClose: true })
 
         .on("end", function () {
           console.log("Stream Done");
