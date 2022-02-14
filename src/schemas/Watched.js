@@ -6,6 +6,7 @@ const schemaWatched = new Schema(
   {
     timeWatched: Number,
     lastTimeWatched: Date,
+    length: Number,
     finished: Boolean,
     stoppedAt: Number,
     video: { type: mongoose.ObjectId, ref: videoModel },
