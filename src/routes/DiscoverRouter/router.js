@@ -6,6 +6,7 @@ export default controller => {
   router.get("/", controller.discover);
   router.get("/subtitles", controller.discoverSubtitles);
   router.get("/details", controller.discoverDetails);
+  router.get("/test", controller.discoverTest);
 
   return router;
 };

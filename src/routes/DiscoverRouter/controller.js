@@ -2,28 +2,29 @@ import path from "path";
 import dotenv from "dotenv";
 import srt2vtt from "srt-to-vtt";
 import fetch from "node-fetch";
-import { accessSync, createReadStream, createWriteStream, rm } from "fs";
+import { appendFile, createReadStream, createWriteStream, readFileSync } from "fs";
 import { videoModel } from "../../schemas/Video";
 import { tvShowModel } from "../../schemas/TvShow";
-import { downloadImage, fileExists, findFiles } from "../../utils/fileManipulation";
+import { findFiles } from "../../utils/fileManipulation";
 import { subtitleModel } from "../../schemas/Subtitles";
-import { regexIsSubtitle, regExBasename, regexTvShow, regexYearDate } from "../../utils/regexes";
+import {
+  regexIsSubtitle,
+  regExBasename,
+  regexTvShow,
+  regexYearDate,
+  regexVideo,
+} from "../../utils/regexes";
 import { parseBasename } from "../../utils/stringManipulation";
 import VideoService from "../VideosRouter/service";
 import { findSubtitles } from "../../utils/extractSubtitles";
 import MovieDbJobsService from "../MovieDbJobRouter/service";
 import TvShowService from "../TvShowRouter/service";
+import { basePath, movieDbUrl } from "../../config/defaultConfig";
+import { getImages, getGenres, getTvShowDetails, getVideoPath } from "../../services/apiService";
+import { opendir, rm } from "fs/promises";
 
 dotenv.config();
 
-const movieDbUrl = `https://api.themoviedb.org/3/search/multi?api_key=${process.env.API_MOVIEDB}&page=1&include_adult=false&language=en-US&query=`;
-const imageDbUrl = `https://image.tmdb.org/t/p/w500`;
-
-// Need to add id after tv/ then add the remaining of the URL
-const detailDbUrl = `https://api.themoviedb.org/3`; // tv | movie / {id}
-const apikeyUrl = `?api_key=${process.env.API_MOVIEDB}&language=en-US`;
-
-const basePath = path.resolve("./public");
 const excludedExtension = [
   "DS_Store",
   "nfo",
@@ -40,213 +41,185 @@ const excludedExtension = [
   "url",
 ];
 
+async function go(filepath, filename, regex) {
+  try {
+    const dir = await opendir(filepath);
+    for await (const dirent of dir) {
+      if (dirent.isFile()) {
+        if (regex.test(dirent.name)) {
+          const parsed = path.parse(dir.path + path.sep + dirent.name);
+          appendFile(basePath + path.sep + filename, `${JSON.stringify(parsed)}\n`, () => {});
+        }
+      } else {
+        await go(dir.path + "/" + dirent.name, filename, regex);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function createEntry(filename, type, baseFolder) {
+  let tv = 0,
+    tct = 0,
+    tut = 0,
+    tcm = 0;
+  const file = readFileSync(filename, "utf-8");
+  const lines = file.split("\n");
+
+  for (const line of lines) {
+    // To prevent error from last line in file being ""
+    if (!line.length) break;
+
+    const parsed = JSON.parse(line);
+    const { dir, base, ext } = parsed;
+    const name = findBaseFolder(dir, baseFolder);
+    let result;
+    if (type === "video") {
+      result = await makeVideo(dir, name, base, ext);
+    } else {
+      result = await makeSubtitle(name, base, ext);
+    }
+    tcm += result.movieJob;
+    tv += result.countVideo;
+    tct += result.countTvShowCreated;
+    tut += result.countUpdatedTvShow;
+  }
+
+  return { tv, tct, tut, tcm };
+}
+
+async function makeVideo(location, basename, filename, ext) {
+  // In case video is in root folder we fall back onto video's name
+  // And we clean it
+  if (!basename) {
+    basename = filename.match(regExBasename);
+    basename = basename[1];
+  }
+  basename = basename.match(regExBasename);
+  basename = parseBasename(basename[1]);
+
+  let countVideo = 0,
+    movieJob = 0,
+    countTvShowCreated = 0,
+    countUpdatedTvShow = 0;
+  const isTvShow = filename.match(regexTvShow);
+  const season = isTvShow && (isTvShow[1] || isTvShow[3] || isTvShow[5]);
+  const episode = isTvShow && (isTvShow[2] || isTvShow[4] || isTvShow[6]);
+  const name = isTvShow ? `${basename} s${season}e${episode}` : basename;
+
+  // check if already exists
+  const existInDb = await videoModel.find({ name });
+  if (existInDb.length) return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
+
+  let video;
+  const year = filename.match(regexYearDate);
+  try {
+    video = await VideoService.create(
+      {
+        filename,
+        basename,
+        name,
+        ext,
+        location,
+        year: year?.length ? new Date(year[0]) : undefined,
+        type: isTvShow ? "tv" : "movie",
+        episode: isTvShow ? +episode : "",
+        season: isTvShow ? +season : "",
+      },
+      // Only creating for movies
+      // if tvshow it's next condition
+      { movieJob: isTvShow ? false : true }
+    );
+  } catch (error) {
+    console.error(error);
+  }
+
+  countVideo++;
+
+  if (!isTvShow) {
+    movieJob++;
+  }
+
+  // video = existInDb[0];
+
+  if (!isTvShow) return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
+
+  const re = new RegExp(`${basename}`, "i");
+  let tvShow = await tvShowModel.findOne({ name: re });
+
+  if (!tvShow) {
+    tvShow = await TvShowService.create(
+      {
+        name: basename,
+        location,
+        seasons: [
+          {
+            number: +season,
+            episodes: [{ number: +episode, ref: video._id }],
+          },
+        ],
+      },
+      {
+        movieJob: true,
+        id: video._id,
+      }
+    );
+    countTvShowCreated++;
+    movieJob++;
+    // TODO: log here which tvShow has been created with name and location
+  } else {
+    const { seasons } = tvShow;
+    const seasonIsPresent = seasons.findIndex(el => {
+      return +el.number === +season;
+    });
+
+    if (seasonIsPresent === -1) {
+      seasons.push({
+        number: +season,
+        episodes: [{ number: +episode, ref: video._id }],
+      });
+    } else {
+      const modifiedSeason = seasons.splice(seasonIsPresent, 1);
+      const episodeIsPresent = modifiedSeason[0].episodes.findIndex(el => +el.number === +episode);
+
+      if (episodeIsPresent === -1) {
+        modifiedSeason[0].episodes.push({
+          number: +episode,
+          ref: video._id,
+        });
+        seasons.push(modifiedSeason[0]);
+      }
+    }
+    tvShow.seasons = seasons;
+    await tvShow.save();
+    countUpdatedTvShow++;
+    // TODO: log here which tvshow has been update with name and data
+  }
+
+  return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
+}
+
+async function makeSubtitle(location, basename, filename, ext) {}
+
+function findBaseFolder(filepath, folderName) {
+  if (!folderName || !filepath) return -1;
+  const splited = filepath.split(path.sep);
+  const position = splited.indexOf(folderName);
+  return splited[position + 1];
+}
 export default class DiscoverController {
   async discover(_, res) {
-    console.log("Starts discovering");
-    let countCreatedVideo = 0,
-      countCreatedTvShow = 0,
-      countUpdatedTvShow = 0,
-      countCreatedMovieJob = 0;
-    const subDirectories = [];
-    const files = await findFiles(basePath);
+    const videosPath = basePath + path.sep + "videos";
+    const tempFile = basePath + path.sep + "video";
 
-    const goThrough = async (files, extraPath = "") => {
-      for (const file of files) {
-        const ext = path.extname(file.name);
+    await go(videosPath, "video", regexVideo);
+    // await go(p, "subtitle", regexIsSubtitle);
 
-        const exclude = excludedExtension.some(ext => file.name.includes(ext));
+    const result = await createEntry(tempFile, "video", "videos");
+    await rm(tempFile);
 
-        if (exclude) continue;
-
-        if (file.isDirectory() || file.isSymbolicLink()) {
-          //          console.log({file}, 'is directory')
-          const sub = await findFiles(basePath + "/" + extraPath + "/" + file.name);
-          subDirectories.push({
-            directory: extraPath + "/" + file.name,
-            content: sub.filter(el => !el.name.includes("DS_Store")),
-          });
-          continue;
-        }
-
-        // Here we need to work the file
-        const filename = path.basename(file.name, ext);
-        const absolutePath = path.resolve(basePath + "/" + extraPath + "/");
-
-        if (!regexIsSubtitle.test(ext)) {
-          const parentFolder = extraPath.split(path.sep);
-          const currentFolder = parentFolder[parentFolder.length - 1];
-          const lowerCurrentFile = currentFolder.toLowerCase();
-          const isRoot = lowerCurrentFile.includes("videos") || lowerCurrentFile.includes("series");
-          let basename = "";
-
-          if (isRoot) {
-            basename = filename.match(regExBasename);
-          } else {
-            // Saison || Season folder name
-            const isMissNamed =
-              lowerCurrentFile.includes("season") || lowerCurrentFile.includes("saison");
-
-            if (isMissNamed) {
-              basename = parentFolder[parentFolder.length - 2].match(regExBasename);
-            } else {
-              basename = currentFolder.match(regExBasename);
-            }
-          }
-
-          if (!basename) {
-            console.error("Something wrong has happened");
-            // TODO: log here with filename
-            console.error(filename);
-          }
-
-          basename = parseBasename(basename[1]);
-
-          const isTvShow = filename.match(regexTvShow);
-          const season = isTvShow && (isTvShow[1] || isTvShow[3] || isTvShow[5]);
-          const episode = isTvShow && (isTvShow[2] || isTvShow[4] || isTvShow[6]);
-          const name = isTvShow ? `${basename} s${season}e${episode}` : basename;
-
-          // if (basename.includes("thrones")) {
-          //   console.log(isTvShow);
-          // }
-
-          // check if already exists
-          const existInDb = await videoModel.find({ name });
-          let video;
-          if (!existInDb.length) {
-            const location = path.resolve(absolutePath + "/" + file.name);
-            const year = filename.match(regexYearDate);
-            try {
-              video = await VideoService.create(
-                {
-                  filename,
-                  basename,
-                  name,
-                  ext,
-                  location,
-                  year: year?.length ? new Date(year[0]) : undefined,
-                  type: isTvShow ? "tv" : "movie",
-                  episode: isTvShow ? +episode : "",
-                  season: isTvShow ? +season : "",
-                },
-                // Only creating for movies
-                // if tvshow it's next condition
-                { movieJob: isTvShow ? false : true }
-              );
-            } catch (error) {
-              console.error({
-                filename,
-                basename,
-                name,
-                ext,
-                location,
-                type: isTvShow ? "tv" : "movie",
-                episode: isTvShow ? +episode : "",
-                season: isTvShow ? +season : "",
-              });
-              console.error(error);
-            }
-
-            countCreatedVideo++;
-
-            if (!isTvShow) {
-              countCreatedMovieJob++;
-            }
-            // TODO: log here which video has been created with name and location
-          } else {
-            video = existInDb[0];
-          }
-
-          if (isTvShow) {
-            const re = new RegExp(`${basename}`, "i");
-            let tvShow = await tvShowModel.findOne({ name: re });
-
-            // To get root Tv Show folder it should always be parentFolder[2]
-            const location = `${basePath}/${parentFolder[1]}/${
-              parentFolder[2] ? parentFolder[2] : ""
-            }`;
-
-            if (!tvShow) {
-              tvShow = await TvShowService.create(
-                {
-                  name: basename,
-                  location,
-                  seasons: [
-                    {
-                      number: +season,
-                      episodes: [{ number: +episode, ref: video._id }],
-                    },
-                  ],
-                },
-                {
-                  movieJob: true,
-                  id: video._id,
-                }
-              );
-              countCreatedTvShow++;
-              countCreatedMovieJob++;
-              // TODO: log here which tvShow has been created with name and location
-            } else {
-              const { seasons } = tvShow;
-              const seasonIsPresent = seasons.findIndex(el => {
-                return +el.number === +season;
-              });
-
-              if (seasonIsPresent === -1) {
-                seasons.push({
-                  number: +season,
-                  episodes: [{ number: +episode, ref: video._id }],
-                });
-                tvShow.seasons = seasons;
-                await tvShow.save();
-                countUpdatedTvShow++;
-                continue;
-              } else {
-                const modifiedSeason = seasons.splice(seasonIsPresent, 1);
-                const episodeIsPresent = modifiedSeason[0].episodes.findIndex(
-                  el => +el.number === +episode
-                );
-
-                if (episodeIsPresent === -1) {
-                  modifiedSeason[0].episodes.push({
-                    number: +episode,
-                    ref: video._id,
-                  });
-                  seasons.push(modifiedSeason[0]);
-                  tvShow.seasons = seasons;
-                  await tvShow.save();
-
-                  countUpdatedTvShow++;
-                  continue;
-                }
-              }
-              // TODO: log here which tvshow has been update with name and data
-            }
-          }
-        }
-      }
-
-      if (process.env.NODE_ENV !== "DEV") {
-        await new Promise(r => setTimeout(r, 1000));
-      }
-
-      while (subDirectories.length > 0) {
-        const subDirectory = subDirectories.shift();
-        await goThrough(subDirectory.content, subDirectory.directory);
-      }
-      if (process.env.NODE_ENV !== "DEV") {
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    };
-    await goThrough(files);
-
-    console.log("Ends discovering");
-    res.json({
-      countCreatedVideo,
-      countCreatedTvShow,
-      countUpdatedTvShow,
-      countCreatedMovieJob,
-    });
+    res.json(result);
   }
 
   async discoverSubtitles(_, res) {
@@ -378,6 +351,10 @@ export default class DiscoverController {
 
       // API Call
       const response = await fetch(movieDbUrl + video.basename);
+      console.log(
+        "🚀 ~ file: controller.js ~ line 356 ~ DiscoverController ~ discoverDetails ~ movieDbUrl + video.basename",
+        movieDbUrl + video.basename
+      );
       const { results } = await response.json();
 
       if (!results.length) {
@@ -400,7 +377,7 @@ export default class DiscoverController {
         }
 
         // In the case dates are not correct
-        // See Bac Nord 2020 on file 2021 on themoviedb
+        // See Bac Nord - 2020 on file, 2021 on themoviedb
         if (!result) {
           result = results[0];
         }
@@ -415,7 +392,6 @@ export default class DiscoverController {
         video.posterPath.push(image);
       }
 
-      console.log(result);
       // Making the new video object
       video.idMovieDb = result.id;
       video.resume = result.overview;
@@ -496,91 +472,17 @@ export default class DiscoverController {
       count,
     });
   }
-}
 
-/**
- * Fetch details for a tvShow
- * @param {String} id TheMovieDb id
- * @returns Object {genres, ongoing, numberSeason, numberEpisode, originCountry}
- */
-export async function getTvShowDetails(id) {
-  try {
-    const response = await fetch(`${detailDbUrl}/tv/${id}${apikeyUrl}`);
-    const result = await response.json();
-    if (!result) return {};
+  async discoverTest(_, res) {
+    const videosPath = basePath + path.sep + "videos";
+    const tempFile = basePath + path.sep + "video";
 
-    return {
-      genres: result.genres.map(el => el.name),
-      ongoing: result.in_production,
-      numberSeason: result.number_of_seasons,
-      numberEpisode: result.number_of_episodes,
-      originCountry: result.origin_country,
-    };
-  } catch (error) {
-    return {};
+    await go(videosPath, "video", regexVideo);
+    // await go(p, "subtitle", regexIsSubtitle);
+
+    const result = await createEntry(tempFile, "video", "videos");
+    await rm(tempFile);
+
+    res.json(result);
   }
-}
-
-/**
- * Fetch genres for a movie
- * @param {String} id of the video on TheMovieDBApi
- * @returns genres of the video
- */
-export async function getGenres(id) {
-  try {
-    const response = await fetch(`${detailDbUrl}/movie/${id}${apikeyUrl}`);
-    const result = await response.json();
-    if (!result) return [];
-
-    return result.genres.map(genre => genre.name);
-  } catch (error) {
-    return [];
-  }
-}
-
-/**
- * Fetch trailers and teasers youtube key for a video
- * @param {String} id of the video on theMovieDBApi
- * @param {String} type enum tv | movie
- * @returns String[] of youtube key
- */
-export async function getVideoPath(id, type) {
-  try {
-    const response = await fetch(`${detailDbUrl}/${type}/${id}/videos${apikeyUrl}`);
-    const { results } = await response.json();
-    if (!results) return [];
-
-    let result = [],
-      i = 0;
-
-    while (i < results.length && result.length < 5) {
-      if (results[i].type.includes("Teaser") || results[i].type.includes("Trailer")) {
-        result.push(results[i].key);
-      }
-      i++;
-    }
-
-    return result;
-  } catch (error) {
-    return [];
-  }
-}
-
-/**
- * Check if an image already exists
- * Download the image if doesn't exists
- * @param {String} filepath name of the file + extension
- * @returns the path of the image or undefined
- */
-export async function getImages(filepath) {
-  if (!filepath) return -1;
-  const basePath = path.resolve("./public/images");
-  const imagePath = `${basePath}${filepath}`;
-
-  if (!fileExists(imagePath)) {
-    const image = await downloadImage(imageDbUrl + filepath, imagePath);
-    return image;
-  }
-
-  return undefined;
 }
