@@ -9,7 +9,7 @@ const schemaVideo = new Schema(
     filename: String,
     ext: String,
     location: String,
-    type: { type: String, enum: ["movie", "tv"] },
+    type: { type: String, enum: ["movie", "tv", "trailer", "teaser"] },
     episode: String,
     season: String,
     year: Date,
@@ -17,10 +17,10 @@ const schemaVideo = new Schema(
     score: Number, // vote_average
     length: Number, // runtime - in minutes
     resume: String, // overview
-    director: String,
-    writers: String,
-    stars: String,
-    trailer: String,
+    director: [String],
+    writers: [String],
+    actors: [String],
+    trailer: [{ type: mongoose.ObjectId, ref: videoModel }],
     genres: [String], // genres
     subtitles: [{ type: mongoose.ObjectId, ref: subtitleModel }],
     trailerYtCode: [String],
