@@ -13,7 +13,8 @@ const app = Express();
 mongoose.connect(
   process.env.NODE_ENV === "development"
     ? process.env.DB_CONNECTION_STRING
-    : "mongodb://amdin:1234@localhost:27017/db_quickFlix?authSource=admin",
+    : // This is PROD CONNECTION
+      "mongodb://amdin:1234@localhost:27017/db_quickFlix?authSource=admin",
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
