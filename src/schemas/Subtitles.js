@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose"
+import { model, Schema } from "mongoose";
 
 const schemaSubtitle = new Schema(
   {
@@ -9,8 +9,8 @@ const schemaSubtitle = new Schema(
   {
     timestamps: true,
   }
-)
+);
 
-export const subtitleModel = model("subtitle", schemaSubtitle)
+export const subtitleModel = model("subtitle", schemaSubtitle);
 
-export default schemaSubtitle
+export default schemaSubtitle;
