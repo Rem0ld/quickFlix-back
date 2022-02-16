@@ -3,11 +3,11 @@
   "ignore": [".git", "node_modules/**/node_modules", "data"],
   "verbose": true,
   "execMap": {
-    "js": "node --harmony"
+    "ts": "ts-node"
   },
-  "watch": ["test/fixtures/", "test/samples/", "src", "index.js"],
+  "watch": ["test/fixtures/", "test/samples/", "src", "index.ts"],
   "env": {
     "NODE_ENV": "development"
   },
-  "ext": "js,json"
+  "ext": "ts,json"
 }
