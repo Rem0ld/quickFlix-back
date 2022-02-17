@@ -2,6 +2,7 @@ import path from "path";
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware, Patch } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
 import { Request, Response, NextFunction } from 'express'
+import { logger } from "../../libs/logger";
 
 @Controller("images")
 @ClassErrorMiddleware(errorHandler)
@@ -25,7 +26,9 @@ export default class ImageController {
 
     res.sendFile(`images/${filepath}`, options, err => {
       if (err) next(err);
+      logger.info(`Image: ${filepath} sent`)
     });
+    return;
   }
   @Patch(":id")
   async patch(req: Request, res: Response, next: NextFunction) { }
