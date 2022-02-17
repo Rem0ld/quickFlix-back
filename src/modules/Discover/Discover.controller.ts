@@ -10,7 +10,7 @@ import { videoModel } from "../../schemas/Video";
 import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 import TvShowService from "../TvShow/TvShow.service";
 import { MovieJobStatus, TvShow, Video } from "../../types";
-import { go, createEntry } from "../../services/miscelleneous";
+import { go, createEntry } from "../../services/miscelleneaous";
 import { getImages, getGenres, getVideoPath, getTvShowDetails } from "../../services/apiService";
 
 @Controller("discover")

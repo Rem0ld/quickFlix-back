@@ -118,6 +118,16 @@ export type PaginatedResponse<T> = {
 
 }
 
+export type ExtSubtitle = "srt" | "vtt" | "sfv"
+export type ExtVideo = "avi" | "mp4" | "mkv"
+
+export type VideoMaker = {
+  countVideo: number;
+  movieJob: number;
+  countTvShowCreated: number;
+  countUpdatedTvShow: number;
+}
+
 /* NOT WORKING */
 // Helpers
 type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T];
@@ -132,6 +142,3 @@ type AppResponse<T> = TypedResponse<{
   skip: number;
   data: T;
 }>
-
-export type ExtSubtitle = "srt" | "vtt" | "sfv"
-export type ExtVideo = "avi" | "mp4" | "mkv"

@@ -9,8 +9,14 @@ import { tvShowModel } from "../schemas/TvShow";
 import { videoModel } from "../schemas/Video";
 import { regExBasename, regexTvShow, regexYearDate } from "../utils/regexes";
 import { parseBasename } from "../utils/stringManipulation";
-import { ExtSubtitle, ExtVideo, TvShow, Video } from "../types";
+import { ExtSubtitle, ExtVideo, TvShow, Video, VideoMaker } from "../types";
 
+/**
+ * Creates a file that references all wanted (regex) files (absolute path) from a directory - use recursion to follow all subfolder
+ * @param {String} filepath Directory to be searched
+ * @param {String} filename name of the file created
+ * @param {RegExp} regex Type of file we want
+ */
 export async function go(filepath: string, filename: string, regex: RegExp) {
   try {
     const dir = await opendir(filepath);
@@ -29,6 +35,13 @@ export async function go(filepath: string, filename: string, regex: RegExp) {
   }
 }
 
+/**
+ * Creates entry from a file (created from the "go" function)
+ * @param {String} filename 
+ * @param {"video" | "subtitle"} type 
+ * @param {String} baseFolder 
+ * @returns count of created video, tv show
+ */
 export async function createEntry(filename: string, type: "video" | "subtitle", baseFolder: string) {
   let tv = 0,
     tct = 0,
@@ -60,12 +73,6 @@ export async function createEntry(filename: string, type: "video" | "subtitle", 
   return { tv, tct, tut, tcm };
 }
 
-type VideoMaker = {
-  countVideo: number;
-  movieJob: number;
-  countTvShowCreated: number;
-  countUpdatedTvShow: number;
-}
 export async function makeVideo(
   location: string, basename: any,
   filename: string, ext: ExtVideo): Promise<VideoMaker> {
