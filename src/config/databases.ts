@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { logger } from "../libs/logger";
 
 export default class DbConnection {
   private uri: string;
@@ -11,8 +12,7 @@ export default class DbConnection {
       this.uri,
       error => {
         if (error) {
-          // TODO: log for db connection error
-          console.log(error);
+          logger.error(error)
         }
         console.log("Connected")
       }

@@ -10,6 +10,7 @@ import { videoModel } from "../schemas/Video";
 import { regExBasename, regexTvShow, regexYearDate } from "../utils/regexes";
 import { parseBasename } from "../utils/stringManipulation";
 import { ExtSubtitle, ExtVideo, TvShow, Video, VideoMaker } from "../types";
+import { logger } from "../libs/logger";
 
 /**
  * Creates a file that references all wanted (regex) files (absolute path) from a directory - use recursion to follow all subfolder
@@ -153,7 +154,7 @@ export async function makeVideo(
     );
     countTvShowCreated++;
     movieJob++;
-    // TODO: log here which tvShow has been created with name and location
+    logger.info(tvShow.name, tvShow.location)
   } else {
     const { seasons } = tvShow;
     const seasonIsPresent = seasons.findIndex(el => {
@@ -181,7 +182,7 @@ export async function makeVideo(
     // @ts-ignore
     await tvShow.save();
     countUpdatedTvShow++;
-    // TODO: log here which tvshow has been update with name and data
+    logger.info(tvShow.name, " updated")
   }
 
   return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
