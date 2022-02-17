@@ -4,13 +4,13 @@ import { Video } from "../types";
 
 const schemaVideo =
   new Schema<Video>({
-    idMovieDb: String, // id
-    name: String,
+    idMovieDb: { type: String, index: true }, // id
+    name: { type: String, index: true },
     basename: String,
     filename: String,
     ext: String,
     location: String,
-    type: { type: String, enum: ["movie", "tv", "trailer", "teaser"] },
+    type: { type: String, enum: ["movie", "tv", "trailer", "teaser"], index: true },
     episode: String,
     season: String,
     year: Date,
@@ -36,6 +36,7 @@ const schemaVideo =
     });
 
 export const videoModel = model<Video>("video", schemaVideo);
+
 export default schemaVideo;
 // TODO: If wrongFormat
 // creation of a new collection with videos we need to download with a different format

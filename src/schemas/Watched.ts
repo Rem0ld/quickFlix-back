@@ -9,7 +9,7 @@ const schemaWatched = new Schema<Watched>(
     length: Number,
     finished: { Type: Boolean, default: false },
     stoppedAt: Number,
-    video: { type: Schema.Types.ObjectId, ref: videoModel },
+    video: { type: Schema.Types.ObjectId, ref: videoModel, index: true },
     user: { type: Schema.Types.ObjectId, ref: userModel },
   },
   {
@@ -18,5 +18,4 @@ const schemaWatched = new Schema<Watched>(
 );
 
 export const watchedModel = model<Watched>("user", schemaWatched)
-
 export default schemaWatched;

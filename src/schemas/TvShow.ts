@@ -4,8 +4,8 @@ import { videoModel } from "./Video";
 
 const schemaTvShow = new Schema<TvShow>(
   {
-    idMovieDb: String, // id
-    name: String,
+    idMovieDb: { type: String, index: true }, // id
+    name: { type: String, index: true },
     location: String,
     numberSeason: Number, // number_of_episodes
     numberEpisode: Number, // number_of_seasons
@@ -28,7 +28,7 @@ const schemaTvShow = new Schema<TvShow>(
     posterPath: [String], // see if I can dl it poster_path
     resume: String, // overview
     score: Number, // vote_average
-    genres: [String], // genre
+    genres: { type: [String], index: true }, // genre
     firstAirDate: Date, // first_air_date
     trailerYtCode: [String],
   },

@@ -3,7 +3,7 @@ import { Subtitle } from "../types";
 
 const schemaSubtitle = new Schema<Subtitle>(
   {
-    name: String,
+    name: { type: String, index: true },
     ext: String,
     path: String,
   },
@@ -13,5 +13,4 @@ const schemaSubtitle = new Schema<Subtitle>(
 );
 
 export const subtitleModel = model<Subtitle>("subtitle", schemaSubtitle);
-
 export default schemaSubtitle;
