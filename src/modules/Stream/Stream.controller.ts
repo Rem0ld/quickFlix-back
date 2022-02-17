@@ -6,6 +6,7 @@ import mime from "mime";
 import { videoModel } from "../../schemas/Video";
 import errorHandler from "../../services/errorHandler";
 import { Video } from "../../types";
+import { logger } from "../../libs/logger";
 
 @Controller("stream")
 export default class StreamController {
@@ -24,8 +25,8 @@ export default class StreamController {
 
     // Check if the file exists in the current directory.
     access(video.location, constants.F_OK, async err => {
-      // TODO: log here with file name and location
-      console.log(`${video.name} ${err ? "does not exist" : "exists"}`);
+      logger.info(`${video.name} ${err ? "does not exist" : "exists"}`)
+      logger.info(`located: ${video.location}`)
       if (err) {
         next(err)
         return;
