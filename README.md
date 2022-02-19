@@ -8,3 +8,5 @@
 - find a way to extract subtitles from videos when present
   - check with ffprobe -v error -of json input.mkv -of json -show_entries "stream=index:stream_tags=language" -select_streams s
     - it gives us a nice json file with the different languages
+
+TODO: fix when fetching only movies sending total of all videos

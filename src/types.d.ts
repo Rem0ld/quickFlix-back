@@ -78,6 +78,13 @@ export type Watched = {
   user: Types.ObjectId
 }
 
+export type WatchedTvShow = {
+  _id: string;
+  tvShow: Types.ObjectId
+  user: Types.ObjectId
+  videos: Watched[] | string[]
+}
+
 export type Role = 'admin' | 'simple'
 export type User = {
   _id: string;
