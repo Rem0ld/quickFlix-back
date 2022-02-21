@@ -2,19 +2,30 @@ import { defaultLimit } from "../../config/defaultConfig";
 import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
-import WatchedService from "./Watched.service";
 import { regexIsSubtitle } from "../../utils/regexes";
+import WatchedService from "./Watched.service";
+import WatchedTvShowService from "../WatchedTvShow/WatchedTvShow.service";
+import { watchedModel } from "../../schemas/Watched";
 
-@Controller("")
+@Controller("watched")
 @ClassErrorMiddleware(errorHandler)
-export default class {
+export default class WatchedController {
   @Get()
   private async find(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const data = await watchedModel.find()
 
+    res.json(data)
+    return;
   }
   @Get(":id")
   private async findById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { id } = req.params
+    const data = await watchedModel.findById(id)
+
+    res.json(data)
+    return;
   }
+
   @Post()
   private async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     const body = req.body;
@@ -27,21 +38,16 @@ export default class {
       timeWatched: body.timeWatched,
       length: body.length,
       finished: body.finished,
-      video: body.videoId,
-      user: body.user
+      video: body.videoId
     })
 
     let tvShow;
 
     if (body.tvShowId) {
-      const exists = await WatchedService.findTvShow(body.tvShowId)
+      const exists = await WatchedTvShowService.findTvShow(body.tvShowId)
 
       if (!exists) {
-        tvShow = await WatchedService.createTvShow({
-          tvShow: body.tvShowId,
-          user: body.user,
-          videos: [watched]
-        })
+        tvShow = await WatchedTvShowService.update(body.tvShowId, { _id: body.videoId })
       }
     }
 
@@ -54,31 +60,35 @@ export default class {
 
   @Post("by-video")
   private async findByVideoId(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { id, isTvShow } = req.body;
+    const { id } = req.body;
 
     if (!id) {
       res.json("Missing id")
       return;
     }
 
-    let data;
-
-    if (isTvShow) {
-      data = await WatchedService.findTvShow(id)
-    } else {
-      data = await WatchedService.findByVideoId(id)
-    }
+    const data = await WatchedService.findByVideoId(id)
 
     if (!data) {
-      res.json("Cannot find")
+      res.json("Doesn't find")
     }
 
     res.json(data)
     return;
   }
 
-  @Patch(":id")
+  @Patch()
   private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { id, ...rest } = req.body;
+
+    if (!id) {
+      res.json("missing Id")
+      return;
+    }
+
+    const data = await WatchedService.update(id, rest)
+
+    res.json(data)
   }
 
   @Delete(":id")

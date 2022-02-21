@@ -12,29 +12,13 @@ class WatchedService {
     return watchedModel.create(data)
   }
 
-  async createTvShow(data: Partial<WatchedTvShow>) {
-    return watchedTvShowModel.create(data)
-  }
-
   async update(id: string, data: Partial<Watched>) {
     return watchedModel.findOneAndUpdate({ video: id }, data)
-  }
-
-  async updateTvShow(id: string, data: Pick<Video, "_id">) {
-    const tvShow = await watchedTvShowModel.findOne({ tvShow: id })
-
-    const exists = tvShow?.videos.indexOf
-    return watchedTvShowModel.updateOne({ tvShow: id }, data)
   }
 
   async findByVideoId(id: string) {
     return watchedModel.findOne({ video: id })
   }
-
-  async findTvShow(id: string) {
-    return watchedTvShowModel.findOne(({ tvShow: id })).populate({ path: "videos" })
-  }
-
 }
 
 export default new WatchedService();

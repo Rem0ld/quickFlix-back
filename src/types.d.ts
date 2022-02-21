@@ -80,7 +80,7 @@ export type Watched = {
 
 export type WatchedTvShow = {
   _id: string;
-  tvShow: Types.ObjectId
+  tvShow: string;
   user: Types.ObjectId
   videos: Watched[] | string[]
 }

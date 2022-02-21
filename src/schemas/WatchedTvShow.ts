@@ -6,7 +6,7 @@ import { watchedModel } from "./Watched";
 
 const schemaWatchedTvShow = new Schema<WatchedTvShow>(
   {
-    tvShow: { type: Schema.Types.ObjectId, ref: tvShowModel, index: true },
+    tvShow: { type: String, index: true },
     videos: [{ type: Schema.Types.ObjectId, ref: watchedModel, index: true }],
     user: { type: Schema.Types.ObjectId, ref: userModel },
   },
@@ -15,5 +15,5 @@ const schemaWatchedTvShow = new Schema<WatchedTvShow>(
   }
 );
 
-export const watchedTvShowModel = model<WatchedTvShow>("user", schemaWatchedTvShow)
+export const watchedTvShowModel = model<WatchedTvShow>("watchedTvShow", schemaWatchedTvShow)
 export default schemaWatchedTvShow;

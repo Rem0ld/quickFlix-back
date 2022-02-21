@@ -37,6 +37,6 @@ const schemaTvShow = new Schema<TvShow>(
   }
 );
 
-export const tvShowModel = model<TvShow>("season", schemaTvShow);
+export const tvShowModel = model<TvShow>("tvShow", schemaTvShow);
 
 export default schemaTvShow;

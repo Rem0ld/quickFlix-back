@@ -16,5 +16,5 @@ const schemaWatched = new Schema<Watched>(
   }
 );
 
-export const watchedModel = model<Watched>("user", schemaWatched)
+export const watchedModel = model<Watched>("watched", schemaWatched)
 export default schemaWatched;
