@@ -10,3 +10,4 @@
     - it gives us a nice json file with the different languages
 
 TODO: fix when fetching only movies sending total of all videos
+Need watchedTvshow service to separate business with watched
