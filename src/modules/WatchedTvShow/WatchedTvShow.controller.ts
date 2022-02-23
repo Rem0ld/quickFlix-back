@@ -49,6 +49,17 @@ export default class WatchedTvShowController {
 
   @Delete(":id")
   private async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { id } = req.params
+
+    if (!id) {
+      res.json("Missing ID")
+      return;
+    }
+
+    const data = await watchedTvShowModel.findByIdAndDelete(id)
+
+    res.json(data)
+    return;
   }
 
   // TODO: middleware to check if admin

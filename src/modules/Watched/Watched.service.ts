@@ -13,7 +13,9 @@ class WatchedService {
   }
 
   async update(id: string, data: Partial<Watched>) {
-    return watchedModel.findOneAndUpdate({ video: id }, data)
+    return watchedModel.findOneAndUpdate({ video: id }, data).then((result) => {
+      return result
+    })
   }
 
   async findByVideoId(id: string) {
