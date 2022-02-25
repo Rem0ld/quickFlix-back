@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
-import { RequestBuilder } from "../../types";
+import { RequestBuilder, TvShow } from "../../types";
 import { videoModel } from "../../schemas/Video";
 
 @Controller("video")
@@ -12,10 +12,12 @@ export default class VideoController {
   @Get()
   private async find(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { limit = defaultLimit, skip = 0, movie = false } = req.query;
-    const request: RequestBuilder = {};
+    const request: RequestBuilder = {
+      type: ["tv", "movie"]
+    };
 
     if (movie) {
-      request.type = "movie";
+      request.type = ["movie"];
     }
 
     if (+limit === -1) {
@@ -25,7 +27,7 @@ export default class VideoController {
     }
 
     try {
-      const count = await videoModel.countDocuments();
+      const count = await videoModel.countDocuments(request);
       const data = await videoModel
         .find(request)
         .skip(+skip)
@@ -39,6 +41,8 @@ export default class VideoController {
       });
     } catch (error) {
       next(error);
+    } finally {
+      return;
     }
   }
 
@@ -60,8 +64,9 @@ export default class VideoController {
       res.json(video);
     } catch (error) {
       next(error);
+    } finally {
+      return;
     }
-    return;
   }
 
   @Post("by-name")
@@ -80,8 +85,9 @@ export default class VideoController {
       res.json(video);
     } catch (error) {
       next(error);
+    } finally {
+      return;
     }
-    return;
   }
 
   @Post("by-fields")
@@ -94,8 +100,9 @@ export default class VideoController {
       res.json(result);
     } catch (error) {
       next(error);
+    } finally {
+      return;
     }
-    return;
   }
 
   @Post()
@@ -104,26 +111,30 @@ export default class VideoController {
       next(new Error("missing name"));
     }
 
-    const video = await VideoService.create(req.body, { movieJob: true });
+    try {
+      const video = await VideoService.create(req.body, { movieJob: true });
 
-    res.json({
-      video,
-    });
-    return;
+      res.json({
+        video,
+      });
+    } catch (error) {
+      next(error)
+    } finally {
+      return;
+    }
   }
 
   @Patch(":id")
   private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const result = await videoModel.updateOne(req.body);
+    const { id } = req.params
 
-      if (!result) throw new Error("Internal Server Error");
-
+    if (!id) next(new Error("Missind ID"));
+    videoModel.findOneAndUpdate({ _id: id }, { ...req.body }).then(result => {
       res.json(result)
-    } catch (err) {
+    }).catch(err => {
       next(err)
-    }
-    return;
+    }).finally(() => { return })
+
   }
 
   @Delete(":id")

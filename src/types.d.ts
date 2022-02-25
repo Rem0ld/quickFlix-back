@@ -37,7 +37,7 @@ export type RequestBuilder = {
   name?: RegExp;
   episode?: string;
   season?: string;
-  type?: string;
+  type?: VideoType[];
 }
 
 export type EpisodeTvShow = {

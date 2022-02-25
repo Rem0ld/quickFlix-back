@@ -17,6 +17,7 @@ export default class TvShowController {
       const data = await TvShowService.findAll(populate as boolean)
 
       res.json(data)
+      return;
     }
 
     const { data, count } = await TvShowService.find({
@@ -31,6 +32,7 @@ export default class TvShowController {
       skip: +skip,
       data,
     });
+    return;
   }
 
   @Get(":id")

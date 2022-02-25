@@ -1,10 +1,5 @@
-import { movieDbJobModel } from "../../schemas/MovieDbJob";
-import { tvShowModel } from "../../schemas/TvShow";
-import { videoModel } from "../../schemas/Video";
 import { watchedModel } from "../../schemas/Watched";
-import { watchedTvShowModel } from "../../schemas/WatchedTvShow";
-import { RequestBuilder, Video, Watched, WatchedTvShow } from "../../types";
-import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
+import { Watched } from "../../types";
 
 
 class WatchedService {
