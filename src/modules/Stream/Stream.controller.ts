@@ -25,8 +25,8 @@ export default class StreamController {
 
     // Check if the file exists in the current directory.
     access(video.location, constants.F_OK, async err => {
-      logger.info(`${video.name} ${err ? "does not exist" : "exists"}`)
-      logger.info(`located: ${video.location}`)
+      // logger.info(`${video.name} ${err ? "does not exist" : "exists"}`)
+      // logger.info(`located: ${video.location}`)
       if (err) {
         next(err)
         return;

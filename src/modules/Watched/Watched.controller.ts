@@ -7,6 +7,7 @@ import WatchedService from "./Watched.service";
 import WatchedTvShowService from "../WatchedTvShow/WatchedTvShow.service";
 import { watchedModel } from "../../schemas/Watched";
 import { watchedTvShowModel } from "../../schemas/WatchedTvShow";
+import { logger } from "../../libs/logger";
 
 @Controller("watched")
 @ClassErrorMiddleware(errorHandler)
@@ -18,6 +19,7 @@ export default class WatchedController {
     res.json(data)
     return;
   }
+
   @Get(":id")
   private async findById(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { id } = req.params
@@ -29,35 +31,45 @@ export default class WatchedController {
 
   @Post()
   private async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const body = req.body;
-
-    if (!body.videoId) {
-      res.json("Missing video ID")
+    const { video } = req.body;
+    logger.info("body", req.body)
+    if (!video) {
+      res.status(500).json("Missing video ID")
       return;
     }
 
-    const watched = await WatchedService.create({
-      timeWatched: body.timeWatched,
-      length: body.length,
-      finished: body.finished,
-      video: body.videoId
-    })
+    const exists = await WatchedService.findByVideoId(video)
 
-    let tvShow;
-
-    if (body.tvShowId) {
-      const exists = await WatchedTvShowService.findTvShow(body.tvShowId)
-
-      if (!exists) {
-        tvShow = await WatchedTvShowService.update(body.tvShowId, { _id: body.videoId })
-      }
+    console.log({ exists })
+    if (exists) {
+      res.json({
+        video: exists
+      })
+      return
     }
 
-    res.json({
-      video: watched,
-      tvShow: tvShow ? tvShow : null
-    })
-    return
+    try {
+      const watched = await WatchedService.create(req.body)
+      let tvShow;
+
+      if (req.body.tvShowId) {
+        const exists = await WatchedTvShowService.findTvShow(req.body.tvShowId)
+
+        if (!exists) {
+          tvShow = await WatchedTvShowService.update(req.body.tvShowId, { _id: req.body.videoId })
+        }
+      }
+
+      res.json({
+        video: watched,
+        tvShow: tvShow ? tvShow : null
+      })
+
+    } catch (error) {
+      console.log(error)
+    } finally {
+      return
+    }
   }
 
   @Post("by-video")
@@ -80,9 +92,9 @@ export default class WatchedController {
     return;
   }
 
-  @Patch()
+  @Patch(":id")
   private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { id, ...rest } = req.body;
+    const { id } = req.params
 
     if (!id) {
       res.json("missing Id")
@@ -90,7 +102,8 @@ export default class WatchedController {
     }
 
     try {
-      const data = await WatchedService.update(id, rest)
+      const data = await WatchedService.update(id, req.body)
+      console.log("🚀 ~ file: Watched.controller.ts ~ line 106 ~ WatchedController ~ patch ~ data", data)
 
       res.json(data)
     } catch (error) {

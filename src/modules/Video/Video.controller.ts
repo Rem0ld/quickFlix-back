@@ -3,8 +3,43 @@ import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
-import { RequestBuilder, TvShow } from "../../types";
+import { RequestBuilder, TvShow, Video } from "../../types";
 import { videoModel } from "../../schemas/Video";
+import { watchedModel } from "../../schemas/Watched";
+import { Mongoose, Types } from "mongoose";
+
+const aggregateWithWatched = async (list: Video[]) => {
+  // const watched = await watchedModel.aggregate([
+  //   {
+  //     $lookup: {
+  //       from: "video",
+  //       localField: "video",
+  //       foreignField: "_id",
+  //       as: "video_id"
+  //     }
+  //   }
+  // ])
+  // console.log("🚀 ~ file: Video.controller.ts ~ line 18 ~ aggregateWithWatched ~ watched", watched)
+
+  const videos = await videoModel.aggregate([
+    {
+      $match: {
+        _id: {
+          "$in": list.map(el => new Types.ObjectId(el._id))
+        }
+      }
+    },
+    {
+      $lookup: {
+        from: "watched",
+        localField: "_id",
+        foreignField: "video",
+        as: "watched_id"
+      }
+    }
+  ])
+  console.log("🚀 ~ file: Video.controller.ts ~ line 32 ~ aggregateWithWatched ~ videos", videos)
+}
 
 @Controller("video")
 @ClassErrorMiddleware(errorHandler)
@@ -33,6 +68,7 @@ export default class VideoController {
         .skip(+skip)
         .limit(+limit);
 
+      aggregateWithWatched(data)
       res.json({
         total: count,
         limit: +limit,
@@ -129,6 +165,7 @@ export default class VideoController {
     const { id } = req.params
 
     if (!id) next(new Error("Missind ID"));
+
     videoModel.findOneAndUpdate({ _id: id }, { ...req.body }).then(result => {
       res.json(result)
     }).catch(err => {
