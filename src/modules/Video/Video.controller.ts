@@ -9,36 +9,29 @@ import { watchedModel } from "../../schemas/Watched";
 import { Mongoose, Types } from "mongoose";
 
 const aggregateWithWatched = async (list: Video[]) => {
-  // const watched = await watchedModel.aggregate([
-  //   {
-  //     $lookup: {
-  //       from: "video",
-  //       localField: "video",
-  //       foreignField: "_id",
-  //       as: "video_id"
-  //     }
-  //   }
-  // ])
-  // console.log("🚀 ~ file: Video.controller.ts ~ line 18 ~ aggregateWithWatched ~ watched", watched)
-
-  const videos = await videoModel.aggregate([
+  const watched = await videoModel.aggregate([
     {
-      $match: {
-        _id: {
-          "$in": list.map(el => new Types.ObjectId(el._id))
+      '$match': {
+        '_id': {
+          '$in': list.map(el => new Types.ObjectId(el._id))
         }
       }
-    },
-    {
-      $lookup: {
-        from: "watched",
-        localField: "_id",
-        foreignField: "video",
-        as: "watched_id"
+    }, {
+      '$lookup': {
+        'from': 'watcheds',
+        'localField': '_id',
+        'foreignField': 'video',
+        'as': 'watched'
+      }
+    }, {
+      '$unwind': {
+        'path': '$watched',
+        'preserveNullAndEmptyArrays': true
       }
     }
   ])
-  console.log("🚀 ~ file: Video.controller.ts ~ line 32 ~ aggregateWithWatched ~ videos", videos)
+
+  return watched
 }
 
 @Controller("video")
@@ -68,12 +61,12 @@ export default class VideoController {
         .skip(+skip)
         .limit(+limit);
 
-      aggregateWithWatched(data)
+
       res.json({
         total: count,
         limit: +limit,
         skip: +skip,
-        data,
+        data: await aggregateWithWatched(data),
       });
     } catch (error) {
       next(error);
