@@ -169,7 +169,7 @@ export default class VideoController {
 
   @Delete(":id")
   private async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { _id: id } = req.params;
+    const { id } = req.params;
 
     if (!id) {
       next(new Error("Missing ID"));
@@ -179,6 +179,10 @@ export default class VideoController {
 
     if (!video) {
       next(new Error("Internal Server Error"));
+    }
+
+    if (video === -1) {
+      res.json(`No entry for this ${id}`)
     }
 
     res.json(video);
