@@ -4,7 +4,7 @@ import { Watched } from "../../types";
 
 class WatchedService {
   async create(data: Partial<Watched>) {
-    return watchedModel.create(data)
+    return watchedModel.findOneAndUpdate({ video: data.video }, data, { upsert: true })
   }
 
   async update(id: string, data: Partial<Watched>) {
