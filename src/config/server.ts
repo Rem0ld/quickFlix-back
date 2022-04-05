@@ -48,9 +48,13 @@ export default class MyServer extends Server {
     const db = new DbConnection(uri!)
     db.connect()
     super.addControllers(
-      [streamController, imagesController,
-        movieDbJobController, subtitleController,
-        tvShowController, videoController,
+      [
+        streamController,
+        imagesController,
+        movieDbJobController,
+        subtitleController,
+        tvShowController,
+        videoController,
         discoverController,
         watchedController,
         watchedTvShowController
