@@ -12,6 +12,8 @@ import TvShowService from "../TvShow/TvShow.service";
 import { MovieJobStatus, TvShow, Video } from "../../types";
 import { go, createEntry } from "../../services/miscelleneaous";
 import { getImages, getGenres, getVideoPath, getTvShowDetails } from "../../services/apiService";
+import { readFileSync } from "fs";
+import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
 
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
@@ -308,6 +310,33 @@ export default class DiscoverController {
     await rm(tempFile);
 
     res.json(result);
+  }
+
+  @Get("audio")
+  private async audio(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const videosPath = basePath + path.sep + "videos";
+    const tempFile = basePath + path.sep + "video";
+    const file = readFileSync(tempFile, "utf-8");
+    const lines = file.split("\n");
+
+    // await go(videosPath, "video", regexVideo);
+
+    console.log(lines[0])
+    const obj = JSON.parse(lines[0])
+    const loca = `${obj.dir}/${obj.base}`
+    ffmpeg(loca)
+      .input(loca)
+      .ffprobe((err, data) => {
+        if (err) {
+          console.log(err)
+          return;
+        }
+        console.log(data)
+      })
+
+
+    // await rm(tempFile);
+    res.json("of")
   }
 
 }
