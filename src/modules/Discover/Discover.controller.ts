@@ -1,11 +1,11 @@
 import path from "path";
-import { rm } from "fs/promises";
+import { readFile, rm } from "fs/promises";
 import fetch from "node-fetch";
 import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import errorHandler from "../../services/errorHandler";
-import { regexVideo } from "../../utils/regexes";
+import { regexIsSubtitle, regexVideo } from "../../utils/regexes";
 import { videoModel } from "../../schemas/Video";
 import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 import TvShowService from "../TvShow/TvShow.service";
@@ -23,13 +23,17 @@ export default class DiscoverController {
     const videosPath = basePath + path.sep + "videos";
     const tempFile = basePath + path.sep + "video";
 
-    await go(videosPath, "video", regexVideo);
+    /**
+     * Should work like this but if video exists it will not be added in TVShow
+     * TODO: Create a job just to create tvshows
+     */
+    await go(videosPath, "video", regexVideo)
     // await go(p, "subtitle", regexIsSubtitle);
 
     const result = await createEntry(tempFile, "video", "videos");
     await rm(tempFile);
-
     res.json(result);
+
   }
 
   // @Get("subtitles")
@@ -316,27 +320,73 @@ export default class DiscoverController {
   private async audio(req: Request, res: Response, next: NextFunction): Promise<void> {
     const videosPath = basePath + path.sep + "videos";
     const tempFile = basePath + path.sep + "video";
-    const file = readFileSync(tempFile, "utf-8");
-    const lines = file.split("\n");
 
     // await go(videosPath, "video", regexVideo);
 
-    console.log(lines[0])
-    const obj = JSON.parse(lines[0])
-    const loca = `${obj.dir}/${obj.base}`
-    ffmpeg(loca)
-      .input(loca)
-      .ffprobe((err, data) => {
-        if (err) {
-          console.log(err)
-          return;
-        }
-        console.log(data)
+    const file = readFileSync(tempFile, "utf-8");
+    const lines = file.split("\n");
+    const result = <any>[]
+    const promises = <any>[]
+
+    for (const line of lines) {
+      // To prevent error from last line in file being ""
+      if (!line.length) break;
+
+      const parsed = JSON.parse(line)
+      const { dir, base } = parsed;
+
+      const pathname = `${dir}/${base}`
+
+      const promise = new Promise((resolve, reject) => {
+        const name = base
+        ffmpeg(pathname)
+          .input(pathname)
+          .ffprobe(async (err, data) => {
+            if (err) {
+              reject({ filename: base, err });
+            }
+
+            /**
+             * data: Ojbect {
+             *  streams: Array [
+             *  codec_name: string (ac3)
+             *  codec_long_name: string
+             *  codec_type: string (audio)
+             * ]
+               * }
+             */
+            const { streams }: { streams: Array<any> } = data
+
+            const reduced = await streams.reduce((
+              acc,
+              { codec_name,
+                codec_long_name,
+                codec_type
+              }) => {
+              acc.name = name
+
+              if (codec_type === "audio") {
+                acc.stream.push({
+                  codec_name,
+                  codec_long_name
+                })
+              }
+              return acc
+            }, { name: "", stream: [] })
+
+            resolve(reduced)
+          })
+
       })
 
+      promises.push(promise)
+    }
 
-    // await rm(tempFile);
-    res.json("of")
+    Promise.allSettled(promises).then(data => {
+
+      res.json(data)
+    })
+    return
   }
 
 }

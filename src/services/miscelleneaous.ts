@@ -1,4 +1,4 @@
-import { opendir, rm } from "fs/promises";
+import { opendir, readFile, rm } from "fs/promises";
 import { appendFile, createReadStream, createWriteStream, readFileSync } from "fs";
 import path from "path";
 import { basePath } from "../config/defaultConfig";
@@ -18,7 +18,7 @@ import { logger } from "../libs/logger";
  * @param {String} filename name of the file created
  * @param {RegExp} regex Type of file we want
  */
-export async function go(filepath: string, filename: string, regex: RegExp) {
+export async function go(filepath: string, filename: string, regex: RegExp): Promise<any> {
   try {
     const dir = await opendir(filepath);
     for await (const dirent of dir) {
@@ -34,6 +34,8 @@ export async function go(filepath: string, filename: string, regex: RegExp) {
   } catch (err) {
     console.error(err);
   }
+
+  return Promise.resolve(filepath)
 }
 
 /**
@@ -48,7 +50,7 @@ export async function createEntry(filename: string, type: "video" | "subtitle", 
     tct = 0,
     tut = 0,
     tcm = 0;
-  const file = readFileSync(filename, "utf-8");
+  const file = await readFile(filename, "utf-8");
   const lines = file.split("\n");
 
   for (const line of lines) {
