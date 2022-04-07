@@ -2,6 +2,7 @@ import { Types } from "mongoose"
 import { Response } from "express"
 
 export type VideoType = "movie" | "tv" | "trailer" | "teaser"
+export type EnumStatus = "todo" | "done" | "error"
 
 export type Video = {
   _id: string;
@@ -134,6 +135,15 @@ export type VideoMaker = {
   countTvShowCreated: number;
   countUpdatedTvShow: number;
 }
+
+export type EncodingJob = {
+  _id: string;
+  videoId: Types.ObjectId | string;
+  pathname: string;
+  status: EnumStatus;
+  error: string[];
+  type: "audio" | "video";
+};
 
 /* NOT WORKING */
 // Helpers
