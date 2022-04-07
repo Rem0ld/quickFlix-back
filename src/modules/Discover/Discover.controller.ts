@@ -1,8 +1,18 @@
 import path from "path";
 import { readFile, rm } from "fs/promises";
 import fetch from "node-fetch";
-import { Request, Response, NextFunction } from 'express';
-import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
+import { Request, Response, NextFunction } from "express";
+import {
+  Controller,
+  Middleware,
+  ErrorMiddleware,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  ClassErrorMiddleware,
+} from "@overnightjs/core";
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import errorHandler from "../../services/errorHandler";
 import { regexIsSubtitle, regexVideo } from "../../utils/regexes";
@@ -11,15 +21,26 @@ import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 import TvShowService from "../TvShow/TvShow.service";
 import { MovieJobStatus, TvShow, Video } from "../../types";
 import { go, createEntry } from "../../services/miscelleneaous";
-import { getImages, getGenres, getVideoPath, getTvShowDetails } from "../../services/apiService";
+import {
+  getImages,
+  getGenres,
+  getVideoPath,
+  getTvShowDetails,
+} from "../../services/apiService";
 import { readFileSync } from "fs";
 import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
+import { encodingJobModel } from "../../schemas/EncodingJobs";
+import { profile } from "winston";
 
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
 export default class DiscoverController {
   @Get("")
-  private async discover(req: Request, res: Response, next: NextFunction): Promise<void> {
+  private async discover(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const videosPath = basePath + path.sep + "videos";
     const tempFile = basePath + path.sep + "video";
 
@@ -27,13 +48,12 @@ export default class DiscoverController {
      * Should work like this but if video exists it will not be added in TVShow
      * TODO: Create a job just to create tvshows
      */
-    await go(videosPath, "video", regexVideo)
+    await go(videosPath, "video", regexVideo);
     // await go(p, "subtitle", regexIsSubtitle);
 
     const result = await createEntry(tempFile, "video", "videos");
     await rm(tempFile);
     res.json(result);
-
   }
 
   // @Get("subtitles")
@@ -154,8 +174,11 @@ export default class DiscoverController {
    *
    */
   @Get("details")
-  private async details(req: Request, res: Response, next: NextFunction): Promise<void> {
-
+  private async details(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     let count = 0,
       errorCount = 0;
 
@@ -164,7 +187,7 @@ export default class DiscoverController {
 
     if (movieJobs) {
       for (const job of movieJobs) {
-        const video: Video = await videoModel.findById(job.video) as Video;
+        const video: Video = (await videoModel.findById(job.video)) as Video;
         const yearMovie = new Date(video.year).getFullYear();
         let status: MovieJobStatus = "done";
 
@@ -235,16 +258,16 @@ export default class DiscoverController {
         count++;
         await new Promise(r => setTimeout(r, 2000));
       }
-
     }
-
 
     // TvShows
     const tvJobs = await movieJobService.findActive({ type: "tv" });
 
     if (tvJobs) {
       for (const job of tvJobs) {
-        const tvShow = await TvShowService.findByName(job.video.basename) as TvShow;
+        const tvShow = (await TvShowService.findByName(
+          job.video.basename
+        )) as TvShow;
         let status: MovieJobStatus = "done";
 
         const response = await fetch(movieDbUrl + tvShow.name);
@@ -295,7 +318,6 @@ export default class DiscoverController {
       }
     }
 
-
     res.json({
       errorCount,
       count,
@@ -303,7 +325,11 @@ export default class DiscoverController {
   }
 
   @Get("test")
-  private async test(req: Request, res: Response, next: NextFunction): Promise<void> {
+  private async test(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const videosPath = basePath + path.sep + "videos";
     const tempFile = basePath + path.sep + "video";
 
@@ -316,44 +342,123 @@ export default class DiscoverController {
     res.json(result);
   }
 
+  // @Get("audio")
+  // private async audio(req: Request, res: Response, next: NextFunction): Promise<void> {
+  //   const proprietaryCodec = ['ac3', 'eac3']
+  //   const videosPath = basePath + path.sep + "videos";
+  //   const tempFile = basePath + path.sep + "video";
+  //   let file: string;
+
+  //   try {
+  //     file = readFileSync(tempFile, "utf-8");
+
+  //   } catch (error: any) {
+  //     if (error.message.includes("no such file")) {
+  //       await go(videosPath, "video", regexVideo);
+  //     }
+  //   } finally {
+  //     file = readFileSync(tempFile, "utf-8");
+  //   }
+
+  //   try {
+  //     const lines = file.split("\n");
+  //     const promises = []
+
+  //     for (const line of lines) {
+  //       // To prevent error from last line in file being ""
+  //       if (!line.length) break;
+
+  //       const parsed = JSON.parse(line)
+  //       const { dir, base } = parsed;
+
+  //       const pathname = `${dir}/${base}`
+
+  //       const promise = new Promise((resolve, reject) => {
+  //         const name = base
+  //         ffmpeg(pathname)
+  //           .input(pathname)
+  //           .ffprobe(async (err, data) => {
+  //             if (err) {
+  //               reject({ filename: base, err });
+  //             }
+
+  //             /**
+  //              * data: Ojbect {
+  //              *  streams: Array [
+  //              *  codec_name: string (ac3)
+  //              *  codec_long_name: string
+  //              *  codec_type: string (audio)
+  //              * ]
+  //                * }
+  //              */
+  //             const { streams }: { streams: Array<any> } = data
+
+  //             const reduced = await streams.reduce((
+  //               acc,
+  //               { codec_name,
+  //                 codec_long_name,
+  //                 codec_type
+  //               }) => {
+  //               acc.name = name
+
+  //               if (codec_type === "audio") {
+  //                 acc.stream.push({
+  //                   codec_name,
+  //                   codec_long_name
+  //                 })
+  //               }
+  //               return acc
+  //             }, { name: "", stream: [] })
+
+  //             resolve(reduced)
+  //           })
+  //       })
+
+  //       promises.push(promise)
+  //     }
+
+  //     Promise.allSettled(promises).then(data => {
+
+  //       res.json(data)
+  //     })
+
+  //   } catch (error: any) {
+  //     res.json({
+  //       message: error.message,
+  //       path: error.path,
+  //       code: error.code
+  //     })
+  //   } finally {
+  //     return
+  //   }
+  // }
+
   @Get("audio")
-  private async audio(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const proprietaryCodec = ['ac3', 'eac3']
-    const videosPath = basePath + path.sep + "videos";
-    const tempFile = basePath + path.sep + "video";
-    let file: string;
+  private async audio(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const proprietaryCodec = ["ac3", "eac3"];
+    let promises = [];
 
     try {
-      file = readFileSync(tempFile, "utf-8");
+      const videos: Video[] = await videoModel.find();
 
-    } catch (error: any) {
-      if (error.message.includes("no such file")) {
-        await go(videosPath, "video", regexVideo);
-      }
-    } finally {
-      file = readFileSync(tempFile, "utf-8");
-    }
+      for (const video of videos) {
+        const { _id: videoId, location, filename } = video;
+        const pathname = `${location}/${filename}`;
 
-    try {
-      const lines = file.split("\n");
-      const promises = []
-
-      for (const line of lines) {
-        // To prevent error from last line in file being ""
-        if (!line.length) break;
-
-        const parsed = JSON.parse(line)
-        const { dir, base } = parsed;
-
-        const pathname = `${dir}/${base}`
-
+        /**
+         * Making promise because ffprobe is a false synchrone operation
+         * as it checks codecs of a file (working with file is almost always asynchrone)
+         */
         const promise = new Promise((resolve, reject) => {
-          const name = base
           ffmpeg(pathname)
             .input(pathname)
             .ffprobe(async (err, data) => {
               if (err) {
-                reject({ filename: base, err });
+                reject({ videoId, err });
               }
 
               /**
@@ -363,47 +468,59 @@ export default class DiscoverController {
                *  codec_long_name: string
                *  codec_type: string (audio)
                * ]
-                 * }
+               * }
                */
-              const { streams }: { streams: Array<any> } = data
+              const { streams }: { streams: Array<any> } = data;
+              let result;
 
-              const reduced = await streams.reduce((
-                acc,
-                { codec_name,
-                  codec_long_name,
-                  codec_type
-                }) => {
-                acc.name = name
+              for (const stream of streams) {
+                const { codec_name } = stream;
 
-                if (codec_type === "audio") {
-                  acc.stream.push({
-                    codec_name,
-                    codec_long_name
-                  })
+                if (proprietaryCodec.includes(codec_name)) {
+                  result = {
+                    videoId: videoId.toString(),
+                    pathname,
+                    status: "todo",
+                    error: [`wrong format ${codec_name}`],
+                    type: "audio",
+                  };
+                  resolve(result);
                 }
-                return acc
-              }, { name: "", stream: [] })
+              }
+              resolve(null)
 
-              resolve(reduced)
-            })
-        })
+            });
+        });
 
-        promises.push(promise)
+        promises.push(promise);
       }
 
-      Promise.allSettled(promises).then(data => {
+      /**
+       * Resolving all promises at once to go fast
+       * filtering result to remove null values
+       * then trying to upsert jobs
+       * finally returning result
+       */
+      let result = await Promise.allSettled(promises);
 
-        res.json(data)
-      })
+      promises = [];
+      promises = result.filter((el: any) => el.value !== null).map((el: any) => {
+        const { value } = el;
+        return encodingJobModel.findByIdAndUpdate(value.videoId, value, {
+          upsert: true,
+        });
+      });
 
+      let created = await Promise.allSettled(promises);
+      created = created.filter((el: any) => el.value !== null);
+
+      res.json({ total: created.length, data: created });
     } catch (error: any) {
       res.json({
         message: error.message,
         path: error.path,
-        code: error.code
-      })
-    } finally {
-      return
+        code: error.code,
+      });
     }
   }
 }
