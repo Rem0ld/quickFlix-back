@@ -318,75 +318,92 @@ export default class DiscoverController {
 
   @Get("audio")
   private async audio(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const proprietaryCodec = ['ac3', 'eac3']
     const videosPath = basePath + path.sep + "videos";
     const tempFile = basePath + path.sep + "video";
+    let file: string;
 
-    // await go(videosPath, "video", regexVideo);
+    try {
+      file = readFileSync(tempFile, "utf-8");
 
-    const file = readFileSync(tempFile, "utf-8");
-    const lines = file.split("\n");
-    const result = <any>[]
-    const promises = <any>[]
-
-    for (const line of lines) {
-      // To prevent error from last line in file being ""
-      if (!line.length) break;
-
-      const parsed = JSON.parse(line)
-      const { dir, base } = parsed;
-
-      const pathname = `${dir}/${base}`
-
-      const promise = new Promise((resolve, reject) => {
-        const name = base
-        ffmpeg(pathname)
-          .input(pathname)
-          .ffprobe(async (err, data) => {
-            if (err) {
-              reject({ filename: base, err });
-            }
-
-            /**
-             * data: Ojbect {
-             *  streams: Array [
-             *  codec_name: string (ac3)
-             *  codec_long_name: string
-             *  codec_type: string (audio)
-             * ]
-               * }
-             */
-            const { streams }: { streams: Array<any> } = data
-
-            const reduced = await streams.reduce((
-              acc,
-              { codec_name,
-                codec_long_name,
-                codec_type
-              }) => {
-              acc.name = name
-
-              if (codec_type === "audio") {
-                acc.stream.push({
-                  codec_name,
-                  codec_long_name
-                })
-              }
-              return acc
-            }, { name: "", stream: [] })
-
-            resolve(reduced)
-          })
-
-      })
-
-      promises.push(promise)
+    } catch (error: any) {
+      if (error.message.includes("no such file")) {
+        await go(videosPath, "video", regexVideo);
+      }
+    } finally {
+      file = readFileSync(tempFile, "utf-8");
     }
 
-    Promise.allSettled(promises).then(data => {
+    try {
+      const lines = file.split("\n");
+      const promises = []
 
-      res.json(data)
-    })
-    return
+      for (const line of lines) {
+        // To prevent error from last line in file being ""
+        if (!line.length) break;
+
+        const parsed = JSON.parse(line)
+        const { dir, base } = parsed;
+
+        const pathname = `${dir}/${base}`
+
+        const promise = new Promise((resolve, reject) => {
+          const name = base
+          ffmpeg(pathname)
+            .input(pathname)
+            .ffprobe(async (err, data) => {
+              if (err) {
+                reject({ filename: base, err });
+              }
+
+              /**
+               * data: Ojbect {
+               *  streams: Array [
+               *  codec_name: string (ac3)
+               *  codec_long_name: string
+               *  codec_type: string (audio)
+               * ]
+                 * }
+               */
+              const { streams }: { streams: Array<any> } = data
+
+              const reduced = await streams.reduce((
+                acc,
+                { codec_name,
+                  codec_long_name,
+                  codec_type
+                }) => {
+                acc.name = name
+
+                if (codec_type === "audio") {
+                  acc.stream.push({
+                    codec_name,
+                    codec_long_name
+                  })
+                }
+                return acc
+              }, { name: "", stream: [] })
+
+              resolve(reduced)
+            })
+        })
+
+        promises.push(promise)
+      }
+
+      Promise.allSettled(promises).then(data => {
+
+        res.json(data)
+      })
+
+    } catch (error: any) {
+      res.json({
+        message: error.message,
+        path: error.path,
+        code: error.code
+      })
+    } finally {
+      return
+    }
   }
-
 }
