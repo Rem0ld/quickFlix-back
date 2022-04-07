@@ -15,6 +15,7 @@ import VideoController from '../modules/Video/Video.controller';
 import DiscoverController from '../modules/Discover/Discover.controller';
 import WatchedController from '../modules/Watched/Watched.controller';
 import WatchedTvShowController from '../modules/WatchedTvShow/WatchedTvShow.controller';
+import EncodingJobController from '../modules/EncodingJob/EncodingJob.controller';
 
 export default class MyServer extends Server {
   constructor() {
@@ -40,6 +41,7 @@ export default class MyServer extends Server {
     const discoverController = new DiscoverController();
     const watchedController = new WatchedController();
     const watchedTvShowController = new WatchedTvShowController();
+    const encodingJobController = new EncodingJobController();
 
     const uri = process.env.NODE_ENV === "development" ?
       process.env.DB_CONNECTION_STRING :
@@ -57,7 +59,8 @@ export default class MyServer extends Server {
         videoController,
         discoverController,
         watchedController,
-        watchedTvShowController
+        watchedTvShowController,
+        encodingJobController
       ]
     )
   }

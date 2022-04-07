@@ -11,5 +11,5 @@ const schemaEncodingJobs = new Schema<EncodingJob>({
   type: { type: String, enum: ["audio", "video"], index: true },
 });
 
-export const movieDbJobModel = model<EncodingJob>("encodingJobs", schemaEncodingJobs);
+export const encodingJobModel = model<EncodingJob>("encodingJobs", schemaEncodingJobs);
 export default schemaEncodingJobs;
