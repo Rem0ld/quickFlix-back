@@ -2,7 +2,7 @@ import { movieDbJobModel } from "../../schemas/MovieDbJob";
 import { movieJobService } from "./MovieDbJob.service";
 import { defaultLimit } from "../../config/defaultConfig";
 import { Request, Response, NextFunction } from 'express';
-import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware } from "@overnightjs/core"
+import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware, Patch } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
 import { Pagination } from "../../types";
 
@@ -60,10 +60,9 @@ export default class MovieDbJobController {
     res.json(data);
   }
 
+  @Patch()
   async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { type } = req.body;
-
-    console.log(type);
 
     if (type === "reset") {
       await movieDbJobModel.updateMany(
@@ -75,5 +74,12 @@ export default class MovieDbJobController {
     }
 
     res.json("ok");
+  }
+
+  @Delete()
+  async deleteAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const movieJob = await movieDbJobModel.deleteMany();
+
+    res.json(movieJob.deletedCount + " deleted")
   }
 }

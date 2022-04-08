@@ -31,7 +31,7 @@ export async function findFiles(dir: string) {
   return readdirSync(dir, { withFileTypes: true });
 }
 
-export async function downloadImage(url: string, filepath: string) {
+export async function downloadImage(url: string, filepath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     client.get(url, res => {
       if (res.statusCode === 200) {

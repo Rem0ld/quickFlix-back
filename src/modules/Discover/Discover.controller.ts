@@ -185,18 +185,14 @@ export default class DiscoverController {
     // Movies
     const movieJobs = await movieJobService.findActive({ type: "movie" });
 
-    if (movieJobs) {
+    if (movieJobs?.length) {
       for (const job of movieJobs) {
-        const video: Video = (await videoModel.findById(job.video)) as Video;
+        const video: Video = await videoModel.findById(job.video) as Video;
         const yearMovie = new Date(video.year).getFullYear();
         let status: MovieJobStatus = "done";
 
         // API Call
         const response = await fetch(movieDbUrl + video.basename);
-        console.log(
-          "🚀 ~ file: controller.js ~ line 356 ~ DiscoverController ~ discoverDetails ~ movieDbUrl + video.basename",
-          movieDbUrl + video.basename
-        );
         const { results } = await response.json();
 
         if (!results.length) {
@@ -206,7 +202,7 @@ export default class DiscoverController {
 
         let result;
 
-        // In case of several movie with the same name we look for the release date
+        // In case of several movies with the same name we look for the release date
         // not bullet proof but will do the job
         if (yearMovie) {
           for (const el of results) {
@@ -217,23 +213,12 @@ export default class DiscoverController {
               break;
             }
           }
-
-          // In the case dates are not correct
-          // See Bac Nord - 2020 on file, 2021 on themoviedb
-          if (!result) {
-            result = results[0];
-          }
-        } else {
-          result = results[0];
         }
 
-        // Checking if image already exists or it will be downloaded
-        const image = await getImages(result?.poster_path);
-
-        if (image.length) {
-          video.posterPath.push(image);
-          // @ts-ignore
-          await video.save();
+        // In the case dates are not correct
+        // See Bac Nord - 2020 on file, 2021 on themoviedb
+        if (!yearMovie || !result) {
+          result = results[0];
         }
 
         // Making the new video object
@@ -241,22 +226,42 @@ export default class DiscoverController {
         video.resume = result.overview;
         video.releaseDate = result.release_date;
         video.score = result.vote_average;
-        video.genres = await getGenres(result.id);
-        video.trailerYtCode = await getVideoPath(result.id, "movie");
+
+        try {
+          video.genres = await getGenres(result.id);
+          video.trailerYtCode = await getVideoPath(result.id, "movie");
+
+          if (result?.poster_path) {
+            // Getting image if doesn't exists
+            getImages(result?.poster_path);
+
+            // Checking if document already have this image on BDD
+            if (!video.posterPath.length || video.posterPath[0] !== result.poster_path) {
+              video.posterPath.push(result.poster_path);
+            }
+          }
+          // // @ts-ignore
+          // await video.save();
+        } catch (error) {
+          console.log(error)
+        }
+
 
         try {
           // @ts-ignore
           await video.save();
+          await movieJobService.update(job._id, { status, error: job.error });
+
         } catch (error) {
           console.error("not saved", error);
           status = "error";
           job.error.push(error as string);
+          await movieJobService.update(job._id, { status, error: job.error });
           errorCount++;
+        } finally {
+          await new Promise(r => setTimeout(r, 2000));
+          count++;
         }
-
-        movieJobService.update(job._id, { status, error: job.error });
-        count++;
-        await new Promise(r => setTimeout(r, 2000));
       }
     }
 
@@ -265,9 +270,9 @@ export default class DiscoverController {
 
     if (tvJobs) {
       for (const job of tvJobs) {
-        const tvShow = (await TvShowService.findByName(
+        const tvShow = await TvShowService.findByName(
           job.video.basename
-        )) as TvShow;
+        ) as TvShow;
         let status: MovieJobStatus = "done";
 
         const response = await fetch(movieDbUrl + tvShow.name);
@@ -280,11 +285,12 @@ export default class DiscoverController {
 
         let result = results[0];
 
-        // Check image
-        const image = await getImages(result.poster_path);
+        if (result.poster_path) {
+          getImages(result.poster_path);
 
-        if (image) {
-          tvShow.posterPath.push(image);
+          if (!tvShow.posterPath.length || tvShow.posterPath[0] !== result.poster_path) {
+            tvShow.posterPath.push(result.poster_path);
+          }
         }
 
         tvShow.idMovieDb = result.id;
