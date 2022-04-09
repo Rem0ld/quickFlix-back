@@ -30,5 +30,5 @@ do
    echo $basename >> logs.txt
   fi
 
-  # sleep 120
+   sleep 120
 done

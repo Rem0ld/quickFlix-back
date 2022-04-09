@@ -12,7 +12,14 @@
 - [x] add them in the bdd
 - [x] make a name shortener to keep only title and for tvshow season and episode
 - [x] check audio codecs and reencode if necessary
-- [ ] Make Job to reencode audio
+- [x] Make Job to reencode audio
+  - [x] job to find which video needs to reencode audio, but fluent-mmpeg was way slower than expected (3x)
+  - [x] creation of a bash script to do it
+    - [x] script
+      - [x] with input file reading line
+      - [ ] with pathname as argument
+      - [ ] connected with node so node can send action
+      - [ ] make node able to read logs to update jobs in bdd
 - [ ] Make aggregation for tvShows
 - [ ] Extract subtitles
 - [ ] websocket
