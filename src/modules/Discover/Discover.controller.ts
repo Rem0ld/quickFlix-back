@@ -520,7 +520,7 @@ export default class DiscoverController {
       let created = await Promise.allSettled(promises);
       created = created.filter((el: any) => el.value !== null);
 
-      res.json({ total: created.length, data: created });
+      res.json({ total: created.length, data: created, result: created.map((el: any) => el.value.pathname)});
     } catch (error: any) {
       res.json({
         message: error.message,

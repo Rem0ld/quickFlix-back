@@ -9,7 +9,7 @@ class EncodingJobService {
       const movieJobs = await encodingJobModel
         .find()
         .populate({
-          path: "video",
+          path: "videoId",
         })
         .limit(limit)
         .skip(skip);
@@ -17,6 +17,13 @@ class EncodingJobService {
       return movieJobs;
     }
     return encodingJobModel.find().limit(limit).skip(skip);
+  }
+
+  async findByType({ limit, skip, type }: any): Promise<EncodingJob[]> {
+    return encodingJobModel.find({
+      type,
+      status: 'todo'
+    }).limit(limit).skip(skip)
   }
 
   // async findById(id: string): Promise<MovieDbJob | undefined | null> {
