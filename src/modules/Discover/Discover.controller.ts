@@ -415,24 +415,4 @@ export default class DiscoverController {
       });
     }
   }
-
-  @Get('make-encoding-jobs')
-  private async makeEncodingJobs(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    const dir = path.relative("/", "/jobs/encodingJobs")
-
-    if (!existsSync(dir)) {
-      res.json("No encodingJobs file")
-      return;
-    }
-
-    const process = spawn('bash', ['/files.sh']);
-    process.on('exit', (code) => {
-      console.log("Child exited");
-      res.json('finished job')
-    });
-  }
 }
