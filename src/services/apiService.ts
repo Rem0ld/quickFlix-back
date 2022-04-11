@@ -79,13 +79,11 @@ export async function getVideoPath(id: string, type: VideoType) {
  * @returns the path of the image or undefined
  */
 export async function getImages(filepath: string): Promise<void> {
-  console.log("🚀 ~ file: apiService.ts ~ line 82 ~ getImages ~ filepath", filepath)
-
   const basePath = "./public/images";
   const imagePath = `${basePath}/${filepath}`;
+  console.log("🚀 ~ file: apiService.ts ~ line 86 ~ getImages ~ imagePath", imagePath)
 
   if (!fileExists(imagePath)) {
-    console.log("🚀 ~ file: apiService.ts ~ line 88 ~ getImages ~ !fileExists(imagePath)", !fileExists(imagePath))
     downloadImage(imageDbUrl + filepath, imagePath);
   }
   return undefined

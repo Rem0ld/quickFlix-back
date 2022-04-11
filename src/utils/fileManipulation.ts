@@ -32,6 +32,7 @@ export async function findFiles(dir: string) {
 }
 
 export async function downloadImage(url: string, filepath: string): Promise<string> {
+  console.log("🚀 ~ file: fileManipulation.ts ~ line 35 ~ downloadImage ~ filepath", filepath)
   return new Promise((resolve, reject) => {
     client.get(url, res => {
       if (res.statusCode === 200) {
