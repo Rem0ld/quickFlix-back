@@ -1,4 +1,4 @@
-import { accessSync, constants, createWriteStream, readdirSync } from "fs";
+import { accessSync, constants, createWriteStream, existsSync, mkdirSync, readdirSync } from "fs";
 import client from "https";
 import path from "path";
 
@@ -32,6 +32,9 @@ export async function findFiles(dir: string) {
 }
 
 export async function downloadImage(url: string, filepath: string): Promise<string> {
+  if (!existsSync(path.dirname(filepath))) {
+    mkdirSync(path.dirname(filepath), { recursive: true })
+  }
   console.log("🚀 ~ file: fileManipulation.ts ~ line 35 ~ downloadImage ~ filepath", filepath)
   return new Promise((resolve, reject) => {
     client.get(url, res => {

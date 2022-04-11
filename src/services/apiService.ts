@@ -80,7 +80,7 @@ export async function getVideoPath(id: string, type: VideoType) {
  */
 export async function getImages(filepath: string): Promise<void> {
   const basePath = "./public/images";
-  const imagePath = `${basePath}/${filepath}`;
+  const imagePath = `${basePath}${filepath}`;
   console.log("🚀 ~ file: apiService.ts ~ line 86 ~ getImages ~ imagePath", imagePath)
 
   if (!fileExists(imagePath)) {
