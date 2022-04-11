@@ -50,61 +50,18 @@ export default class EncodingJobController {
 
   @Post("audio")
   async audioJobs(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { limit = defaultLimit, skip = 0 } = req.query;
-    const jobs = await encodingJobService.findByType({ limit, skip, type: "audio" })
-    console.log("🚀 ~ file: EncodingJob.controller.ts ~ line 54 ~ EncodingJobController ~ audioJobs ~ jobs", jobs)
-
-    let result: any = [], i = 0, activeJob = 0
-
-    const wrapper = (job: EncodingJob) => {
-      const base = path.dirname(job.pathname)
-      const ext = path.extname(job.pathname)
-
-      return ffmpeg(job.pathname)
-        .audioCodec('libmp3lame')
-        .audioQuality(2)
-        .on('start', (commandLine) => {
-          console.log('Spawned Ffmpeg with command: ' + commandLine);
-        })
-        .on('progress', function (progress) {
-          console.log('Processing: ' + progress.percent + '% done');
-        })
-        .on("end", (stdout) => {
-          console.log("🚀 ~ file: EncodingJob.controller.ts ~ line 74 ~ EncodingJobController ~ .on ~ stdout", stdout)
-          i++
-
-          result.push(job);
-
-          job.status = "done"
-          // @ts-ignore
-          job.save()
-          console.log("process finished")
-          res.json(result)
-        })
-        .on("error", (err) => {
-          console.log("🚀 ~ file: EncodingJob.controller.ts ~ line 82 ~ EncodingJobController ~ .on ~ err", err)
-        })
-        .save(`${base}/temp${ext}`);
-    }
-
-
-    if (!jobs) {
-      res.json("no more audio jobs")
-    }
-
-    // res.json(jobs)
-    wrapper(jobs[i])
-
-    // try {
-
-
-    // } catch (error) {
-    //   console.log(error)
-    // } finally {
-    //   res.json(result)
-    // }
   }
 
+  @Post("change-audio")
+  async changeAudio(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const {id} = req.body;
+
+    if(!id) {
+      res.json("Missing ID")
+      return;
+    }
+    
+  }
   // @Post("vidoe")
   // async videoJobs(req: Request, res: Response, next: NextFunction): Promise<void> {
 

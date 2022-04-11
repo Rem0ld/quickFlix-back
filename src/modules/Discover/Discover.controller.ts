@@ -21,9 +21,10 @@ import {
   getVideoPath,
   getTvShowDetails,
 } from "../../services/apiService";
-import { appendFile } from "fs";
+import { appendFile, existsSync } from "fs";
 import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
 import { encodingJobModel } from "../../schemas/EncodingJobs";
+import { spawn } from "child_process";
 
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
@@ -396,7 +397,7 @@ export default class DiscoverController {
       promises = [];
       promises = result.filter((el: any) => el.value !== null).map(async (el: any) => {
         const { value } = el;
-        appendFile('./jobs/encodingJobs', `${value.pathname.split(" ").join(`\\ `)}\n`, () => { });
+        appendFile('./jobs/encodingJobs', `${value.pathname}\n`, () => { });
         return encodingJobModel.findByIdAndUpdate(value.videoId, value, {
           upsert: true,
         });
@@ -413,5 +414,25 @@ export default class DiscoverController {
         code: error.code,
       });
     }
+  }
+
+  @Get('make-encoding-jobs')
+  private async makeEncodingJobs(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const dir = path.relative("/", "/jobs/encodingJobs")
+
+    if (!existsSync(dir)) {
+      res.json("No encodingJobs file")
+      return;
+    }
+
+    const process = spawn('bash', ['/files.sh']);
+    process.on('exit', (code) => {
+      console.log("Child exited");
+      res.json('finished job')
+    });
   }
 }

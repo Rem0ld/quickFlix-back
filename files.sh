@@ -2,9 +2,9 @@
 
   # find $(pwd)/public/videos/* -regex '.*/*.[mkv|mp4|avi]' -not -path '*/Sample/*' -not -path '*/Extras/*' | head -n 10 | while read -r i
   # See readme, but we need to make this script to receive an argument and process it
-  cat ./jobs/job | while read -r i
+  cat ./jobs/encodingJobs | while read -r i
 do
-  echo "$i"
+  echo "starting $i" >> logs/logs.txt
   # To capture basename without extension
   # and dirname + creation tempfile
   length=$((${#i} - 4))
@@ -24,11 +24,14 @@ do
   result=$?
   if [[ $result != 0 ]]; then
     rm "$dirname/$temp"
-    echo "$i" >> error_logs.txt
+    echo "$i" >> logs/error_logs.txt
   else
    mv "$dirname/$temp" "$i" 
-   echo $basename >> logs.txt
+   echo $basename >> logs/logs.txt
+   echo "ending $i" >> logs/logs.txt
   fi
 
-   sleep 120
+   # sleep 120
 done
+
+exit 0
