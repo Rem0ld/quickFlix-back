@@ -25,6 +25,7 @@ import { appendFile, existsSync } from "fs";
 import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
 import { encodingJobModel } from "../../schemas/EncodingJobs";
 import { spawn } from "child_process";
+import { logger } from "../../libs/logger";
 
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
@@ -189,8 +190,8 @@ export default class DiscoverController {
         const response = await fetch(movieDbUrl + video.basename);
         const { results } = await response.json();
 
-        if (!results.length) {
-          console.log(`No result for ${video.basename}`);
+        if (!results || !results.length) {
+          logger.info(`No result for ${video.basename}`);
           continue;
         }
 
