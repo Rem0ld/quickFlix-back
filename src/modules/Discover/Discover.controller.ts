@@ -188,7 +188,6 @@ export default class DiscoverController {
 
         // API Call
         const response = await fetch(movieDbUrl + video.basename);
-        console.log("🚀 ~ file: Discover.controller.ts ~ line 191 ~ DiscoverController ~ response", response)
         const { results } = await response.json();
 
         if (!results || !results.length) {
