@@ -38,7 +38,7 @@ class VideoService {
     }
 
     if (params.movieJob) {
-      await movieJobService.create(video._id);
+      await movieJobService.create({ id: video._id });
     }
 
     return video;

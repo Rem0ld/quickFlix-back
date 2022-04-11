@@ -1,5 +1,5 @@
 import { opendir, readFile, rm } from "fs/promises";
-import { appendFile, createReadStream, createWriteStream, readFileSync } from "fs";
+import { appendFile } from "fs";
 import path from "path";
 import { basePath } from "../config/defaultConfig";
 import { findBaseFolder } from "../utils/fileManipulation";

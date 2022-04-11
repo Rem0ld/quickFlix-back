@@ -1,16 +1,10 @@
 import path from "path";
-import { readFile, rm } from "fs/promises";
+import { rm } from "fs/promises";
 import fetch from "node-fetch";
 import { Request, Response, NextFunction } from "express";
 import {
   Controller,
-  Middleware,
-  ErrorMiddleware,
   Get,
-  Post,
-  Put,
-  Patch,
-  Delete,
   ClassErrorMiddleware,
 } from "@overnightjs/core";
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
@@ -27,10 +21,9 @@ import {
   getVideoPath,
   getTvShowDetails,
 } from "../../services/apiService";
-import { readFileSync } from "fs";
+import { appendFile } from "fs";
 import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
 import { encodingJobModel } from "../../schemas/EncodingJobs";
-import { profile } from "winston";
 
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
@@ -330,115 +323,6 @@ export default class DiscoverController {
     });
   }
 
-  @Get("test")
-  private async test(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    const videosPath = basePath + path.sep + "videos";
-    const tempFile = basePath + path.sep + "video";
-
-    await go(videosPath, "video", regexVideo);
-    // await go(p, "subtitle", regexIsSubtitle);
-
-    const result = await createEntry(tempFile, "video", "videos");
-    await rm(tempFile);
-
-    res.json(result);
-  }
-
-  // @Get("audio")
-  // private async audio(req: Request, res: Response, next: NextFunction): Promise<void> {
-  //   const proprietaryCodec = ['ac3', 'eac3']
-  //   const videosPath = basePath + path.sep + "videos";
-  //   const tempFile = basePath + path.sep + "video";
-  //   let file: string;
-
-  //   try {
-  //     file = readFileSync(tempFile, "utf-8");
-
-  //   } catch (error: any) {
-  //     if (error.message.includes("no such file")) {
-  //       await go(videosPath, "video", regexVideo);
-  //     }
-  //   } finally {
-  //     file = readFileSync(tempFile, "utf-8");
-  //   }
-
-  //   try {
-  //     const lines = file.split("\n");
-  //     const promises = []
-
-  //     for (const line of lines) {
-  //       // To prevent error from last line in file being ""
-  //       if (!line.length) break;
-
-  //       const parsed = JSON.parse(line)
-  //       const { dir, base } = parsed;
-
-  //       const pathname = `${dir}/${base}`
-
-  //       const promise = new Promise((resolve, reject) => {
-  //         const name = base
-  //         ffmpeg(pathname)
-  //           .input(pathname)
-  //           .ffprobe(async (err, data) => {
-  //             if (err) {
-  //               reject({ filename: base, err });
-  //             }
-
-  //             /**
-  //              * data: Ojbect {
-  //              *  streams: Array [
-  //              *  codec_name: string (ac3)
-  //              *  codec_long_name: string
-  //              *  codec_type: string (audio)
-  //              * ]
-  //                * }
-  //              */
-  //             const { streams }: { streams: Array<any> } = data
-
-  //             const reduced = await streams.reduce((
-  //               acc,
-  //               { codec_name,
-  //                 codec_long_name,
-  //                 codec_type
-  //               }) => {
-  //               acc.name = name
-
-  //               if (codec_type === "audio") {
-  //                 acc.stream.push({
-  //                   codec_name,
-  //                   codec_long_name
-  //                 })
-  //               }
-  //               return acc
-  //             }, { name: "", stream: [] })
-
-  //             resolve(reduced)
-  //           })
-  //       })
-
-  //       promises.push(promise)
-  //     }
-
-  //     Promise.allSettled(promises).then(data => {
-
-  //       res.json(data)
-  //     })
-
-  //   } catch (error: any) {
-  //     res.json({
-  //       message: error.message,
-  //       path: error.path,
-  //       code: error.code
-  //     })
-  //   } finally {
-  //     return
-  //   }
-  // }
-
   @Get("audio")
   private async audio(
     req: Request,
@@ -510,8 +394,9 @@ export default class DiscoverController {
       let result = await Promise.allSettled(promises);
 
       promises = [];
-      promises = result.filter((el: any) => el.value !== null).map((el: any) => {
+      promises = result.filter((el: any) => el.value !== null).map(async (el: any) => {
         const { value } = el;
+        appendFile('./jobs/encodingJobs', `${value.pathname.split(" ").join(`\\ `)}\n`, () => { });
         return encodingJobModel.findByIdAndUpdate(value.videoId, value, {
           upsert: true,
         });
@@ -520,7 +405,7 @@ export default class DiscoverController {
       let created = await Promise.allSettled(promises);
       created = created.filter((el: any) => el.value !== null);
 
-      res.json({ total: created.length, data: created, result: created.map((el: any) => el.value.pathname)});
+      res.json({ total: created.length, data: created, result: created.map((el: any) => el.value.pathname) });
     } catch (error: any) {
       res.json({
         message: error.message,

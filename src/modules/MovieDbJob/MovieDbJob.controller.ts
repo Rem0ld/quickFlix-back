@@ -4,7 +4,11 @@ import { defaultLimit } from "../../config/defaultConfig";
 import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware, Patch } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
-import { Pagination } from "../../types";
+import { Pagination, TvShow, Video } from "../../types";
+import VideoService from "../Video/Video.service";
+import { videoModel } from "../../schemas/Video";
+import TvShowService from "../TvShow/TvShow.service";
+import { tvShowModel } from "../../schemas/TvShow";
 
 @Controller("movie-job")
 @ClassErrorMiddleware(errorHandler)
@@ -58,6 +62,34 @@ export default class MovieDbJobController {
     const data = movieJobService.findByVideoId(id);
 
     res.json(data);
+  }
+
+  @Post("make")
+  async make(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const videos: Video[] = await videoModel.find({ type: 'movie' });
+    const tvShows: TvShow[] = await tvShowModel.find({});
+    const promises: any = []
+
+    try {
+      for (const video of videos) {
+        if (!video.posterPath.length) {
+          promises.push(movieJobService.create({ id: video._id }))
+        }
+      }
+
+      for (const tvShow of tvShows) {
+        if (!tvShow.posterPath.length) {
+          promises.push(movieJobService.create({ id: tvShow._id, type: "tv" }))
+        }
+      }
+
+      Promise.allSettled(promises).then(result => {
+        res.json(result)
+      })
+    } catch (error) {
+      res.json(error)
+    }
+
   }
 
   @Patch()

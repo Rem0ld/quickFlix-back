@@ -41,10 +41,10 @@ class MovieDbJobService {
     return data;
   }
 
-  async create(id: string): Promise<MovieDbJob> {
-    return movieDbJobModel.create({
+  async create({ id, type = "movie" }: { id: string, type?: VideoType }): Promise<MovieDbJob | null> {
+    return movieDbJobModel.findOneAndUpdate({
       video: id,
-    });
+    }, { video: id, type }, { upsert: true });
   }
 
   async update(id: string, data: Partial<MovieDbJob>): Promise<MovieDbJob | null | undefined> {

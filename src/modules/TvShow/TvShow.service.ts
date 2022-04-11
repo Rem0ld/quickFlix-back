@@ -1,6 +1,7 @@
 import { movieDbJobModel } from "../../schemas/MovieDbJob";
 import { tvShowModel } from "../../schemas/TvShow";
 import { Pagination, TvShow } from "../../types";
+import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
 class TvShowService {
   async findAll(populate: boolean) {
@@ -59,7 +60,7 @@ class TvShowService {
     return result;
   }
 
-  async create(data: Partial<TvShow>, params: { movieJob?: boolean, id?: string }) {
+  async create(data: Partial<TvShow>, params?: { movieJob: boolean, id: string }) {
     const tvShow: TvShow | null = await tvShowModel.create(data);
 
     if (!tvShow) {
@@ -69,9 +70,9 @@ class TvShowService {
       return tvShow;
     }
 
-    if (params.movieJob) {
-      await movieDbJobModel.create({
-        video: params.id,
+    if (params?.movieJob) {
+      await movieJobService.create({
+        id: params.id,
         type: "tv",
       });
     }
