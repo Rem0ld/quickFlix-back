@@ -426,6 +426,7 @@ export default class DiscoverController {
     const proprietaryCodec = ["ac3", "eac3"];
     let promises = [];
 
+    logger.info("starting")
     try {
       const videos: Video[] = await videoModel.find();
 
@@ -443,9 +444,7 @@ export default class DiscoverController {
               if (err) {
                 reject({ videoId, err });
               }
-              console.log("🚀 ~ file: Discover.controller.ts ~ line 442 ~ promise ~ pathname", pathname)
-              console.log("🚀 ~ file: Discover.controller.ts ~ line 443 ~ .ffprobe ~ data", data)
-
+              logger.info(`Processing ${pathname}`)
               /**
                * data: Ojbect {
                *  streams: Array [

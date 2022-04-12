@@ -7,6 +7,7 @@ import { RequestBuilder, TvShow, Video } from "../../types";
 import { videoModel } from "../../schemas/Video";
 import { watchedModel } from "../../schemas/Watched";
 import { Mongoose, Types } from "mongoose";
+import path from "path";
 
 const aggregateWithWatched = async (list: Video[]) => {
   const watched = await videoModel.aggregate([
@@ -96,6 +97,20 @@ export default class VideoController {
     } finally {
       return;
     }
+  }
+
+  @Post("reset")
+  private async resetLocation(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const videos = await videoModel.find({});
+
+    const promises = videos.map(video => {
+      return videoModel.findByIdAndUpdate(video._id, {
+        location: path.dirname(video.location),
+        filename: path.basename(video.filename)
+      })
+    })
+
+    Promise.allSettled(promises).then(result => res.json(result))
   }
 
   @Post("by-name")
