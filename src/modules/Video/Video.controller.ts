@@ -99,23 +99,6 @@ export default class VideoController {
     }
   }
 
-  @Post("reset")
-  private async resetLocation(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const videos = await videoModel.find({});
-
-    const promises = videos.map(video => {
-      const basename = path.basename(video.filename)
-      const splitted = basename.split(",")
-      const filename = splitted.slice(0, splitted.length - 2).join(".")
-      return videoModel.findByIdAndUpdate(video._id, {
-        location: path.dirname(video.location),
-        filename: `${filename}${video.ext}`
-      })
-    })
-
-    Promise.allSettled(promises).then(result => res.json(result))
-  }
-
   @Post("by-name")
   private async findOneByName(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { name } = req.body;
