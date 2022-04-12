@@ -2,11 +2,7 @@ import path from "path";
 import { rm } from "fs/promises";
 import fetch from "node-fetch";
 import { Request, Response, NextFunction } from "express";
-import {
-  Controller,
-  Get,
-  ClassErrorMiddleware,
-} from "@overnightjs/core";
+import { Controller, Get, ClassErrorMiddleware } from "@overnightjs/core";
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import errorHandler from "../../services/errorHandler";
 import { regexIsSubtitle, regexVideo } from "../../utils/regexes";
@@ -26,6 +22,9 @@ import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
 import { encodingJobModel } from "../../schemas/EncodingJobs";
 import { spawn } from "child_process";
 import { logger } from "../../libs/logger";
+import VideoService from "../Video/Video.service";
+import { tvShowModel } from "../../schemas/TvShow";
+import { mongo, Mongoose } from "mongoose";
 
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
@@ -51,6 +50,106 @@ export default class DiscoverController {
     res.json(result);
   }
 
+  @Get("add-tv-shows")
+  private async addTvShows(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    let somethingHasUpdated = false;
+
+    try {
+      const videos = await VideoService.findByFields({
+        type: ["tv"],
+      });
+
+      // First iteration is to create tvShows
+      for (const video of videos) {
+        const re = new RegExp(`${video.basename}`, "i");
+        let tvShow: TvShow | null = await tvShowModel.findOne({ name: re });
+
+        if (!tvShow) {
+          tvShow = await TvShowService.create(
+            {
+              name: video.basename,
+              location: video.location,
+              seasons: [
+                {
+                  number: +video.season!,
+                  episodes: [{ number: +video.episode!, ref: video._id }],
+                },
+              ],
+            },
+            {
+              movieJob: true,
+              id: video._id,
+            }
+          );
+          logger.info(`TvShow created ${tvShow.name} ${tvShow.location}`);
+        }
+      }
+
+      const tvShows: TvShow[] = await TvShowService.findAll(false);
+      const indicesTvShow = tvShows.map(tvShow => tvShow.name);
+
+      // Second iteration is to add tvShows in documents
+      for (const video of videos) {
+        const re = new RegExp(`${video.basename}`, "i");
+        const index = indicesTvShow.findIndex(tvShow => tvShow.match(re));
+
+        if (index === -1) {
+          continue;
+        }
+
+        // Destructuring  for ease
+        // But modifying directly in the object Tvshows
+        let tvShow = tvShows[index];
+        const { seasons } = tvShow;
+        const season = video.season || 0;
+        const episode = video.episode || 0;
+
+        const seasonIsPresent = seasons.findIndex(el => {
+          return +el.number === +season;
+        });
+
+        if (seasonIsPresent === -1) {
+          tvShows[index].seasons.push({
+            number: +season!,
+            episodes: [{ number: +episode, ref: video._id }],
+          });
+          somethingHasUpdated = true;
+        } else {
+          const episodeIsPresent = seasons[seasonIsPresent].episodes.findIndex(
+            el => {
+              return +el.number === +episode
+            }
+          );
+
+          if (episodeIsPresent === -1) {
+            tvShows[index].seasons[seasonIsPresent].episodes.push({
+              number: +episode,
+              ref: video._id,
+            });
+            somethingHasUpdated = true;
+          }
+        }
+      }
+
+      if (somethingHasUpdated) {
+        const promises = tvShows.map(async tvShow => {
+          return tvShowModel.findByIdAndUpdate(tvShow._id, tvShow);
+        });
+
+        Promise.allSettled(promises).then(result => res.json(result));
+      } else {
+        res.json("Nothing to update");
+      }
+    } catch (error) {
+      res.json(error);
+      return;
+    }
+  }
+
   // @Get("subtitles")
   // private async subtitles(req: Request, res: Response, next: NextFunction): Promise<void> {
 
@@ -59,25 +158,17 @@ export default class DiscoverController {
   //   const files = await findFiles(basePath);
 
   //   const goThrough = async (files, extraPath = "") => {
-  //     for (const file of files) {
-  //       const ext = path.extname(file.name);
   //       const isSubtitle = regexIsSubtitle.test(ext);
 
-  //       const exclude = excludedExtension.some(ext => file.name.includes(ext));
 
   //       if (exclude) continue;
 
-  //       if (file.isDirectory() || file.isSymbolicLink()) {
-  //         const sub = await findFiles(basePath + "/" + extraPath + "/" + file.name);
   //         subDirectories.push({
-  //           directory: extraPath + "/" + file.name,
   //           content: sub.filter(el => !el.name.includes("DS_Store")),
   //         });
   //         continue;
   //       }
 
-  //       // Here we need to work the file
-  //       const filename = path.basename(file.name, ext);
   //       const absolutePath = path.resolve(basePath + "/" + extraPath + "/");
   //       let basename = filename.match(regExBasename);
 
@@ -92,7 +183,6 @@ export default class DiscoverController {
   //         if (subExists.length > 0) continue;
 
   //         if (ext.includes("srt")) {
-  //           createReadStream(absolutePath + "/" + file.name)
   //             .pipe(srt2vtt())
   //             .pipe(createWriteStream(`${absolutePath}/${filename}.vtt`));
   //         }
@@ -128,7 +218,6 @@ export default class DiscoverController {
   //         // It's a video let's look into container for text streams
 
   //         const result = await findSubtitles(
-  //           absolutePath + "/" + file.name,
   //           basename,
   //           isTvShow,
   //           season,
@@ -182,7 +271,7 @@ export default class DiscoverController {
 
     if (movieJobs?.length) {
       for (const job of movieJobs) {
-        const video: Video = await videoModel.findById(job.video) as Video;
+        const video: Video = (await videoModel.findById(job.video)) as Video;
         const yearMovie = new Date(video.year).getFullYear();
         let status: MovieJobStatus = "done";
 
@@ -211,7 +300,6 @@ export default class DiscoverController {
         }
 
         // In the case dates are not correct
-        // See Bac Nord - 2020 on file, 2021 on themoviedb
         if (!yearMovie || !result) {
           result = results[0];
         }
@@ -231,22 +319,23 @@ export default class DiscoverController {
             getImages(result?.poster_path);
 
             // Checking if document already have this image on BDD
-            if (!video.posterPath.length || video.posterPath[0] !== result.poster_path) {
+            if (
+              !video.posterPath.length ||
+              video.posterPath[0] !== result.poster_path
+            ) {
               video.posterPath.push(result.poster_path);
             }
           }
           // // @ts-ignore
           // await video.save();
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
-
 
         try {
           // @ts-ignore
           await video.save();
           await movieJobService.update(job._id, { status, error: job.error });
-
         } catch (error) {
           console.error("not saved", error);
           status = "error";
@@ -265,9 +354,9 @@ export default class DiscoverController {
 
     if (tvJobs) {
       for (const job of tvJobs) {
-        const tvShow = await TvShowService.findByName(
+        const tvShow = (await TvShowService.findByName(
           job.video.basename
-        ) as TvShow;
+        )) as TvShow;
         let status: MovieJobStatus = "done";
 
         const response = await fetch(movieDbUrl + tvShow.name);
@@ -283,7 +372,10 @@ export default class DiscoverController {
         if (result.poster_path) {
           getImages(result.poster_path);
 
-          if (!tvShow.posterPath.length || tvShow.posterPath[0] !== result.poster_path) {
+          if (
+            !tvShow.posterPath.length ||
+            tvShow.posterPath[0] !== result.poster_path
+          ) {
             tvShow.posterPath.push(result.poster_path);
           }
         }
@@ -343,7 +435,6 @@ export default class DiscoverController {
 
         /**
          * Making promise because ffprobe is a false synchrone operation
-         * as it checks codecs of a file (working with file is almost always asynchrone)
          */
         const promise = new Promise((resolve, reject) => {
           ffmpeg(pathname)
@@ -379,8 +470,7 @@ export default class DiscoverController {
                   resolve(result);
                 }
               }
-              resolve(null)
-
+              resolve(null);
             });
         });
 
@@ -396,18 +486,24 @@ export default class DiscoverController {
       let result = await Promise.allSettled(promises);
 
       promises = [];
-      promises = result.filter((el: any) => el.value !== null).map(async (el: any) => {
-        const { value } = el;
-        appendFile('./jobs/encodingJobs', `${value.pathname}\n`, () => { });
-        return encodingJobModel.findByIdAndUpdate(value.videoId, value, {
-          upsert: true,
+      promises = result
+        .filter((el: any) => el.value !== null)
+        .map(async (el: any) => {
+          const { value } = el;
+          appendFile("./jobs/encodingJobs", `${value.pathname}\n`, () => { });
+          return encodingJobModel.findByIdAndUpdate(value.videoId, value, {
+            upsert: true,
+          });
         });
-      });
 
       let created = await Promise.allSettled(promises);
       created = created.filter((el: any) => el.value !== null);
 
-      res.json({ total: created.length, data: created, result: created.map((el: any) => el.value.pathname) });
+      res.json({
+        total: created.length,
+        data: created,
+        result: created.map((el: any) => el.value.pathname),
+      });
     } catch (error: any) {
       res.json({
         message: error.message,

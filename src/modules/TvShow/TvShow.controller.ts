@@ -5,6 +5,7 @@ import errorHandler from "../../services/errorHandler";
 import { tvShowModel } from "../../schemas/TvShow";
 import TvShowService from "./TvShow.service";
 import { TvShow } from "../../types";
+import { movieDbJobModel } from "../../schemas/MovieDbJob";
 
 @Controller("tv-show")
 @ClassErrorMiddleware(errorHandler)
@@ -87,5 +88,14 @@ export default class TvShowController {
   // TODO: middleware to check if admin
   @Delete()
   private async deleteAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const tvShow = await tvShowModel.deleteMany();
+    const movieJob = await movieDbJobModel.deleteMany({
+      type: "tv"
+    })
+
+    res.json({
+      tvShow: tvShow.deletedCount,
+      movieJob: movieJob.deletedCount
+    })
   }
 }

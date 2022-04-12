@@ -35,7 +35,6 @@ export async function downloadImage(url: string, filepath: string): Promise<stri
   if (!existsSync(path.dirname(filepath))) {
     mkdirSync(path.dirname(filepath), { recursive: true })
   }
-  console.log("🚀 ~ file: fileManipulation.ts ~ line 35 ~ downloadImage ~ filepath", filepath)
   return new Promise((resolve, reject) => {
     client.get(url, res => {
       if (res.statusCode === 200) {

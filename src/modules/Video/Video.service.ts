@@ -1,12 +1,12 @@
 import { movieDbJobModel } from "../../schemas/MovieDbJob";
 import { tvShowModel } from "../../schemas/TvShow";
 import { videoModel } from "../../schemas/Video";
-import { RequestBuilder, Video } from "../../types";
+import { RequestBuilder, Video, VideoType } from "../../types";
 import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
 
 class VideoService {
-  async findByFields({ name, episode, season }: { name: string, episode: string, season: string }) {
+  async findByFields({ name, episode, season, type }: { name?: string, episode?: string, season?: string, type?: VideoType[] }) {
     const request: RequestBuilder = {};
 
     if (name) {
@@ -17,6 +17,9 @@ class VideoService {
     }
     if (season) {
       request.season = season.toString();
+    }
+    if (type) {
+      request.type = type;
     }
 
     const videos = await videoModel.find(request);

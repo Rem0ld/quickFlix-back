@@ -156,8 +156,7 @@ export async function makeVideo(
     );
     countTvShowCreated++;
     movieJob++;
-    console.log("🚀 ~ file: miscelleneaous.ts ~ line 160 ~ tvShow.location", tvShow.location)
-    logger.info(`${tvShow.name} ${tvShow.location}`)
+    logger.info(`Created tvShow ${tvShow.name} ${tvShow.location}`)
   } else {
     const { seasons } = tvShow;
     const seasonIsPresent = seasons.findIndex(el => {
