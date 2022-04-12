@@ -372,8 +372,8 @@ export default class DiscoverController {
         const response = await fetch(movieDbUrl + tvShow.name);
         const { results } = await response.json();
 
-        if (!results.length) {
-          console.error(`No result for ${tvShow}`);
+        if (!results || !results.length) {
+          logger.error(`No result for ${tvShow}`);
           continue;
         }
 
