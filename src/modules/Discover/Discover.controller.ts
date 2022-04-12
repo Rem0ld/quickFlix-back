@@ -443,6 +443,8 @@ export default class DiscoverController {
               if (err) {
                 reject({ videoId, err });
               }
+              console.log("🚀 ~ file: Discover.controller.ts ~ line 442 ~ promise ~ pathname", pathname)
+              console.log("🚀 ~ file: Discover.controller.ts ~ line 443 ~ .ffprobe ~ data", data)
 
               /**
                * data: Ojbect {
