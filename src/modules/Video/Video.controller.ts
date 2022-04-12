@@ -105,10 +105,11 @@ export default class VideoController {
 
     const promises = videos.map(video => {
       const basename = path.basename(video.filename)
-      const filename = basename.split(".").slice(0, basename.split(".").length - 1)
+      const splitted = basename.split(",")
+      const filename = splitted.slice(0, splitted.length - 2).join(".")
       return videoModel.findByIdAndUpdate(video._id, {
         location: path.dirname(video.location),
-        filename: `${filename.join(".")}${video.ext}`
+        filename: `${filename}${video.ext}`
       })
     })
 
