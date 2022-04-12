@@ -364,6 +364,9 @@ export default class DiscoverController {
 
     if (tvJobs) {
       for (const job of tvJobs) {
+        if (!job.video.basename) {
+          continue;
+        }
         const tvShow = (await TvShowService.findByName(
           job.video.basename
         )) as TvShow;
