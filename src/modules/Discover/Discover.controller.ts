@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from "express";
 import { Controller, Get, ClassErrorMiddleware } from "@overnightjs/core";
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import errorHandler from "../../services/errorHandler";
-import { regexIsSubtitle, regexVideo } from "../../utils/regexes";
+import { regexIsSubtitle, regexTvShow, regexVideo } from "../../utils/regexes";
 import { videoModel } from "../../schemas/Video";
 import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 import TvShowService from "../TvShow/TvShow.service";
@@ -35,19 +35,29 @@ export default class DiscoverController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const videosPath = basePath + path.sep + "videos";
+    const videos = process.env.NODE_ENV === "development" ? "videos" : "Videos";
+    const tvShows = process.env.NODE_ENV === "development" ? null : "Series";
+    const videosPath = basePath + path.sep;
     const tempFile = basePath + path.sep + "video";
+    let result2;
 
     /**
      * Should work like this but if video exists it will not be added in TVShow
      * TODO: Create a job just to create tvshows
      */
-    await go(videosPath, "video", regexVideo);
+    await go(videosPath + videos, tempFile, regexVideo);
     // await go(p, "subtitle", regexIsSubtitle);
 
-    const result = await createEntry(tempFile, "video", "videos");
+    const result = await createEntry(tempFile, "video", videos);
     await rm(tempFile);
-    res.json(result);
+
+    if (tvShows) {
+      await go(videosPath + tvShows, tempFile, regexVideo)
+      result2 = await createEntry(tempFile, "video", tvShows)
+      await rm(tempFile);
+    }
+
+    res.json({ result, result2 });
   }
 
   @Get("add-tv-shows")

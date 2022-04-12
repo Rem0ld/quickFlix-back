@@ -18,17 +18,17 @@ import { logger } from "../libs/logger";
  * @param {String} filename name of the file created
  * @param {RegExp} regex Type of file we want
  */
-export async function go(filepath: string, filename: string, regex: RegExp): Promise<any> {
+export async function go(filepath: string, tempFile: string, regex: RegExp): Promise<any> {
   try {
     const dir = await opendir(filepath);
     for await (const dirent of dir) {
       if (dirent.isFile()) {
         if (regex.test(dirent.name)) {
           const parsed = path.parse(dir.path + path.sep + dirent.name);
-          appendFile(basePath + path.sep + filename, `${JSON.stringify(parsed)}\n`, () => { });
+          appendFile(tempFile, `${JSON.stringify(parsed)}\n`, () => { });
         }
       } else {
-        await go(dir.path + "/" + dirent.name, filename, regex);
+        await go(dir.path + "/" + dirent.name, tempFile, regex);
       }
     }
   } catch (err) {
