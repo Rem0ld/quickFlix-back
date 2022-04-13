@@ -64,8 +64,6 @@ class TvShowService {
     const tvShow: TvShow | null = await tvShowModel.create(data);
 
     if (!tvShow) {
-      console.log("Something wrong has happened");
-      console.log(tvShow);
       // This should be an error
       return tvShow;
     }

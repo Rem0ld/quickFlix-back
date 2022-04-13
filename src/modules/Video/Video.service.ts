@@ -35,8 +35,6 @@ class VideoService {
     const video = await videoModel.create(data);
 
     if (!video) {
-      console.log("Something wrong has happened");
-      console.log(video);
       return video;
     }
 

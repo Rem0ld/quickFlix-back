@@ -12,7 +12,16 @@ import { watchedTvShowModel } from "../../schemas/WatchedTvShow";
 export default class WatchedTvShowController {
   @Get()
   private async find(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const data = await watchedTvShowModel.find()
+    const { populate } = req.query;
+    let data;
+
+    if (populate) {
+      data = await watchedTvShowModel.find().populate("videos.watchedId")
+
+    } else {
+      data = await watchedTvShowModel.find();
+
+    }
 
     res.json(data)
     return;
@@ -29,20 +38,28 @@ export default class WatchedTvShowController {
 
   @Post()
   private async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { name, videoId, watchedId } = req.body;
 
-    return
-  }
-
-  @Patch()
-  private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { name, videoId } = req.body;
-
-    if (!name) {
+    if (!name || !videoId || !watchedId) {
       res.json("Missing arguments")
       return;
     }
 
-    const result = await WatchedTvShowService.update(name, { _id: videoId })
+    const result = await WatchedTvShowService.update(name, req.body)
+
+    res.json(result)
+  }
+
+  @Patch()
+  private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { name, videoId, watchedId } = req.body;
+
+    if (!name || !videoId || !watchedId) {
+      res.json("Missing arguments")
+      return;
+    }
+
+    const result = await WatchedTvShowService.update(name, req.body)
 
     res.json(result)
   }

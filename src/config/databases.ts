@@ -14,7 +14,7 @@ export default class DbConnection {
         if (error) {
           logger.error(error)
         }
-        console.log("Connected")
+        logger.info("Connected")
       }
     );
   }

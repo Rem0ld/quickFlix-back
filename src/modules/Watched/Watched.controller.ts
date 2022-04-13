@@ -40,7 +40,6 @@ export default class WatchedController {
 
     const exists = await WatchedService.findByVideoId(video)
 
-    console.log({ exists })
     if (exists) {
       res.json({
         video: exists
@@ -50,19 +49,9 @@ export default class WatchedController {
 
     try {
       const watched = await WatchedService.create(req.body)
-      let tvShow;
-
-      if (req.body.tvShowId) {
-        const exists = await WatchedTvShowService.findTvShow(req.body.tvShowId)
-
-        if (!exists) {
-          tvShow = await WatchedTvShowService.update(req.body.tvShowId, { _id: req.body.videoId })
-        }
-      }
 
       res.json({
         video: watched,
-        tvShow: tvShow ? tvShow : null
       })
 
     } catch (error) {
@@ -94,7 +83,9 @@ export default class WatchedController {
 
   @Patch(":id")
   private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { id } = req.params
+    // id = videoId
+    // tvShow = name
+    const { id, tvShow } = req.params
 
     if (!id) {
       res.json("missing Id")
@@ -103,9 +94,9 @@ export default class WatchedController {
 
     try {
       const data = await WatchedService.update(id, req.body)
-      console.log("🚀 ~ file: Watched.controller.ts ~ line 106 ~ WatchedController ~ patch ~ data", data)
 
-      res.json(data)
+      const watchedTvShow = await WatchedTvShowService.update(tvShow, { watchedId: data?._id.toString()!, videoId: data?.video.toString()! })
+      res.json({ data, watchedTvShow })
     } catch (error) {
       next(error)
     }

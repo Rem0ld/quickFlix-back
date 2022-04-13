@@ -54,46 +54,12 @@ export default class EncodingJobController {
 
   @Post("change-audio")
   async changeAudio(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const {id} = req.body;
+    const { id } = req.body;
 
-    if(!id) {
+    if (!id) {
       res.json("Missing ID")
       return;
     }
-    
+
   }
-  // @Post("vidoe")
-  // async videoJobs(req: Request, res: Response, next: NextFunction): Promise<void> {
-
-  // }
-
-  // @Get(":id")
-  // async findById(req: Request, res: Response, next: NextFunction): Promise<void> {
-  //   const { id } = req.params;
-
-  //   if (!id) next(new Error("Requires an id"));
-
-  //   const data = movieJobService.findById(id);
-
-  //   res.json(data);
-  // }
-
-
-  // @Patch(:id)
-  // async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
-  //   const { type } = req.body;
-
-  //   console.log(type);
-
-  //   if (type === "reset") {
-  //     await movieDbJobModel.updateMany(
-  //       { status: "done" },
-  //       {
-  //         status: "todo",
-  //       }
-  //     );
-  //   }
-
-  //   res.json("ok");
-  // }
 }

@@ -2,6 +2,7 @@ import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
 import { subtitleExists } from "./fileManipulation";
 import path from "path";
 import { subtitleModel } from "../schemas/Subtitles";
+import { logger } from "../libs/logger";
 
 export async function extractSubtitleTrack(
   inputFile: string,
@@ -24,13 +25,13 @@ export async function extractSubtitleTrack(
       )
       .output(path.dirname(inputFile) + "/" + outputFile)
       .on("error", function (err: Error, stdout: any, stderr: any) {
-        console.log("=======================");
-        console.log("An error occurred: " + err.message, err, stderr);
+        logger.info("=======================");
+        logger.info("An error occurred: " + err.message, err, stderr);
       })
       .on("end", async function () { });
     command.run();
   } catch (e: any) {
-    console.log(e, e.code, e.msg);
+    logger.error(e, e.code, e.msg);
   }
 }
 
@@ -89,7 +90,7 @@ export async function findSubtitles(videopath: string, name: string, isTvShow: b
         }
       }
     } catch (error) {
-      console.log("in catch from findSubtitles", error);
+      logger.error("in catch from findSubtitles", error);
     }
   });
 }

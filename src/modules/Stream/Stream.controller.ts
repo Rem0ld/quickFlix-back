@@ -67,7 +67,6 @@ export default class StreamController {
       fs.createReadStream(videoPath, { start: start, end: end, autoClose: true })
 
         .on("end", function () {
-          console.log("Stream Done");
         })
 
         .on("error", function (err) {
