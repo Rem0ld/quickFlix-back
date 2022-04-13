@@ -1,5 +1,13 @@
 #!/bin/bash
 
+  encodingJobsPath="./jobs/encodingJobs"
+   
+  test -f "$encodingJobsPath"
+  
+  if [[$? -ne 0]]; then
+    exit 1
+  fi
+
   # find $(pwd)/public/videos/* -regex '.*/*.[mkv|mp4|avi]' -not -path '*/Sample/*' -not -path '*/Extras/*' | head -n 10 | while read -r i
   # See readme, but we need to make this script to receive an argument and process it
   cat ./jobs/encodingJobs | while read -r i

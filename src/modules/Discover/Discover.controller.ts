@@ -436,7 +436,7 @@ export default class DiscoverController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const proprietaryCodec = ["ac3", "eac3"];
+    const proprietaryCodec = ["ac3", "eac3", "dts"];
     let promises = [];
 
     logger.info("starting")
