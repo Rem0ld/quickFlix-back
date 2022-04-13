@@ -20,7 +20,6 @@ export default class WatchedTvShowController {
 
     } else {
       data = await watchedTvShowModel.find();
-
     }
 
     res.json(data)
@@ -34,6 +33,20 @@ export default class WatchedTvShowController {
 
     res.json(data)
     return;
+  }
+
+  @Post("by-name")
+  private async findByName(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { tvShow } = req.body;
+
+    if (!tvShow) {
+      res.json("Missing arguments")
+      return;
+    }
+
+    const result = await watchedTvShowModel.findOne({ tvShow }).populate("videos.watchedId")
+
+    res.json(result)
   }
 
   @Post()

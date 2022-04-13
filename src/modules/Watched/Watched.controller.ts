@@ -85,7 +85,9 @@ export default class WatchedController {
   private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
     // id = videoId
     // tvShow = name
-    const { id, tvShow } = req.params
+    const { id } = req.params;
+    const { tvShow } = req.body;
+    console.log("🚀 ~ file: Watched.controller.ts ~ line 89 ~ WatchedController ~ patch ~ tvShow", tvShow)
 
     if (!id) {
       res.json("missing Id")
@@ -94,8 +96,12 @@ export default class WatchedController {
 
     try {
       const data = await WatchedService.update(id, req.body)
+      let watchedTvShow
 
-      const watchedTvShow = await WatchedTvShowService.update(tvShow, { watchedId: data?._id.toString()!, videoId: data?.video.toString()! })
+      if (tvShow) {
+        watchedTvShow = await WatchedTvShowService.update(tvShow, { watchedId: data?._id.toString()!, videoId: data?.video.toString()! })
+      }
+
       res.json({ data, watchedTvShow })
     } catch (error) {
       next(error)

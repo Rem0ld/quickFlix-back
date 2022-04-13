@@ -27,9 +27,6 @@ class WatchedTvShowService {
       return video.videoId.toString() === data.videoId;
     });
 
-    console.log({ exists })
-    console.log(data)
-
     if (exists === -1) {
       tvShow.videos = [
         ...tvShow.videos,
