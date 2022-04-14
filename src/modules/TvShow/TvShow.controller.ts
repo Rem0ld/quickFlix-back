@@ -6,6 +6,7 @@ import { tvShowModel } from "../../schemas/TvShow";
 import TvShowService from "./TvShow.service";
 import { TvShow } from "../../types";
 import { movieDbJobModel } from "../../schemas/MovieDbJob";
+import { logger } from "../../libs/logger";
 
 @Controller("tv-show")
 @ClassErrorMiddleware(errorHandler)
@@ -79,9 +80,27 @@ export default class TvShowController {
   @Post()
   private async create(req: Request, res: Response, next: NextFunction): Promise<void> {
   }
+
   @Patch(":id")
   private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const { id } = req.params
+
+    if (!id) {
+      res.json("Missing argument")
+      return;
+    }
+
+    try {
+      const response = await tvShowModel.findByIdAndUpdate(id, req.body)
+
+      res.json(response)
+    } catch (error) {
+      logger.error(error)
+    } finally {
+      return;
+    }
   }
+
   @Delete(":id")
   private async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
   }

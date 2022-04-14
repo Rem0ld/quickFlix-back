@@ -31,6 +31,7 @@ const schemaTvShow = new Schema<TvShow>(
     genres: { type: [String], index: true }, // genre
     firstAirDate: Date, // first_air_date
     trailerYtCode: [String],
+    averageLength: Number
   },
   {
     timestamps: true,

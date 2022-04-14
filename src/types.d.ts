@@ -67,6 +67,7 @@ export type TvShow = {
   score?: number;
   firstAirDate: Date;
   seasons: SeasonTvShow[];
+  averageLength?: number;
 }
 
 export type Watched = {
