@@ -52,8 +52,8 @@ export default class DiscoverController {
     await rm(tempFile);
 
     if (tvShows) {
-      await go(videosPath + tvShows, tempFile, regexVideo)
-      result2 = await createEntry(tempFile, "video", tvShows)
+      await go(videosPath + tvShows, tempFile, regexVideo);
+      result2 = await createEntry(tempFile, "video", tvShows);
       await rm(tempFile);
     }
 
@@ -131,7 +131,7 @@ export default class DiscoverController {
         } else {
           const episodeIsPresent = seasons[seasonIsPresent].episodes.findIndex(
             el => {
-              return +el.number === +episode
+              return +el.number === +episode;
             }
           );
 
@@ -169,7 +169,6 @@ export default class DiscoverController {
 
   //   const goThrough = async (files, extraPath = "") => {
   //       const isSubtitle = regexIsSubtitle.test(ext);
-
 
   //       if (exclude) continue;
 
@@ -294,7 +293,7 @@ export default class DiscoverController {
           continue;
         }
 
-        let result;
+        let result: any;
 
         // In case of several movies with the same name we look for the release date
         // not bullet proof but will do the job
@@ -328,16 +327,15 @@ export default class DiscoverController {
             // Getting image if doesn't exists
             getImages(result?.poster_path);
 
+            const exist = video.posterPath.filter(
+              el => el !== result.poster_path
+            );
+
             // Checking if document already have this image on BDD
-            if (
-              !video.posterPath.length ||
-              video.posterPath[0] !== result.poster_path
-            ) {
+            if (!video.posterPath.length || !exist.length) {
               video.posterPath.push(result.poster_path);
             }
           }
-          // // @ts-ignore
-          // await video.save();
         } catch (error) {
           console.log(error);
         }
@@ -385,10 +383,11 @@ export default class DiscoverController {
         if (result.poster_path) {
           getImages(result.poster_path);
 
-          if (
-            !tvShow.posterPath.length ||
-            tvShow.posterPath[0] !== result.poster_path
-          ) {
+          const exist = tvShow.posterPath.filter(
+            el => el !== result.poster_path
+          );
+
+          if (!tvShow.posterPath.length || !exist) {
             tvShow.posterPath.push(result.poster_path);
           }
         }
@@ -439,7 +438,7 @@ export default class DiscoverController {
     const proprietaryCodec = ["ac3", "eac3", "dts"];
     let promises = [];
 
-    logger.info("starting")
+    logger.info("starting");
     try {
       const videos: Video[] = await videoModel.find();
 
@@ -457,7 +456,7 @@ export default class DiscoverController {
               if (err) {
                 reject({ videoId, err });
               }
-              logger.info(`Processing ${pathname}`)
+              logger.info(`Processing ${pathname}`);
               /**
                * data: Ojbect {
                *  streams: Array [
