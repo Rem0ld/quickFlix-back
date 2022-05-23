@@ -2,6 +2,15 @@ import { accessSync, constants, createWriteStream, existsSync, mkdirSync, readdi
 import client from "https";
 import path from "path";
 
+export function accessFolder(folderPath: string) {
+  try {
+    accessSync(folderPath, constants.R_OK)
+  }catch(error) {
+    return false
+  }
+  return true
+}
+
 export function fileExists(filepath: string) {
   try {
     accessSync(filepath, constants.R_OK);

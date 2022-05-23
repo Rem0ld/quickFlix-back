@@ -25,6 +25,8 @@ import { logger } from "../../libs/logger";
 import VideoService from "../Video/Video.service";
 import { tvShowModel } from "../../schemas/TvShow";
 import { mongo, Mongoose } from "mongoose";
+import { accessFolder } from "../../utils/fileManipulation";
+import { ParsedUrlQuery } from "querystring";
 
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
@@ -427,6 +429,20 @@ export default class DiscoverController {
       errorCount,
       count,
     });
+  }
+  
+  @Get("drive")
+  private async accessDrive(req: Request, res: Response): Promise<void> {
+    const folderPath = req.query.folderPath
+
+    if(!folderPath) {
+      res.json('Missing folderPath')
+      return
+    }
+    console.log(folderPath)
+    const response = accessFolder(folderPath as string)
+
+    res.json({access: response})
   }
 
   @Get("audio")
