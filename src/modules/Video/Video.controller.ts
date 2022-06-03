@@ -45,9 +45,11 @@ export default class VideoController {
       type: ["tv", "movie"]
     };
 
-    if (movie) {
+    console.log(movie)
+    if (movie === "true") {
       request.type = ["movie"];
     }
+    console.log(request)
 
     if (+limit === -1) {
       const data = await videoModel.find(request);
