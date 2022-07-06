@@ -1,15 +1,21 @@
-# Use root/example as user/password credentials
+# Use postgres/example user/password credentials
 version: "3.1"
 
 services:
-  quickflix:
-    image: mongo
+  db:
+    image: postgres
     restart: always
     environment:
-      MONGO_INITDB_DATABASE: db_quickflix
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: docker
+      POSTGRES_DB: quickflix_db
     volumes:
-      - ./data/:/data/db
+      - ./data/sql/:/data/db
     ports:
-      - 27018:27017
+      - 5432:5432
 
-
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
