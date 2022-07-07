@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { logger } from "../libs/logger";
 
 export default class DbConnection {
@@ -8,14 +7,5 @@ export default class DbConnection {
   }
 
   public connect() {
-    mongoose.connect(
-      this.uri,
-      error => {
-        if (error) {
-          logger.error(error)
-        }
-        logger.info("Connected")
-      }
-    );
   }
 }

@@ -1,5 +1,3 @@
-DROP DATABASE IF EXISTS "quickflix_db";
-CREATE DATABASE "quickflix_db";
 
 DROP TYPE IF EXISTS "type_video" CASCADE;
 CREATE TYPE "type_video" AS ENUM (
@@ -8,30 +6,30 @@ CREATE TYPE "type_video" AS ENUM (
   'trailer'
 );
 
-DROP TABLE IF EXISTS "users" CASCADE;
-CREATE TABLE "users" (
+DROP TABLE IF EXISTS "user" CASCADE;
+CREATE TABLE "user" (
   "id" SERIAL PRIMARY KEY,
   "email" varchar,
-  "pasword" varchar,
+  "password" varchar,
   "is_admin" boolean,
-  "created_at" timestamp,
-  "updated_at" timestamp
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "updated_at" timestamp NOT NULL DEFAULT  now()
 );
 
 DROP TABLE IF EXISTS "watched" CASCADE;
 CREATE TABLE "watched" (
-  "id" int PRIMARY KEY,
+  "id" SERIAL PRIMARY KEY,
   "video_id" int,
   "user_id" int,
   "times_watched" float,
   "finished" boolean,
-  "created_at" timestamp,
-  "updated_at" timestamp
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "updated_at" timestamp NOT NULL DEFAULT  now()
 );
 
-DROP TABLE IF EXISTS "videos" CASCADE;
-CREATE TABLE "videos" (
-  "id" int PRIMARY KEY,
+DROP TABLE IF EXISTS "video" CASCADE;
+CREATE TABLE "video" (
+  "id" SERIAL PRIMARY KEY,
   "name" varchar,
   "basename" varchar,
   "filename" varchar,
@@ -54,13 +52,13 @@ CREATE TABLE "videos" (
   "trailer_yt_code" varchar[],
   "poster_path" varchar[],
   "tv_show_id" int,
-  "created_at" timestamp,
-  "updated_at" timestamp
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "updated_at" timestamp NOT NULL DEFAULT  now()
 );
 
-DROP TABLE IF EXISTS "tv_shows" CASCADE;
-CREATE TABLE "tv_shows" (
-  "id" int PRIMARY KEY,
+DROP TABLE IF EXISTS "tv_show" CASCADE;
+CREATE TABLE "tv_show" (
+  "id" SERIAL PRIMARY KEY,
   "id_movie_db" varchar,
   "name" varchar,
   "location" varchar,
@@ -75,40 +73,41 @@ CREATE TABLE "tv_shows" (
   "first_air_date" timestamp,
   "trailer_yt_code" varchar[],
   "average_length" float,
-  "created_at" timestamp,
-  "updated_at" timestamp
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "updated_at" timestamp NOT NULL DEFAULT  now()
 );
 
 DROP TABLE IF EXISTS "watched_tv_show" CASCADE;
 CREATE TABLE "watched_tv_show" (
+  "id" SERIAL,
   "tv_show_id" int,
   "user_id" int,
   "watched_id" int,
-  "created_at" timestamp,
-  "updated_at" timestamp,
-  PRIMARY KEY ("tv_show_id", "user_id")
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "updated_at" timestamp NOT NULL DEFAULT  now(),
+  PRIMARY KEY ("tv_show_id", "user_id", "watched_id")
 );
 
-CREATE INDEX ON "videos" ("name");
+CREATE INDEX ON "video" ("name");
 
-CREATE INDEX ON "videos" ("basename");
+CREATE INDEX ON "video" ("basename");
 
-CREATE INDEX ON "videos" ("genres");
+CREATE INDEX ON "video" ("genres");
 
-CREATE INDEX ON "tv_shows" ("name");
+CREATE INDEX ON "tv_show" ("name");
 
-CREATE INDEX ON "tv_shows" ("genres");
+CREATE INDEX ON "tv_show" ("genres");
 
-ALTER TABLE "watched" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+ALTER TABLE "watched" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "watched" ADD FOREIGN KEY ("video_id") REFERENCES "videos" ("id") ON DELETE CASCADE;
+ALTER TABLE "watched" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "videos" ADD FOREIGN KEY ("trailer") REFERENCES "videos" ("id") ON DELETE CASCADE;
+ALTER TABLE "video" ADD FOREIGN KEY ("trailer") REFERENCES "video" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "videos" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_shows" ("id") ON DELETE CASCADE;
+ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_shows" ("id") ON DELETE CASCADE;
+ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("watched_id") REFERENCES "watched" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
