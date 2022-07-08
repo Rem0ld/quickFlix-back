@@ -53,7 +53,7 @@ class TvShowService {
 
   }
 
-  async findByName(name: string): Promise<TvShow | null> {
+  async findByName({ name }: { name: string }): Promise<TvShow | null> {
     const re = new RegExp(`${name}`, "i");
     const result = await tvShowModel.findOne({ name: re });
 

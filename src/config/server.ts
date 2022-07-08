@@ -16,6 +16,7 @@ import DiscoverController from '../modules/Discover/Discover.controller';
 import WatchedController from '../modules/Watched/Watched.controller';
 import WatchedTvShowController from '../modules/WatchedTvShow/WatchedTvShow.controller';
 import EncodingJobController from '../modules/EncodingJob/EncodingJob.controller';
+import { AppDataSource } from '../data-source';
 
 export default class MyServer extends Server {
   constructor() {
@@ -43,12 +44,6 @@ export default class MyServer extends Server {
     const watchedTvShowController = new WatchedTvShowController();
     const encodingJobController = new EncodingJobController();
 
-    const uri = process.env.NODE_ENV === "development" ?
-      process.env.DB_CONNECTION_STRING :
-      "mongodb://amdin:1234@localhost:27017/db_quickFlix?authSource=admin";
-
-    const db = new DbConnection(uri!)
-    db.connect()
     super.addControllers(
       [
         streamController,
@@ -69,7 +64,7 @@ export default class MyServer extends Server {
     this.app.listen(port, () => {
       log(`Listening on ${port}`)
       log(`Environment is ${process.env.NODE_ENV}`)
-      log(`Db string is ${process.env.DB_CONNECTION_STRING}`)
+      // log(`Db string is ${process.env.DB_CONNECTION_STRING}`)
     })
   }
 }

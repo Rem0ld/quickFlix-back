@@ -5,12 +5,11 @@ import { basePath } from "../config/defaultConfig";
 import { findBaseFolder } from "../utils/fileManipulation";
 import TvShowService from "../modules/TvShow/TvShow.service";
 import VideoService from "../modules/Video/Video.service";
-import { tvShowModel } from "../schemas/TvShow";
-import { videoModel } from "../schemas/Video";
 import { regExBasename, regexTvShow, regexYearDate } from "../utils/regexes";
 import { parseBasename } from "../utils/stringManipulation";
 import { ExtSubtitle, ExtVideo, TvShow, Video, VideoMaker } from "../types";
 import { logger } from "../libs/logger";
+import { EntityManager, Repository } from "typeorm";
 
 /**
  * Creates a file that references all wanted (regex) files (absolute path) from a directory - use recursion to follow all subfolder
@@ -18,7 +17,11 @@ import { logger } from "../libs/logger";
  * @param {String} filename name of the file created
  * @param {RegExp} regex Type of file we want
  */
-export async function go(filepath: string, tempFile: string, regex: RegExp): Promise<any> {
+export async function go(
+  filepath: string,
+  tempFile: string,
+  regex: RegExp
+): Promise<any> {
   try {
     const dir = await opendir(filepath);
     for await (const dirent of dir) {
@@ -35,17 +38,21 @@ export async function go(filepath: string, tempFile: string, regex: RegExp): Pro
     console.error(err);
   }
 
-  return Promise.resolve(filepath)
+  return Promise.resolve(filepath);
 }
 
 /**
  * Creates entry from a file (created from the "go" function)
- * @param {String} filename 
- * @param {"video" | "subtitle"} type 
- * @param {String} baseFolder 
+ * @param {String} filename
+ * @param {"video" | "subtitle"} type
+ * @param {String} baseFolder
  * @returns count of created video, tv show
  */
-export async function createEntry(filename: string, type: "video" | "subtitle", baseFolder: string) {
+export async function createEntry(
+  filename: string,
+  type: "video" | "subtitle",
+  baseFolder: string
+) {
   let tv = 0,
     tct = 0,
     tut = 0,
@@ -77,8 +84,11 @@ export async function createEntry(filename: string, type: "video" | "subtitle", 
 }
 
 export async function makeVideo(
-  location: string, basename: any,
-  filename: string, ext: ExtVideo): Promise<VideoMaker> {
+  location: string,
+  basename: any,
+  filename: string,
+  ext: ExtVideo
+): Promise<VideoMaker> {
   // In case video is in root folder we fall back onto video's name
   // And we clean it
   if (!basename) {
@@ -98,8 +108,9 @@ export async function makeVideo(
   const name = isTvShow ? `${basename} s${season}e${episode}` : basename;
 
   // check if already exists
-  const existInDb = await videoModel.find({ name });
-  if (existInDb.length) return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
+  const existInDb = await VideoService.find({ name });
+  if (existInDb.length)
+    return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
 
   let video = <Video>{};
   const year = filename.match(regexYearDate);
@@ -132,10 +143,12 @@ export async function makeVideo(
 
   // video = existInDb[0];
 
-  if (!isTvShow) return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
+  if (!isTvShow)
+    return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
 
-  const re = new RegExp(`${basename}`, "i");
-  let tvShow: TvShow | null = await tvShowModel.findOne({ name: re });
+  let tvShow: TvShow | null = await TvShowService.findByName({
+    name: basename,
+  });
 
   if (!tvShow) {
     tvShow = await TvShowService.create(
@@ -145,18 +158,18 @@ export async function makeVideo(
         seasons: [
           {
             number: +season!,
-            episodes: [{ number: +episode!, ref: video._id }],
+            episodes: [{ number: +episode!, ref: video.id }],
           },
         ],
       },
       {
         movieJob: true,
-        id: video._id,
+        id: video.id,
       }
     );
     countTvShowCreated++;
     movieJob++;
-    logger.info(`Created tvShow ${tvShow.name} ${tvShow.location}`)
+    logger.info(`Created tvShow ${tvShow.name} ${tvShow.location}`);
   } else {
     const { seasons } = tvShow;
     const seasonIsPresent = seasons.findIndex(el => {
@@ -166,16 +179,18 @@ export async function makeVideo(
     if (seasonIsPresent === -1) {
       seasons.push({
         number: +season!,
-        episodes: [{ number: +episode!, ref: video._id }],
+        episodes: [{ number: +episode!, ref: video.id }],
       });
     } else {
       const modifiedSeason = seasons.splice(seasonIsPresent, 1);
-      const episodeIsPresent = modifiedSeason[0].episodes.findIndex(el => +el.number === +episode!);
+      const episodeIsPresent = modifiedSeason[0].episodes.findIndex(
+        el => +el.number === +episode!
+      );
 
       if (episodeIsPresent === -1) {
         modifiedSeason[0].episodes.push({
           number: +episode!,
-          ref: video._id,
+          ref: video.id,
         });
         seasons.push(modifiedSeason[0]);
       }
@@ -184,10 +199,15 @@ export async function makeVideo(
     // @ts-ignore
     await tvShow.save();
     countUpdatedTvShow++;
-    logger.info(`${tvShow.name} updated`)
+    logger.info(`${tvShow.name} updated`);
   }
 
   return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
 }
 
-export async function makeSubtitle(location: string, basename: string, filename: string, ext: ExtSubtitle) { }
+export async function makeSubtitle(
+  location: string,
+  basename: string,
+  filename: string,
+  ext: ExtSubtitle
+) { }

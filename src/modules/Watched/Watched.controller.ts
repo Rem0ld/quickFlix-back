@@ -5,8 +5,6 @@ import errorHandler from "../../services/errorHandler";
 import { regexIsSubtitle } from "../../utils/regexes";
 import WatchedService from "./Watched.service";
 import WatchedTvShowService from "../WatchedTvShow/WatchedTvShow.service";
-import { watchedModel } from "../../schemas/Watched";
-import { watchedTvShowModel } from "../../schemas/WatchedTvShow";
 import { logger } from "../../libs/logger";
 
 @Controller("watched")

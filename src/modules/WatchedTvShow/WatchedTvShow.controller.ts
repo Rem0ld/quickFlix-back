@@ -4,8 +4,6 @@ import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete,
 import errorHandler from "../../services/errorHandler";
 import { regexIsSubtitle } from "../../utils/regexes";
 import WatchedTvShowService from "../WatchedTvShow/WatchedTvShow.service";
-import { watchedModel } from "../../schemas/Watched";
-import { watchedTvShowModel } from "../../schemas/WatchedTvShow";
 
 @Controller("watched-tv-show")
 @ClassErrorMiddleware(errorHandler)

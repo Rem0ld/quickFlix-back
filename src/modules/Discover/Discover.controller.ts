@@ -6,10 +6,8 @@ import { Controller, Get, ClassErrorMiddleware } from "@overnightjs/core";
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import errorHandler from "../../services/errorHandler";
 import { regexIsSubtitle, regexTvShow, regexVideo } from "../../utils/regexes";
-import { videoModel } from "../../schemas/Video";
 import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 import TvShowService from "../TvShow/TvShow.service";
-import { MovieJobStatus, TvShow, Video } from "../../types";
 import { go, createEntry } from "../../services/miscelleneaous";
 import {
   getImages,
@@ -19,12 +17,9 @@ import {
 } from "../../services/apiService";
 import { appendFile, existsSync } from "fs";
 import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
-import { encodingJobModel } from "../../schemas/EncodingJobs";
 import { spawn } from "child_process";
 import { logger } from "../../libs/logger";
 import VideoService from "../Video/Video.service";
-import { tvShowModel } from "../../schemas/TvShow";
-import { mongo, Mongoose } from "mongoose";
 import { accessFolder } from "../../utils/fileManipulation";
 import { ParsedUrlQuery } from "querystring";
 
@@ -430,19 +425,19 @@ export default class DiscoverController {
       count,
     });
   }
-  
+
   @Get("drive")
   private async accessDrive(req: Request, res: Response): Promise<void> {
     const folderPath = req.query.folderPath
 
-    if(!folderPath) {
+    if (!folderPath) {
       res.json('Missing folderPath')
       return
     }
     console.log(folderPath)
     const response = accessFolder(folderPath as string)
 
-    res.json({access: response})
+    res.json({ access: response })
   }
 
   @Get("audio")

@@ -1,8 +1,14 @@
 import { defaultLimit } from "../../config/defaultConfig";
-import { Request, Response, NextFunction } from 'express';
-import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware, Patch } from "@overnightjs/core"
+import { Request, Response, NextFunction } from "express";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  ClassErrorMiddleware,
+} from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
-import { EncodingJob, Pagination } from "../../types";
 import { encodingJobModel } from "../../schemas/EncodingJobs";
 import { encodingJobService } from "./EncodingJob.service";
 import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
@@ -42,24 +48,34 @@ export default class EncodingJobController {
 
   // TODO: middleware to check if admin
   @Delete()
-  private async deleteAll(_: Request, res: Response, next: NextFunction): Promise<void> {
+  private async deleteAll(
+    _: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const jobs = await encodingJobModel.deleteMany();
 
     res.json(`${jobs.deletedCount} removed`);
   }
 
   @Post("audio")
-  async audioJobs(req: Request, res: Response, next: NextFunction): Promise<void> {
-  }
+  async audioJobs(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> { }
 
   @Post("change-audio")
-  async changeAudio(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async changeAudio(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.body;
 
     if (!id) {
-      res.json("Missing ID")
+      res.json("Missing ID");
       return;
     }
-
   }
 }

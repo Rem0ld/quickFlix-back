@@ -6,6 +6,11 @@ import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
 
 class VideoService {
+  async find({ name }) {
+    // TODO: prepare db request in data layer
+
+    return []
+  }
   async findByFields({ name, episode, season, type }: { name?: string, episode?: string, season?: string, type?: VideoType[] }) {
     const request: RequestBuilder = {};
 

@@ -1,11 +1,10 @@
-import { Types } from "mongoose"
 import { Response } from "express"
 
 export type VideoType = "movie" | "tv" | "trailer" | "teaser"
-export type EnumStatus = "todo" | "done" | "error"
+export type TJobStatus = "todo" | "done" | "error"
 
 export type Video = {
-  _id: string;
+  id: string;
   idMovieDb?: string // id
   name: string
   basename: string
@@ -23,9 +22,9 @@ export type Video = {
   director?: string[],
   writers?: string[],
   actors?: string[],
-  trailer?: Types.ObjectId[],
+  trailer?: number[],
   genres: string[],
-  subtitles: Types.ObjectId[],
+  subtitles: number[],
   trailerYtCode: string[],
   posterPath: string[],
   flags?: {
@@ -52,7 +51,7 @@ export type SeasonTvShow = {
 }
 
 export type TvShow = {
-  _id: string;
+  id: string;
   idMovieDb?: string // id
   name: string
   location: string
@@ -71,47 +70,41 @@ export type TvShow = {
 }
 
 export type Watched = {
-  _id: string;
+  id: string;
   timeWatched: number;
   length?: number;
   finished: boolean;
   stoppedAt?: number;
-  video: Types.ObjectId;
-  user: Types.ObjectId
+  video: number;
+  user: number;
 }
 
 export type WatchedTvShow = {
-  _id: string;
-  tvShow: string;
-  user: Types.ObjectId
-  videos: {
-    watchedId: Types.ObjectId | Watched | string,
-    videoId: Types.ObjectId | Video | string
-  }[]
+  id: string;
+  tvShow: number;
+  user: number;
 }
 
-export type Role = 'admin' | 'simple'
-export type User = {
-  _id: string;
+export type TRole = 'admin' | 'simple'
+export type TUser = {
+  id: string;
   pseudo: string;
   email: string;
   password: string;
-  role: Role
+  role: TRole
 }
 
 export type Subtitle = {
-  _id: string;
+  id: string;
   name: string;
   ext: string;
   path: string;
 }
 
-export type MovieJobStatus = "todo" | "done" | "error";
-
 export type MovieDbJob = {
-  _id: string;
+  id: string;
   video: Video;
-  status: MovieJobStatus;
+  status: TJobStatus;
   error: string[];
   type: VideoType
 }
@@ -141,10 +134,10 @@ export type VideoMaker = {
 }
 
 export type EncodingJob = {
-  _id: string;
-  videoId: Types.ObjectId | string;
+  id: string;
+  videoId: number;
   pathname: string;
-  status: EnumStatus;
+  status: TJobStatus;
   error: string[];
   type: "audio" | "video";
 };
@@ -152,7 +145,7 @@ export type EncodingJob = {
 /* NOT WORKING */
 // Helpers
 type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T];
-type Omit<T, K extends keyof T> = Pick<T, Diff<keyof T, K>>;
+// type Omit<T, K extends keyof T> = Pick<T, Diff<keyof T, K>>;
 
 // Generic typed response, we omit 'json' and we add a new json method with the desired parameter type
 type TypedResponse<T> = Omit<Response, 'json'> & { json(data: T): Response };

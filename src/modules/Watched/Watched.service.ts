@@ -1,4 +1,3 @@
-import { watchedModel } from "../../schemas/Watched";
 import { Watched } from "../../types";
 
 

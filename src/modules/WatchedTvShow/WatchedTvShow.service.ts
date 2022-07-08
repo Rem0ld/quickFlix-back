@@ -1,4 +1,3 @@
-import { watchedTvShowModel } from "../../schemas/WatchedTvShow";
 import { WatchedTvShow } from "../../types";
 class WatchedTvShowService {
   async create(data: Partial<WatchedTvShow>) {
