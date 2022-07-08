@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
-import { User } from "./User";
-import { Video } from "./Video";
-import { WatchedTvShow } from "./WatchedTvShow"
+import { User } from "../User/User.entity";
+import { Video } from "../Video/Video.entity";
+import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity"
 
 @Entity()
 export class Watched {

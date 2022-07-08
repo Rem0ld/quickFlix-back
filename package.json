@@ -30,7 +30,7 @@
    "scripts": {
       "clean": "rm -fr dist",
       "build": "yarn clean && tsc",
-      "start": "ts-node src/index.ts",
+      "start": "ts-node index.ts",
       "transpile": "babel index.js -d dist; babel -d ./dist/src ./src",
       "dev": "nodemon index.ts",
       "typeorm": "typeorm-ts-node-commonjs"

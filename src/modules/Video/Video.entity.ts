@@ -9,10 +9,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { TvShow } from "./TvShow";
-import { Watched } from "./Watched";
+import { TvShow } from "../TvShow/TvShow.entity";
+import { Watched } from "../Watched/Watched.entity";
 
-export enum VideoType {
+export enum VideoEnum {
   MOVIE = "movie",
   TV = "tv",
   TRAILER = "trailer",
@@ -60,9 +60,9 @@ export class Video {
   @Index()
   @Column({
     type: "enum",
-    enum: VideoType,
+    enum: VideoEnum,
   })
-  type: VideoType;
+  type: VideoEnum;
 
   @Column()
   score: number;

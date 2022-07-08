@@ -1,15 +1,25 @@
 {
    "compilerOptions": {
       "lib": [
-         "es5",
-         "es6"
+         "ES2021.String"
       ],
-      "target": "es5",
+      "target": "ES6",
       "module": "commonjs",
       "moduleResolution": "node",
       "outDir": "./build",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
-      "sourceMap": true
-   }
+      "sourceMap": true,
+      "allowJs": true,
+      "checkJs": true,
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+   },
+   "include": [
+      "src/**/*.ts",
+      "index.ts"
+   ],
+   "exclude": [
+      "node_modules"
+   ]
 }

@@ -1,10 +1,10 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
-import { TvShow } from "./entity/TvShow"
-import { User } from "./entity/User"
-import { Video } from "./entity/Video"
-import { Watched } from "./entity/Watched"
-import { WatchedTvShow } from "./entity/WatchedTvShow"
+import { TvShow } from "./modules/TvShow/TvShow.entity"
+import { User } from "./modules/User/User.entity"
+import { Video } from "./modules/Video/Video.entity"
+import { Watched } from "./modules/Watched/Watched.entity"
+import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity"
 
 export const AppDataSource = new DataSource({
     type: "postgres",

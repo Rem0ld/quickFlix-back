@@ -7,8 +7,8 @@ import {
     UpdateDateColumn,
     Timestamp,
 } from "typeorm";
-import { Watched } from "./Watched";
-import { WatchedTvShow } from "./WatchedTvShow";
+import { Watched } from "../Watched/Watched.entity";
+import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
 @Entity()
 export class User {

@@ -18,13 +18,14 @@ CREATE TABLE "user" (
 
 DROP TABLE IF EXISTS "watched" CASCADE;
 CREATE TABLE "watched" (
-  "id" SERIAL PRIMARY KEY,
+  "id" SERIAL UNIQUE,
   "video_id" int,
   "user_id" int,
-  "times_watched" float,
-  "finished" boolean,
+  "times_watched" float DEFAULT 0.00,
+  "finished" boolean DEFAULT false,
   "created_at" timestamp NOT NULL DEFAULT now(),
-  "updated_at" timestamp NOT NULL DEFAULT  now()
+  "updated_at" timestamp NOT NULL DEFAULT  now(),
+  PRIMARY KEY ("video_id", "user_id")
 );
 
 DROP TABLE IF EXISTS "video" CASCADE;
@@ -33,7 +34,7 @@ CREATE TABLE "video" (
   "name" varchar,
   "basename" varchar,
   "filename" varchar,
-  "ext" char,
+  "ext" varchar(3),
   "location" varchar,
   "episode" varchar,
   "season" varchar,
@@ -88,6 +89,28 @@ CREATE TABLE "watched_tv_show" (
   PRIMARY KEY ("tv_show_id", "user_id", "watched_id")
 );
 
+DROP TABLE IF EXISTS "encoding_job" CASCADE;
+CREATE TABLE "encoding_job" (
+  "id" SERIAL PRIMARY KEY,
+  "status" varchar,
+  "type" varchar,
+  "path" varchar,
+  "errors" varchar[],
+  "video_id" int,
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "updated_at" timestamp NOT NULL DEFAULT  now()
+);
+
+DROP TABLE IF EXISTS "movie_db_job" CASCADE;
+CREATE TABLE "movie_db_job" (
+  "id" SERIAL PRIMARY KEY,
+  "status" varchar,
+  "type" varchar,
+  "video_id" int,
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "updated_at" timestamp NOT NULL DEFAULT  now()
+);
+
 CREATE INDEX ON "video" ("name");
 
 CREATE INDEX ON "video" ("basename");
@@ -97,6 +120,15 @@ CREATE INDEX ON "video" ("genres");
 CREATE INDEX ON "tv_show" ("name");
 
 CREATE INDEX ON "tv_show" ("genres");
+
+CREATE INDEX ON "encoding_job" ("type");
+
+CREATE INDEX ON "encoding_job" ("status");
+
+CREATE INDEX ON "movie_db_job" ("status");
+
+CREATE INDEX ON "movie_db_job" ("type");
+
 
 ALTER TABLE "watched" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
 
@@ -111,3 +143,7 @@ ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show
 ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("watched_id") REFERENCES "watched" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "encoding_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "movie_db_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;

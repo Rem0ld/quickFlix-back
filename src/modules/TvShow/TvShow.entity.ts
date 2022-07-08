@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -7,11 +8,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Video } from "./Video";
-import { WatchedTvShow } from "./WatchedTvShow";
+import { Video } from "../Video/Video.entity";
+import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
 @Entity()
-export class TvShow {
+export class TvShow extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
