@@ -9,10 +9,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { TVideo } from "../../types";
 import { TvShow } from "../TvShow/TvShow.entity";
 import { Watched } from "../Watched/Watched.entity";
 
-export enum VideoEnum {
+export enum VideoTypeEnum {
   MOVIE = "movie",
   TV = "tv",
   TRAILER = "trailer",
@@ -20,7 +21,7 @@ export enum VideoEnum {
 }
 
 @Entity()
-export class Video {
+export class Video implements TVideo {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -43,11 +44,11 @@ export class Video {
   @Column()
   location: string;
 
-  @Column()
-  episode: string;
+  @Column({ type: "int2" })
+  episode: number;
 
-  @Column()
-  season: string;
+  @Column({ type: "int2" })
+  season: number;
 
   @Column({
     type: "date",
@@ -60,9 +61,9 @@ export class Video {
   @Index()
   @Column({
     type: "enum",
-    enum: VideoEnum,
+    enum: VideoTypeEnum,
   })
-  type: VideoEnum;
+  type: VideoTypeEnum;
 
   @Column()
   score: number;
@@ -78,33 +79,32 @@ export class Video {
   @Column({ name: "id_movie_db" })
   idMovieDb: string;
 
-  @Column('text', { array: true })
+  @Column("text", { array: true })
   directors: string[];
 
-  @Column('text', { array: true })
+  @Column("text", { array: true })
   writers: string[];
 
-  @Column('text', { array: true })
+  @Column("text", { array: true })
   actors: string[];
 
-  @ManyToOne((type) => Video, video => video.id)
-  video: Video;
 
-  @OneToMany((type) => Video, video => video.video)
-  trailer: Video[];
-
-  @Column('text', { array: true })
+  @Column("text", { array: true })
   genres: string[];
 
-  @Column('text', { name: 'trailer_yt_code', array: true })
+  @Column("text", { name: "trailer_yt_code", array: true })
   trailerYtCode: string[];
 
-  @Column('text', { name: "poster_path", array: true })
+  @Column("text", { name: "poster_path", array: true })
   posterPath: string[];
 
-  @ManyToOne((type) => TvShow, tvShow => tvShow.videos)
+  @ManyToOne(type => Video, video => video.id)
+  @JoinColumn({ name: "video_id_ref" })
+  videoIdRef: Video;
+
+  @ManyToOne(type => TvShow, tvShow => tvShow.videos)
   @JoinColumn({ name: "tv_show_id" })
-  tvShow: TvShow;
+  tvShowId: TvShow;
 
   @OneToMany(() => Watched, watched => watched.video)
   userWatchedVideo: Watched[];
@@ -112,6 +112,6 @@ export class Video {
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
-  @UpdateDateColumn(({ name: "updated_at" }))
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 }

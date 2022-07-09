@@ -1,19 +1,21 @@
 import { Response } from "express"
+import { Video, VideoTypeEnum } from "./modules/Video/Video.entity";
+import { TvShow } from "./modules/TvShow/TvShow.entity";
 
 export type VideoType = "movie" | "tv" | "trailer" | "teaser"
 export type TJobStatus = "todo" | "done" | "error"
 
-export type Video = {
-  id: string;
+export type TVideo = {
+  id: number;
   idMovieDb?: string // id
   name: string
   basename: string
   filename: string
   ext: string
   location: string
-  type: VideoType
-  episode?: string | number,
-  season?: string | number,
+  type: VideoTypeEnum,
+  episode?: number,
+  season?: number,
   year: Date,
   releaseDate: Date,
   score?: number,
@@ -22,21 +24,24 @@ export type Video = {
   director?: string[],
   writers?: string[],
   actors?: string[],
-  trailer?: number[],
+  trailer?: Video[],
   genres: string[],
-  subtitles: number[],
   trailerYtCode: string[],
   posterPath: string[],
-  flags?: {
-    wrongFormat: boolean,
-    needSubtitles: boolean,
-  },
+  tvShowId?: TvShow;
+  // videoId?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  // flags?: {
+  //   wrongFormat: boolean,
+  //   needSubtitles: boolean,
+  // },
 }
 
 export type RequestBuilder = {
-  name?: RegExp;
-  episode?: string;
-  season?: string;
+  name?: string;
+  episode?: number;
+  season?: number;
   type?: VideoType[];
 }
 
@@ -50,8 +55,8 @@ export type SeasonTvShow = {
   episodes: EpisodeTvShow[]
 }
 
-export type TvShow = {
-  id: string;
+export type TTvShow = {
+  id: number;
   idMovieDb?: string // id
   name: string
   location: string
@@ -70,7 +75,7 @@ export type TvShow = {
 }
 
 export type Watched = {
-  id: string;
+  id: number;
   timeWatched: number;
   length?: number;
   finished: boolean;
@@ -80,30 +85,30 @@ export type Watched = {
 }
 
 export type WatchedTvShow = {
-  id: string;
+  id: number;
   tvShow: number;
   user: number;
 }
 
 export type TRole = 'admin' | 'simple'
 export type TUser = {
-  id: string;
+  id: number;
   pseudo: string;
   email: string;
   password: string;
-  role: TRole
+  isAdmin: boolean;
 }
 
 export type Subtitle = {
-  id: string;
+  id: number;
   name: string;
   ext: string;
   path: string;
 }
 
 export type MovieDbJob = {
-  id: string;
-  video: Video;
+  id: number;
+  video: TVideo;
   status: TJobStatus;
   error: string[];
   type: VideoType
@@ -134,7 +139,7 @@ export type VideoMaker = {
 }
 
 export type EncodingJob = {
-  id: string;
+  id: number;
   videoId: number;
   pathname: string;
   status: TJobStatus;

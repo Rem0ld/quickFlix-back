@@ -2,13 +2,15 @@
 DROP TYPE IF EXISTS "type_video" CASCADE;
 CREATE TYPE "type_video" AS ENUM (
   'movie',
-  'tvshow',
-  'trailer'
+  'tv',
+  'trailer',
+  'teaser'
 );
 
 DROP TABLE IF EXISTS "user" CASCADE;
 CREATE TABLE "user" (
   "id" SERIAL PRIMARY KEY,
+  "pseudo" varchar(40) UNIQUE,
   "email" varchar,
   "password" varchar,
   "is_admin" boolean,
@@ -17,7 +19,7 @@ CREATE TABLE "user" (
 );
 
 DROP TABLE IF EXISTS "watched" CASCADE;
-CREATE TABLE "watched" (
+CREATE TABLE "watched"(
   "id" SERIAL UNIQUE,
   "video_id" int,
   "user_id" int,
@@ -48,7 +50,7 @@ CREATE TABLE "video" (
   "directors" varchar[],
   "writers" varchar[],
   "actors" varchar[],
-  "trailer" int,
+  "video_id_ref" int,
   "genres" varchar[],
   "trailer_yt_code" varchar[],
   "poster_path" varchar[],
@@ -134,7 +136,7 @@ ALTER TABLE "watched" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DE
 
 ALTER TABLE "watched" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "video" ADD FOREIGN KEY ("trailer") REFERENCES "video" ("id") ON DELETE CASCADE;
+ALTER TABLE "video" ADD FOREIGN KEY ("video_id_ref") REFERENCES "video" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
 

@@ -65,7 +65,7 @@ export class TvShow extends BaseEntity {
   })
   averageLength: number;
 
-  @OneToMany(() => Video, video => video.tvShow)
+  @OneToMany(() => Video, video => video.tvShowId)
   videos: Video[];
 
   @OneToMany(() => WatchedTvShow, watchedTvShow => watchedTvShow.tvShow)

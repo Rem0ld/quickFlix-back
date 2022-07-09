@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 import { encodingJobModel } from "../../schemas/EncodingJobs";
 import { movieDbJobModel } from "../../schemas/MovieDbJob";
-import { EncodingJob, MovieDbJob, Pagination, Video, VideoType } from "../../types";
+import { EncodingJob, MovieDbJob, Pagination, TVideo, VideoType } from "../../types";
 
 class EncodingJobService {
   async find({ limit, skip, populate }: Pagination): Promise<EncodingJob[]> {

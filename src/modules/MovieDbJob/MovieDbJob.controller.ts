@@ -4,7 +4,7 @@ import { defaultLimit } from "../../config/defaultConfig";
 import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware, Patch } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
-import { Pagination, TvShow, Video } from "../../types";
+import { Pagination, TvShow, TVideo } from "../../types";
 import VideoService from "../Video/Video.service";
 import { videoModel } from "../../schemas/Video";
 import TvShowService from "../TvShow/TvShow.service";
@@ -66,7 +66,7 @@ export default class MovieDbJobController {
 
   @Post("make")
   async make(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const videos: Video[] = await videoModel.find({ type: 'movie' });
+    const videos: TVideo[] = await videoModel.find({ type: 'movie' });
     const tvShows: TvShow[] = await tvShowModel.find({});
     const promises: any = []
 

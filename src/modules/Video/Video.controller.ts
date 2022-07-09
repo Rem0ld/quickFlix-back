@@ -3,13 +3,13 @@ import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
-import { RequestBuilder, TvShow, Video } from "../../types";
+import { RequestBuilder, TvShow, TVideo } from "../../types";
 import { videoModel } from "../../schemas/Video";
 import { watchedModel } from "../../schemas/Watched";
 import { Mongoose, Types } from "mongoose";
 import path from "path";
 
-const aggregateWithWatched = async (list: Video[]) => {
+const aggregateWithWatched = async (list: TVideo[]) => {
   const watched = await videoModel.aggregate([
     {
       '$match': {

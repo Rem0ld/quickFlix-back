@@ -5,7 +5,7 @@ import path from "path";
 import mime from "mime";
 import { videoModel } from "../../schemas/Video";
 import errorHandler from "../../services/errorHandler";
-import { Video } from "../../types";
+import { TVideo } from "../../types";
 import { logger } from "../../libs/logger";
 
 @Controller("stream")
@@ -16,7 +16,7 @@ export default class StreamController {
     const { id } = req.params;
     if (!id) next(new Error("An id is required"));
 
-    const video: Video | null = await videoModel.findById(id);
+    const video: TVideo | null = await videoModel.findById(id);
 
     if (!video) {
       next(new Error("This id doesn't exist"))

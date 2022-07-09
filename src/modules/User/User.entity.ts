@@ -6,6 +6,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     Timestamp,
+    BaseEntity,
 } from "typeorm";
 import { Watched } from "../Watched/Watched.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
@@ -15,7 +16,10 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: true })
+    @Column({ unique: true })
+    pseudo: string;
+
+    @Column()
     email: string;
 
     @Column()

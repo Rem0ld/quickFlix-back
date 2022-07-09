@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { jobStatusType } from "../EncodingJob/EncodingJob.entity";
-import { Video, VideoEnum } from "../Video/Video.entity";
+import { Video, VideoTypeEnum } from "../Video/Video.entity";
 
 @Entity()
 export class MovieDbJob {
@@ -24,7 +24,7 @@ export class MovieDbJob {
   errors: string[];
 
   @Column()
-  type: VideoEnum;
+  type: VideoTypeEnum;
 
   @ManyToOne(() => Video, video => video.id)
   @JoinColumn({ name: "video_id" })
