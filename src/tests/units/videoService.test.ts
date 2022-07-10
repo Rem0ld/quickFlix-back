@@ -6,6 +6,7 @@ import VideoRepository from "../../modules/Video/Video.repository";
 import { RequestBuilder, TVideo } from "../../types";
 import { AppDataSource } from "../../data-source";
 import connection from "../../config/databases";
+import { v4 as uuidv4 } from "uuid";
 
 beforeAll(async () => {
   await connection.create();
@@ -19,6 +20,7 @@ const videoRepo = new VideoRepository(AppDataSource.manager);
 const videoService = new VideoService(videoRepo);
 
 const mockVideo: Omit<TVideo, "id"> = {
+  uuid: uuidv4(),
   name: "game of thrones",
   basename: "game of thrones",
   location: "useretcgaime",
