@@ -30,8 +30,8 @@ export type TVideo = {
   posterPath: string[],
   tvShowId?: TvShow;
   // videoId?: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   // flags?: {
   //   wrongFormat: boolean,
   //   needSubtitles: boolean,
@@ -42,7 +42,7 @@ export type RequestBuilder = {
   name?: string;
   episode?: number;
   season?: number;
-  type?: VideoType[];
+  type?: VideoTypeEnum[];
 }
 
 export type EpisodeTvShow = {

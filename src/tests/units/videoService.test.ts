@@ -1,7 +1,9 @@
-import VideoService from "../../modules/Video/Video.service";
+import VideoService, {
+  dynamicQueryBuilder,
+} from "../../modules/Video/Video.service";
 import { Video, VideoTypeEnum } from "../../modules/Video/Video.entity";
 import VideoRepository from "../../modules/Video/Video.repository";
-import { TVideo } from "../../types";
+import { RequestBuilder, TVideo } from "../../types";
 import { AppDataSource } from "../../data-source";
 import connection from "../../config/databases";
 
@@ -16,7 +18,7 @@ afterAll(async () => {
 const videoRepo = new VideoRepository(AppDataSource.manager);
 const videoService = new VideoService(videoRepo);
 
-const mockVideo: Partial<TVideo> = {
+const mockVideo: Omit<TVideo, "id"> = {
   name: "game of thrones",
   basename: "game of thrones",
   location: "useretcgaime",
@@ -30,6 +32,17 @@ const mockVideo: Partial<TVideo> = {
   genres: ["action"],
   trailerYtCode: [],
   posterPath: [],
+};
+
+const mockRequest: RequestBuilder = {
+  name: "game",
+  episode: 1,
+  season: 1,
+  type: [VideoTypeEnum.TV, VideoTypeEnum.MOVIE],
+};
+
+const mockRequestEpisode: RequestBuilder = {
+  episode: 1,
 };
 
 describe("Video service unit test", () => {
@@ -46,20 +59,53 @@ describe("Video service unit test", () => {
 
   describe("should miss parameter to create video", () => {
     it("should not pass", async () => {
-      await expect(videoService.create({}, { movieJob: false })).rejects.toThrowError("invalid video object, missing name");
-
+      await expect(
+        videoService.create({} as TVideo, { movieJob: false })
+      ).rejects.toThrowError("invalid video object, missing name");
     });
   });
 
   describe("get all videos", () => {
     it("should get the video we created", async () => {
       try {
-        const videos = await videoService.find({ limit: 20, skip: 0 })
-        console.log(videos)
-        expect(videos).toHaveLength(1)
+        const videos = await videoService.find({ limit: 20, skip: 0 });
+        expect(videos).toHaveLength(1);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-    })
-  })
+    });
+  });
+
+  describe("Query builder unit test", () => {
+    describe("Build request to DB properly", () => {
+      it("should return request to DB with wheres", async () => {
+        try {
+          const result = await dynamicQueryBuilder(
+            mockRequest,
+            Video,
+            "video"
+          ).getMany();
+          expect(result.length).toBeGreaterThanOrEqual(0);
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    });
+
+    describe("Build query with only episode set", () => {
+      it("should return all records with episode 1 and pass", async () => {
+        try {
+          const result = await dynamicQueryBuilder(
+            mockRequestEpisode,
+            Video,
+            "video"
+          ).getMany();
+
+          expect(result.length).toBeGreaterThanOrEqual(0);
+        } catch (error) {
+          console.error(error);
+        }
+      });
+    });
+  });
 });

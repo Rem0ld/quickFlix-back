@@ -1,33 +1,77 @@
-import { Brackets, createQueryBuilder, EntitySchema, QueryBuilder, SelectQueryBuilder } from "typeorm";
+import { EntityTarget, SelectQueryBuilder } from "typeorm";
+import { isArray } from "util";
+import { defaultLimit } from "../../config/defaultConfig";
 import { AppDataSource } from "../../data-source";
 import { RequestBuilder, TVideo, VideoType } from "../../types";
+import { VideoTypeEnum } from "./Video.entity";
 import VideoRepository from "./Video.repository";
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
-function dynamicQueryBuilder<T>(args: { [k: string]: string }, entity: EntitySchema): SelectQueryBuilder<T> {
-  const entityName = entity.options.name
+export function dynamicQueryBuilder<T>(
+  data: RequestBuilder,
+  entity: EntityTarget<T>,
+  entityName: string
+): SelectQueryBuilder<T> {
   const builder = AppDataSource.createQueryBuilder(entity, entityName);
-  for (const arg in args) {
-    builder.where(`${entityName}.${arg}= :${arg}`, { [arg]: arg });
+  for (const el in data) {
+    if (!Array.isArray(data[el])) {
+      builder.andWhere(`${entityName}.${el} LIKE :${el}`, {
+        [el]: `${data[el]}%`,
+      });
+    } else {
+      builder.andWhere(`${entityName}.${el} IN (:...${el})`, {
+        [el]: data[el],
+      });
+    }
   }
 
   return builder;
 }
 
 class VideoService {
-  videoRepo;
+  videoRepo: VideoRepository;
   constructor(videoRepository: VideoRepository) {
-    this.videoRepo = videoRepository
+    this.videoRepo = videoRepository;
   }
 
-  async find({ limit = 20, skip = 0 }: { limit: number, skip: number }) {
+  async findById(id: string) {
+    if (!id.length) {
+      throw new Error("missing Id");
+    }
+
+    const video = await this.videoRepo.findById(parseInt(id));
+
+    return video;
+  }
+
+  async find({
+    limit = defaultLimit,
+    skip = 0,
+  }: {
+    limit: number;
+    skip: number;
+  }) {
     // TODO: prepare db request in data layer
 
-    const videos = await this.videoRepo.findAll({ limit, skip })
-    return videos
+    const videos = await this.videoRepo.findAll({ limit, skip });
+    return videos;
   }
 
-  async findByFields({ name, episode, season, type }: { name?: string, episode?: string, season?: string, type?: VideoType[] }) {
+  async findByFields({
+    name,
+    episode,
+    season,
+    type,
+    limit,
+    skip,
+  }: {
+    name?: string;
+    episode?: string;
+    season?: string;
+    type?: VideoTypeEnum[];
+    limit: number;
+    skip: number;
+  }) {
     const request: RequestBuilder = {};
 
     if (name) {
@@ -43,19 +87,19 @@ class VideoService {
       request.type = type;
     }
 
-    const videos = await this.videoRepo.find(request);
+    const videos = await this.videoRepo.findByFields(request, limit, skip);
 
-    if (!videos) throw new Error("Cannot find video");
+    if (!videos) throw new Error("Cannot find videos");
 
     return videos;
   }
 
   async patch(id: string, data: Partial<TVideo>) { }
 
-  async create(data: Partial<TVideo>, params: { movieJob: boolean }) {
+  async create(data: Omit<TVideo, "id">, params: { movieJob: boolean }) {
     // TODO: validation to make sure video has everything needed
     if (!data?.name?.length) {
-      throw new Error("invalid video object, missing name")
+      throw new Error("invalid video object, missing name");
     }
     const video = await this.videoRepo.create(data);
 
@@ -98,4 +142,4 @@ class VideoService {
   // }
 }
 
-export default VideoService; 
+export default VideoService;
