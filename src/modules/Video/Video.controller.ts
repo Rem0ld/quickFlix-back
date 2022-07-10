@@ -11,7 +11,6 @@ import {
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
 import { VideoTypeEnum } from "./Video.entity";
-import { logger } from "../../libs/logger";
 import { VideoDTO } from "./Video.dto";
 
 @Controller("video")
@@ -38,7 +37,7 @@ export default class VideoController {
         parseInt(limit.toString()),
         parseInt(skip.toString())
       );
-      const result = data.map(el => new VideoDTO(el));
+      const result = data.map(el => new VideoDTO(el).serialize());
 
       res.json({
         total,

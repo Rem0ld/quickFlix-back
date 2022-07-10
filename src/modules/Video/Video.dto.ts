@@ -37,4 +37,15 @@ export class VideoDTO implements TVideo {
       this[el] = data[el]
     }
   }
+
+  serialize() {
+    const result: Partial<VideoDTO> = {}
+    const parsed = JSON.parse(JSON.stringify(this))
+    for (let el in parsed) {
+      if (this[el] !== null) {
+        result[el] = this[el]
+      }
+    }
+    return result
+  }
 }
