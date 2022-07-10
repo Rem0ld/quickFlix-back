@@ -7,11 +7,13 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from "typeorm";
 import { TVideo } from "../../types";
 import { TvShow } from "../TvShow/TvShow.entity";
 import { Watched } from "../Watched/Watched.entity";
+import { v4 as uuidv4 } from "uuid";
 
 export enum VideoTypeEnum {
   MOVIE = "movie",
@@ -21,9 +23,14 @@ export enum VideoTypeEnum {
 }
 
 @Entity()
+@Unique(["uuid"])
 export class Video implements TVideo {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Index()
+  @Column({ default: uuidv4() })
+  uuid: string;
 
   @Index()
   @Column()
@@ -100,11 +107,11 @@ export class Video implements TVideo {
 
   @ManyToOne(type => Video, video => video.id)
   @JoinColumn({ name: "video_id_ref" })
-  videoIdRef: Video;
+  video: Video;
 
   @ManyToOne(type => TvShow, tvShow => tvShow.videos)
   @JoinColumn({ name: "tv_show_id" })
-  tvShowId: TvShow;
+  tvShow: TvShow;
 
   @OneToMany(() => Watched, watched => watched.video)
   userWatchedVideo: Watched[];

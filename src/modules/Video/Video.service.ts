@@ -1,5 +1,4 @@
 import { EntityTarget, SelectQueryBuilder } from "typeorm";
-import { isArray } from "util";
 import { defaultLimit } from "../../config/defaultConfig";
 import { AppDataSource } from "../../data-source";
 import { RequestBuilder, TVideo, VideoType } from "../../types";
@@ -35,7 +34,7 @@ class VideoService {
   }
 
   async findById(id: string) {
-    if (!id.length) {
+    if (!id?.length) {
       throw new Error("missing Id");
     }
 
@@ -44,17 +43,16 @@ class VideoService {
     return video;
   }
 
-  async find({
-    limit = defaultLimit,
-    skip = 0,
-  }: {
-    limit: number;
-    skip: number;
-  }) {
+  async find(limit: number = defaultLimit, skip: number = 0) {
     // TODO: prepare db request in data layer
-
-    const videos = await this.videoRepo.findAll({ limit, skip });
-    return videos;
+    try {
+      const total = await this.videoRepo.getCount();
+      const videos = await this.videoRepo.findAll({ limit, skip });
+      return { data: videos, total };
+    } catch (error) {
+      console.error(error);
+      throw new Error("Cannot find all videos, probably due to reaching DB");
+    }
   }
 
   async findByFields({
@@ -89,7 +87,7 @@ class VideoService {
 
     const videos = await this.videoRepo.findByFields(request, limit, skip);
 
-    if (!videos) throw new Error("Cannot find videos");
+    // if (!videos) throw new Error("Cannot find videos");
 
     return videos;
   }
@@ -114,32 +112,30 @@ class VideoService {
     return video;
   }
 
-  // async deleteOneById(id: string) {
-  //   const video = await videoModel.findByIdAndDelete(id);
+  async deleteOneById(id: string) {
+    if (!id.length) {
+      throw new Error("Missing id");
+    }
 
-  //   if (!video) return -1;
+    const video = await this.videoRepo.delete(parseInt(id));
 
-  //   await movieJobService.deletOneByVideoId(id);
+    // await movieJobService.deletOneByVideoId(id);
 
-  //   return video;
-  // }
+    return video;
+  }
 
-  // /**
-  //  * Removes all videos, tvshows and movieJobs
-  //  *
-  //  * @returns the count of any removed
-  //  */
-  // async deleteAll() {
-  //   const videos = await videoModel.deleteMany();
-  //   const movieJob = await movieDbJobModel.deleteMany();
-  //   const tvShow = await tvShowModel.deleteMany();
-
-  //   return {
-  //     videos: videos.deletedCount,
-  //     tvshows: tvShow.deletedCount,
-  //     movieJobs: movieJob.deletedCount,
-  //   };
-  // }
+  // TODO: add some kind of validation here to be sure admin is doing it
+  async deleteAll() {
+    try {
+      await this.videoRepo.deleteAll();
+      return;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Cannot delete all from table video");
+    }
+    // const movieJob = await movieDbJobModel.deleteMany();
+    // const tvShow = await tvShowModel.deleteMany();
+  }
 }
 
 export default VideoService;

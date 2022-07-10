@@ -33,6 +33,7 @@ CREATE TABLE "watched"(
 DROP TABLE IF EXISTS "video" CASCADE;
 CREATE TABLE "video" (
   "id" SERIAL PRIMARY KEY,
+  "uuid" varchar UNIQUE,
   "name" varchar,
   "basename" varchar,
   "filename" varchar,
@@ -62,6 +63,7 @@ CREATE TABLE "video" (
 DROP TABLE IF EXISTS "tv_show" CASCADE;
 CREATE TABLE "tv_show" (
   "id" SERIAL PRIMARY KEY,
+  "uuid" varchar UNIQUE,
   "id_movie_db" varchar,
   "name" varchar,
   "location" varchar,
@@ -119,9 +121,13 @@ CREATE INDEX ON "video" ("basename");
 
 CREATE INDEX ON "video" ("genres");
 
+CREATE INDEX ON "video" ("uuid");
+
 CREATE INDEX ON "tv_show" ("name");
 
 CREATE INDEX ON "tv_show" ("genres");
+
+CREATE INDEX ON "tv_show" ("uuid");
 
 CREATE INDEX ON "encoding_job" ("type");
 

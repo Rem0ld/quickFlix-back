@@ -1,75 +1,50 @@
 import { defaultLimit } from "../../config/defaultConfig";
-import { Request, Response, NextFunction } from 'express';
-import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
+import { Request, Response, NextFunction } from "express";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  ClassErrorMiddleware,
+} from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
-import { RequestBuilder, TvShow, TVideo } from "../../types";
-import { videoModel } from "../../schemas/Video";
-import { watchedModel } from "../../schemas/Watched";
-import { Mongoose, Types } from "mongoose";
-import path from "path";
-
-const aggregateWithWatched = async (list: TVideo[]) => {
-  const watched = await videoModel.aggregate([
-    {
-      '$match': {
-        '_id': {
-          '$in': list.map(el => new Types.ObjectId(el._id))
-        }
-      }
-    }, {
-      '$lookup': {
-        'from': 'watcheds',
-        'localField': '_id',
-        'foreignField': 'video',
-        'as': 'watched'
-      }
-    }, {
-      '$unwind': {
-        'path': '$watched',
-        'preserveNullAndEmptyArrays': true
-      }
-    }
-  ])
-
-  return watched
-}
+import { VideoTypeEnum } from "./Video.entity";
+import { logger } from "../../libs/logger";
+import { VideoDTO } from "./Video.dto";
 
 @Controller("video")
 @ClassErrorMiddleware(errorHandler)
 export default class VideoController {
+  constructor(private service: VideoService) { }
+
   @Get()
-  private async find(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { limit = defaultLimit, skip = 0, movie = false } = req.query;
-    const request: RequestBuilder = {
-      type: ["tv", "movie"]
-    };
+  private async find(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { limit = defaultLimit, skip = 0 } = req.query;
 
-    console.log(movie)
-    if (movie === "true") {
-      request.type = ["movie"];
-    }
-    console.log(request)
-
-    if (+limit === -1) {
-      const data = await videoModel.find(request);
-      res.json(data);
-      return;
-    }
+    // if (+limit === -1) {
+    //   const data = await videoModel.find(request);
+    //   res.json(data);
+    //   return;
+    // }
 
     try {
-      const count = await videoModel.countDocuments(request);
-      const data = await videoModel
-        .find(request)
-        .skip(+skip)
-        .limit(+limit);
-
+      const { data, total } = await this.service.find(
+        parseInt(limit.toString()),
+        parseInt(skip.toString())
+      );
+      const result = data.map(el => new VideoDTO(el));
 
       res.json({
-        total: count,
+        total,
         limit: +limit,
         skip: +skip,
-        data: await aggregateWithWatched(data),
+        data: result,
       });
     } catch (error) {
       next(error);
@@ -79,19 +54,15 @@ export default class VideoController {
   }
 
   @Get(":id")
-  private async findById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  private async findById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
 
-    if (!id) {
-      next(new Error("Missing ID"))
-    }
-
     try {
-      const video = await videoModel.findById(id);
-
-      if (!video) {
-        throw new Error("Video doesn't exists");
-      }
+      const video = await this.service.findById(id);
 
       res.json(video);
     } catch (error) {
@@ -101,33 +72,48 @@ export default class VideoController {
     }
   }
 
-  @Post("by-name")
-  private async findOneByName(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { name } = req.body;
+  // @Post("by-name")
+  // private async findOneByName(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction
+  // ): Promise<void> {
+  //   const { name } = req.body;
 
-    if (!name) next(new Error("missing name"));
+  //   if (!name) next(new Error("missing name"));
 
-    try {
-      const re = new RegExp(`${name}`, "i");
+  //   try {
+  //     const re = new RegExp(`${name}`, "i");
 
-      const video = await videoModel.find({ name: re });
+  //     const video = await videoModel.find({ name: re });
 
-      if (!video) throw new Error("Movie doesn't exists");
+  //     if (!video) throw new Error("Movie doesn't exists");
 
-      res.json(video);
-    } catch (error) {
-      next(error);
-    } finally {
-      return;
-    }
-  }
+  //     res.json(video);
+  //   } catch (error) {
+  //     next(error);
+  //   } finally {
+  //     return;
+  //   }
+  // }
 
   @Post("by-fields")
-  private async findOneByFields(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const result = await VideoService.findByFields(req.body);
+  private async findOneByFields(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { name, episode, season, type, limit, skip } = req.query;
 
-      if (!result) throw new Error("Internal Server Error");
+    try {
+      const result = await this.service.findByFields({
+        name: name.toString(),
+        episode: episode.toString(),
+        season: season.toString(),
+        type: type as VideoTypeEnum[],
+        limit: parseInt(limit.toString()),
+        skip: parseInt(skip.toString()),
+      });
 
       res.json(result);
     } catch (error) {
@@ -138,66 +124,67 @@ export default class VideoController {
   }
 
   @Post()
-  private async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    if (!req.body.name) {
-      next(new Error("missing name"));
-    }
-
+  private async create(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const video = await VideoService.create(req.body, { movieJob: true });
+      const video = await this.service.create(req.body, { movieJob: true });
 
       res.json({
         video,
       });
     } catch (error) {
-      next(error)
+      next(error);
     } finally {
       return;
     }
   }
 
   @Patch(":id")
-  private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { id } = req.params
-
-    if (!id) next(new Error("Missind ID"));
-
-    videoModel.findOneAndUpdate({ _id: id }, { ...req.body }).then(result => {
-      res.json(result)
-    }).catch(err => {
-      next(err)
-    }).finally(() => { return })
-
+  private async patch(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { id } = req.params;
   }
 
   @Delete(":id")
-  private async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+  private async delete(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const { id } = req.params;
 
-    if (!id) {
-      next(new Error("Missing ID"));
+    try {
+      const video = await this.service.deleteOneById(id);
+      res.json(video);
+    } catch (error) {
+      next(error);
     }
 
-    const video = await VideoService.deleteOneById(id);
-
-    if (!video) {
-      next(new Error("Internal Server Error"));
-    }
-
-    if (video === -1) {
-      res.json(`No entry for this ${id}`)
-    }
-
-    res.json(video);
     return;
   }
 
   // TODO: middleware to check if admin
   @Delete()
-  private async deleteAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-    // See function signature
-    const result = await VideoService.deleteAll();
+  private async deleteAll(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      await this.service.deleteAll();
 
-    res.json(result);
+      res.statusCode = 204;
+      res.statusMessage = "All entries has been removed";
+      res.end();
+    } catch (error) {
+      next(error);
+    }
+    return;
   }
 }

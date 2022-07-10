@@ -1,12 +1,12 @@
-import { Watched } from "../../types";
+import { TWatched } from "../../types";
 
 
 class WatchedService {
-  async create(data: Partial<Watched>) {
+  async create(data: Partial<TWatched>) {
     return watchedModel.findOneAndUpdate({ video: data.video }, data, { upsert: true })
   }
 
-  async update(id: string, data: Partial<Watched>) {
+  async update(id: string, data: Partial<TWatched>) {
     return watchedModel.findOneAndUpdate({ video: id }, data, { upsert: true }).then((result) => {
       return result
     })

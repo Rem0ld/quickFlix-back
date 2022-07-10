@@ -68,7 +68,7 @@ describe("Video service unit test", () => {
   describe("get all videos", () => {
     it("should get the video we created", async () => {
       try {
-        const videos = await videoService.find({ limit: 20, skip: 0 });
+        const videos = await videoService.find(20, 0);
         expect(videos).toHaveLength(1);
       } catch (error) {
         console.log(error);

@@ -14,7 +14,7 @@ export const AppDataSource = new DataSource({
     password: "example",
     database: "quickflix_db",
     synchronize: false,
-    logging: true,
+    logging: false,
     dropSchema: false,
     entities: [User, TvShow, Video, Watched, WatchedTvShow],
     migrations: [],

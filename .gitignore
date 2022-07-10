@@ -9,3 +9,5 @@ data/
 public/
 logs/
 jobs/
+quick-start*
+yarn-error.log

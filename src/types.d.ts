@@ -1,12 +1,14 @@
 import { Response } from "express"
 import { Video, VideoTypeEnum } from "./modules/Video/Video.entity";
 import { TvShow } from "./modules/TvShow/TvShow.entity";
+import { Watched } from "./modules/Watched/Watched.entity";
 
 export type VideoType = "movie" | "tv" | "trailer" | "teaser"
 export type TJobStatus = "todo" | "done" | "error"
 
 export type TVideo = {
   id: number;
+  uuid: string;
   idMovieDb?: string // id
   name: string
   basename: string
@@ -21,15 +23,16 @@ export type TVideo = {
   score?: number,
   length?: number,
   resume?: string,
-  director?: string[],
+  directors?: string[],
   writers?: string[],
   actors?: string[],
   trailer?: Video[],
   genres: string[],
   trailerYtCode: string[],
   posterPath: string[],
-  tvShowId?: TvShow;
-  // videoId?: number;
+  tvShow?: TvShow;
+  video?: Video;
+  userWatchedVideo?: Watched[];
   createdAt?: Date;
   updatedAt?: Date;
   // flags?: {
@@ -74,9 +77,9 @@ export type TTvShow = {
   averageLength?: number;
 }
 
-export type Watched = {
+export type TWatched = {
   id: number;
-  timeWatched: number;
+  timesWatched: number;
   length?: number;
   finished: boolean;
   stoppedAt?: number;

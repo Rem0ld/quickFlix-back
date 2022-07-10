@@ -3,9 +3,14 @@ import { defaultLimit } from "../../config/defaultConfig";
 import { RequestBuilder, TVideo } from "../../types";
 import { Video } from "./Video.entity";
 import { dynamicQueryBuilder } from "./Video.service";
+import { v4 as uuidv4 } from "uuid";
 
 class VideoRepository {
   constructor(private manager: EntityManager) { }
+
+  async getCount() {
+    return this.manager.count(Video);
+  }
 
   async findAll({
     limit,
@@ -60,15 +65,23 @@ class VideoRepository {
   }
 
   async create(videoEntity: Omit<TVideo, "id">) {
-    return this.manager.save(Video, videoEntity);
+    return this.manager.save(Video, { ...videoEntity, uuid: uuidv4() });
   }
 
   async update(videoEntity: TVideo) {
     return this.manager.update(Video, videoEntity.id, videoEntity);
   }
 
-  async delete(videoEntity: TVideo) {
-    return this.manager.remove(videoEntity);
+  async delete(id: number) {
+    return this.manager
+      .createQueryBuilder(Video, "video")
+      .delete()
+      .where("id= :id", { id: id })
+      .execute();
+  }
+
+  async deleteAll() {
+    return this.manager.clear(Video);
   }
 }
 
