@@ -1,12 +1,10 @@
-import { EntityTarget, SelectQueryBuilder } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import { AppDataSource } from "../../data-source";
-import { RequestBuilder, TVideo, VideoType } from "../../types";
+import { RequestBuilder, TVideo } from "../../types";
 import { VideoTypeEnum } from "./Video.entity";
 import VideoRepository from "./Video.repository";
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
-class VideoService {
+export default class VideoService {
   videoRepo: VideoRepository;
   constructor(videoRepository: VideoRepository) {
     this.videoRepo = videoRepository;
@@ -14,7 +12,7 @@ class VideoService {
 
   async findById(id: string) {
     if (!id?.length) {
-      throw new Error("missing Id");
+      throw new Error("missing ID");
     }
 
     const video = await this.videoRepo.findById(parseInt(id));
@@ -22,7 +20,7 @@ class VideoService {
     return video;
   }
 
-  async find(limit: number = defaultLimit, skip: number = 0) {
+  async findAll(limit: number = defaultLimit, skip: number = 0) {
     // TODO: prepare db request in data layer
     try {
       const total = await this.videoRepo.getCount();
@@ -116,5 +114,3 @@ class VideoService {
     // const tvShow = await tvShowModel.deleteMany();
   }
 }
-
-export default VideoService;

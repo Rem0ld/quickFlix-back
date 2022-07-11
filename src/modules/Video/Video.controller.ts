@@ -33,7 +33,7 @@ export default class VideoController {
     // }
 
     try {
-      const { data, total } = await this.service.find(
+      const { data, total } = await this.service.findAll(
         parseInt(limit.toString()),
         parseInt(skip.toString())
       );

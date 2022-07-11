@@ -1,9 +1,10 @@
 import { TVideo, TWatched } from "../../types";
+import baseDTO from "../../utils/BaseDTO";
 import { TvShow } from "../TvShow/TvShow.entity";
 import { Watched } from "../Watched/Watched.entity";
 import { Video, VideoTypeEnum } from "./Video.entity";
 
-export class VideoDTO implements TVideo {
+export class VideoDTO extends baseDTO<TVideo> {
   id: number;
   uuid: string;
   name: string;
@@ -33,19 +34,9 @@ export class VideoDTO implements TVideo {
   updatedAt: Date;
 
   constructor(data: TVideo) {
+    super();
     for (let el in data) {
-      this[el] = data[el]
+      this[el] = data[el];
     }
-  }
-
-  serialize() {
-    const result: Partial<VideoDTO> = {}
-    const parsed = JSON.parse(JSON.stringify(this))
-    for (let el in parsed) {
-      if (this[el] !== null) {
-        result[el] = this[el]
-      }
-    }
-    return result
   }
 }

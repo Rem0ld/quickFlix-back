@@ -88,7 +88,6 @@ export type TTvShow = {
   resume?: string;
   score?: number;
   firstAirDate: Date;
-  seasons: SeasonTvShow[];
   averageLength?: number;
 };
 
@@ -180,3 +179,31 @@ type AppResponse<T> = TypedResponse<{
   skip: number;
   data: T;
 }>;
+
+// Tried to dynamically create repository but not working
+// class Base<T> implements BaseRepository<T> {
+//   constructor(
+//     private manager: EntityManager,
+//     private entity: EntitySchema<T>
+//   ) {}
+
+//   findAll(limit: number, skip: number): Promise<T[]> {
+//     return this.manager
+//       .createQueryBuilder<T>(this.entity, this.entity.options.name)
+//       .take(limit)
+//       .skip(skip)
+//       .getMany();
+//   }
+
+//   findById(id: number): Promise<T> {
+//     return this.manager.findOneBy(this.entity, { id });
+//   }
+
+//   create(data: Omit<T, "id">): Promise<T> {}
+
+//   createMany(data: Omit<T, "id">[]): Promise<T[]> {}
+
+//   update(id: number, data: Partial<T>): Promise<UpdateResult> {}
+
+//   delete(id: number): Promise<DeleteResult> {}
+// }
