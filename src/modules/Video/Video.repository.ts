@@ -1,24 +1,18 @@
 import { EntityManager } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import { RequestBuilder, TVideo } from "../../types";
+import { BaseRepository, RequestBuilder, TVideo } from "../../types";
 import { Video } from "./Video.entity";
-import { dynamicQueryBuilder } from "./Video.service";
 import { v4 as uuidv4 } from "uuid";
+import dynamicQueryBuilder from "../../utils/queryBuilder";
 
-class VideoRepository {
+class VideoRepository implements BaseRepository<Video> {
   constructor(private manager: EntityManager) { }
 
   async getCount() {
     return this.manager.count(Video);
   }
 
-  async findAll({
-    limit,
-    skip,
-  }: {
-    limit: number;
-    skip: number;
-  }): Promise<TVideo[]> {
+  async findAll(limit: number, skip: number): Promise<Video[]> {
     return this.manager
       .getRepository(Video)
       .createQueryBuilder("video")
@@ -27,7 +21,7 @@ class VideoRepository {
       .getMany();
   }
 
-  async findById(id: number): Promise<TVideo | null> {
+  async findById(id: number): Promise<Video | null> {
     return this.manager.findOneBy(Video, {
       id,
     });
@@ -37,7 +31,7 @@ class VideoRepository {
     data: { key: string; value: any },
     limit: number,
     skip: number
-  ): Promise<TVideo[] | null> {
+  ): Promise<Video[] | null> {
     return this.manager.find(Video, {
       where: {
         [data.key]: data.value,
@@ -68,8 +62,12 @@ class VideoRepository {
     return this.manager.save(Video, { ...videoEntity, uuid: uuidv4() });
   }
 
-  async update(videoEntity: TVideo) {
-    return this.manager.update(Video, videoEntity.id, videoEntity);
+  async createMany(data: Omit<Video, "id">[]): Promise<Video[]> {
+    return this.manager.save(Video, data);
+  }
+
+  async update(id: number, data: Video) {
+    return this.manager.update(Video, id, data);
   }
 
   async delete(id: number) {

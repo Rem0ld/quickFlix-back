@@ -1,35 +1,50 @@
-import { Response } from "express"
+import { Response } from "express";
 import { Video, VideoTypeEnum } from "./modules/Video/Video.entity";
 import { TvShow } from "./modules/TvShow/TvShow.entity";
 import { Watched } from "./modules/Watched/Watched.entity";
+import { DeleteResult, UpdateResult } from "typeorm";
 
-export type VideoType = "movie" | "tv" | "trailer" | "teaser"
-export type TJobStatus = "todo" | "done" | "error"
+export interface Reader<T> {
+  findAll(limit: number, skip: number): Promise<T[]>;
+  findById(id: number): Promise<T>;
+}
+
+export interface Writer<T> {
+  create(data: Omit<T, "id">): Promise<T>;
+  createMany(data: Omit<T, "id">[]): Promise<T[]>;
+  update(id: number, data: Partial<T>): Promise<UpdateResult>;
+  delete(id: number): Promise<DeleteResult>;
+}
+
+type BaseRepository<T> = Reader<T> & Writer<T>;
+
+export type VideoType = "movie" | "tv" | "trailer" | "teaser";
+export type TJobStatus = "todo" | "done" | "error";
 
 export type TVideo = {
   id: number;
   uuid: string;
-  idMovieDb?: string // id
-  name: string
-  basename: string
-  filename: string
-  ext: string
-  location: string
-  type: VideoTypeEnum,
-  episode?: number,
-  season?: number,
-  year: Date,
-  releaseDate: Date,
-  score?: number,
-  length?: number,
-  resume?: string,
-  directors?: string[],
-  writers?: string[],
-  actors?: string[],
-  trailer?: Video[],
-  genres: string[],
-  trailerYtCode: string[],
-  posterPath: string[],
+  idMovieDb?: string; // id
+  name: string;
+  basename: string;
+  filename: string;
+  ext: string;
+  location: string;
+  type: VideoTypeEnum;
+  episode?: number;
+  season?: number;
+  year: Date;
+  releaseDate: Date;
+  score?: number;
+  length?: number;
+  resume?: string;
+  directors?: string[];
+  writers?: string[];
+  actors?: string[];
+  trailer?: Video[];
+  genres: string[];
+  trailerYtCode: string[];
+  posterPath: string[];
   tvShow?: TvShow;
   video?: Video;
   userWatchedVideo?: Watched[];
@@ -39,30 +54,30 @@ export type TVideo = {
   //   wrongFormat: boolean,
   //   needSubtitles: boolean,
   // },
-}
+};
 
 export type RequestBuilder = {
   name?: string;
   episode?: number;
   season?: number;
   type?: VideoTypeEnum[];
-}
+};
 
 export type EpisodeTvShow = {
   number: string | number;
   ref: String;
-}
+};
 
 export type SeasonTvShow = {
   number: string | number;
-  episodes: EpisodeTvShow[]
-}
+  episodes: EpisodeTvShow[];
+};
 
 export type TTvShow = {
   id: number;
-  idMovieDb?: string // id
-  name: string
-  location: string
+  idMovieDb?: string; // id
+  name: string;
+  location: string;
   numberSeason: number;
   numberEpisode: number;
   ongoing: boolean;
@@ -75,7 +90,7 @@ export type TTvShow = {
   firstAirDate: Date;
   seasons: SeasonTvShow[];
   averageLength?: number;
-}
+};
 
 export type TWatched = {
   id: number;
@@ -85,61 +100,60 @@ export type TWatched = {
   stoppedAt?: number;
   video: number;
   user: number;
-}
+};
 
 export type WatchedTvShow = {
   id: number;
   tvShow: number;
   user: number;
-}
+};
 
-export type TRole = 'admin' | 'simple'
+export type TRole = "admin" | "simple";
 export type TUser = {
   id: number;
   pseudo: string;
   email: string;
   password: string;
   isAdmin: boolean;
-}
+};
 
 export type Subtitle = {
   id: number;
   name: string;
   ext: string;
   path: string;
-}
+};
 
 export type MovieDbJob = {
   id: number;
   video: TVideo;
   status: TJobStatus;
   error: string[];
-  type: VideoType
-}
+  type: VideoType;
+};
 
 export type Pagination = {
   limit: number;
   skip: number;
   populate?: boolean;
-}
+};
 
 export type PaginatedResponse<T> = {
   total: number;
   limit: number;
   skip: number;
   data: T;
+};
 
-}
-
-export type ExtSubtitle = "srt" | "vtt" | "sfv"
-export type ExtVideo = "avi" | "mp4" | "mkv"
+export type ExtSubtitle = "srt" | "vtt" | "sfv";
+export type ExtVideo = "avi" | "mp4" | "mkv";
 
 export type VideoMaker = {
   countVideo: number;
   movieJob: number;
   countTvShowCreated: number;
   countUpdatedTvShow: number;
-}
+};
 
 export type EncodingJob = {
   id: number;
@@ -152,15 +166,17 @@ export type EncodingJob = {
 
 /* NOT WORKING */
 // Helpers
-type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T];
+type Diff<T extends string, U extends string> = ({ [P in T]: P } & {
+  [P in U]: never;
+} & { [x: string]: never })[T];
 // type Omit<T, K extends keyof T> = Pick<T, Diff<keyof T, K>>;
 
 // Generic typed response, we omit 'json' and we add a new json method with the desired parameter type
-type TypedResponse<T> = Omit<Response, 'json'> & { json(data: T): Response };
+type TypedResponse<T> = Omit<Response, "json"> & { json(data: T): Response };
 // An example of a typed response
 type AppResponse<T> = TypedResponse<{
   total: number;
   limit: number;
   skip: number;
   data: T;
-}>
+}>;

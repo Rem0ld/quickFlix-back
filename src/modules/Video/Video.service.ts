@@ -6,27 +6,6 @@ import { VideoTypeEnum } from "./Video.entity";
 import VideoRepository from "./Video.repository";
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
-export function dynamicQueryBuilder<T>(
-  data: RequestBuilder,
-  entity: EntityTarget<T>,
-  entityName: string
-): SelectQueryBuilder<T> {
-  const builder = AppDataSource.createQueryBuilder(entity, entityName);
-  for (const el in data) {
-    if (!Array.isArray(data[el])) {
-      builder.andWhere(`${entityName}.${el} LIKE :${el}`, {
-        [el]: `${data[el]}%`,
-      });
-    } else {
-      builder.andWhere(`${entityName}.${el} IN (:...${el})`, {
-        [el]: data[el],
-      });
-    }
-  }
-
-  return builder;
-}
-
 class VideoService {
   videoRepo: VideoRepository;
   constructor(videoRepository: VideoRepository) {
@@ -47,7 +26,7 @@ class VideoService {
     // TODO: prepare db request in data layer
     try {
       const total = await this.videoRepo.getCount();
-      const videos = await this.videoRepo.findAll({ limit, skip });
+      const videos = await this.videoRepo.findAll(limit, skip);
       return { data: videos, total };
     } catch (error) {
       console.error(error);

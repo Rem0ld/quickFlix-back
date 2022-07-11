@@ -1,8 +1,6 @@
-import { defaultLimit } from "../../config/defaultConfig";
 import { Request, Response, NextFunction } from 'express';
 import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
 import errorHandler from "../../services/errorHandler";
-import { regexIsSubtitle } from "../../utils/regexes";
 import WatchedService from "./Watched.service";
 import WatchedTvShowService from "../WatchedTvShow/WatchedTvShow.service";
 import { logger } from "../../libs/logger";
