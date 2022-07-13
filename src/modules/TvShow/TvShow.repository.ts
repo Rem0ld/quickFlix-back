@@ -17,6 +17,7 @@ export class TvShowRepository implements BaseRepository<TvShow> {
     return this.manager
       .getRepository(TvShow)
       .createQueryBuilder(TvShow.name)
+      .leftJoinAndSelect("tv_show.videos", "video")
       .take(limit)
       .skip(skip)
       .getMany();

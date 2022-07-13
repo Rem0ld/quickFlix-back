@@ -33,10 +33,7 @@ export default class VideoController {
     // }
 
     try {
-      const { data, total } = await this.service.findAll(
-        parseInt(limit.toString()),
-        parseInt(skip.toString())
-      );
+      const { data, total } = await this.service.findAll(+limit, +skip);
       const result = data.map(el => new VideoDTO(el).serialize());
 
       res.json({
@@ -110,8 +107,8 @@ export default class VideoController {
         episode: episode.toString(),
         season: season.toString(),
         type: type as VideoTypeEnum[],
-        limit: parseInt(limit.toString()),
-        skip: parseInt(skip.toString()),
+        limit: +limit,
+        skip: +skip,
       });
 
       res.json(result);

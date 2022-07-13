@@ -1,10 +1,10 @@
 import { TableInheritance } from "typeorm";
-import { Pagination } from "../../types";
+import { Pagination, TResultService } from "../../types";
 import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 import { TvShow } from "./TvShow.entity";
 import { TvShowRepository } from "./TvShow.repository";
 
-class TvShowService {
+export default class TvShowService {
   repo: TvShowRepository;
   constructor(repo: TvShowRepository) { }
 
@@ -13,7 +13,7 @@ class TvShowService {
       throw new Error("missing ID");
     }
 
-    const data = await this.repo.findById(parseInt(id));
+    const data = await this.repo.findById(+id);
     return data;
   }
 
@@ -21,8 +21,7 @@ class TvShowService {
   async findAll(
     limit: number,
     skip: number,
-    populate: boolean
-  ): Promise<{ total: number; data: TvShow[] }> {
+  ): Promise<TResultService<TvShow[]>> {
     try {
       const total = await this.repo.getCount();
       const data = await this.repo.findAll(limit, skip);
@@ -55,7 +54,7 @@ class TvShowService {
 
   async update(id: string, data: Partial<TvShow>) {
     try {
-      const result = await this.repo.update(parseInt(id), data);
+      const result = await this.repo.update(+id, data);
       return result;
     } catch (error) {
       console.error(error);
@@ -65,7 +64,7 @@ class TvShowService {
 
   async delete(id: string) {
     try {
-      const result = await this.repo.delete(parseInt(id));
+      const result = await this.repo.delete(+id);
       console.log(result);
       return {};
     } catch (error) {

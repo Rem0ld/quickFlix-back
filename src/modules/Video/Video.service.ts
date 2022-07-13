@@ -15,7 +15,7 @@ export default class VideoService {
       throw new Error("missing ID");
     }
 
-    const video = await this.videoRepo.findById(parseInt(id));
+    const video = await this.videoRepo.findById(+id);
 
     return video;
   }
@@ -53,10 +53,10 @@ export default class VideoService {
       request.name = name;
     }
     if (episode) {
-      request.episode = parseInt(episode);
+      request.episode = +episode;
     }
     if (season) {
-      request.season = parseInt(season);
+      request.season = +season;
     }
     if (type) {
       request.type = type;
@@ -94,7 +94,7 @@ export default class VideoService {
       throw new Error("Missing id");
     }
 
-    const video = await this.videoRepo.delete(parseInt(id));
+    const video = await this.videoRepo.delete(+id);
 
     // await movieJobService.deletOneByVideoId(id);
 

@@ -131,6 +131,11 @@ export type MovieDbJob = {
   type: VideoType;
 };
 
+export type TResultService<T> = {
+  total: number;
+  data: T | T[];
+}
+
 export type Pagination = {
   limit: number;
   skip: number;
