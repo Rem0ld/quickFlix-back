@@ -5,8 +5,7 @@ import {
     OneToMany,
     CreateDateColumn,
     UpdateDateColumn,
-    Timestamp,
-    BaseEntity,
+    Index,
 } from "typeorm";
 import { Watched } from "../Watched/Watched.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
@@ -16,9 +15,11 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Index()
     @Column({ unique: true })
     pseudo: string;
 
+    @Index()
     @Column()
     email: string;
 
@@ -39,6 +40,6 @@ export class User {
     @CreateDateColumn({ name: "created_at" })
     createdAt: Date;
 
-    @UpdateDateColumn(({ name: "updated_at" }))
-    updatedAt: Date
+    @UpdateDateColumn({ name: "updated_at" })
+    updatedAt: Date;
 }

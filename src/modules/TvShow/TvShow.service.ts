@@ -13,14 +13,18 @@ export default class TvShowService {
       throw new Error("missing ID");
     }
 
-    const data = await this.repo.findById(+id);
-    return data;
+    try {
+      const data = await this.repo.findById(+id);
+      return data;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   // TODO: make join with videos
   async findAll(
     limit: number,
-    skip: number,
+    skip: number
   ): Promise<TResultService<TvShow[]>> {
     try {
       const total = await this.repo.getCount();
@@ -40,7 +44,18 @@ export default class TvShowService {
   // }
 
   async create(data: TvShow, params?: { movieJob: boolean; id: string }) {
-    const result = await this.repo.create(data);
+    // TODO: Add more validation here
+    if (!Object.keys(data).length) {
+      throw new Error("missing data");
+    }
+
+    try {
+      const result = await this.repo.create(data);
+      return result;
+    } catch (error) {
+      console.error(error);
+      throw new Error(error);
+    }
 
     // if (params?.movieJob) {
     //   await movieJobService.create({
@@ -48,28 +63,38 @@ export default class TvShowService {
     //     type: "tv",
     //   });
     // }
-
-    return result;
   }
 
   async update(id: string, data: Partial<TvShow>) {
+    if (!id.length) {
+      throw new Error("missing id");
+    }
+
+    if (!Object.keys(data).length) {
+      throw new Error("missing data");
+    }
+
     try {
       const result = await this.repo.update(+id, data);
       return result;
     } catch (error) {
       console.error(error);
-      throw new Error("Cannot update record");
+      throw new Error(error);
     }
   }
 
   async delete(id: string) {
+    if (!id.length) {
+      throw new Error("missing id");
+    }
+
     try {
       const result = await this.repo.delete(+id);
       console.log(result);
       return {};
     } catch (error) {
       console.error(error);
-      throw new Error("cannot delete record");
+      throw new Error(error);
     }
   }
 }

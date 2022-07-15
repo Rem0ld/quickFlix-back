@@ -1,12 +1,11 @@
-import VideoService, {
-  dynamicQueryBuilder,
-} from "../../modules/Video/Video.service";
 import { Video, VideoTypeEnum } from "../../modules/Video/Video.entity";
 import VideoRepository from "../../modules/Video/Video.repository";
 import { RequestBuilder, TVideo } from "../../types";
 import { AppDataSource } from "../../data-source";
 import connection from "../../config/databases";
 import { v4 as uuidv4 } from "uuid";
+import VideoService from "../../modules/Video/Video.service";
+import dynamicQueryBuilder from "../../utils/queryBuilder";
 
 beforeAll(async () => {
   await connection.create();

@@ -1,6 +1,8 @@
 import { TvShow } from "./TvShow.entity";
 import { TTvShow } from "../../types"
 import baseDTO from "../../utils/BaseDTO";
+import { Video } from "../Video/Video.entity";
+import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
 
 export class TvShowDTO extends baseDTO<TTvShow>{
@@ -19,6 +21,8 @@ export class TvShowDTO extends baseDTO<TTvShow>{
   trailerYtCode: string[];
   posterPath: string[];
   firstAirDate: Date;
+  videos?: Video[];
+  userWatchedTvShow?: WatchedTvShow[];
   createdAt: Date;
   updatedAt: Date;
 
