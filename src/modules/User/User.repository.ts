@@ -1,9 +1,9 @@
-import { EntityManager } from "typeorm";
-import { TUser } from "../../types";
+import { DeleteResult, EntityManager, UpdateResult } from "typeorm";
 import { User } from "./User.entity";
 import bcrypt from "bcryptjs";
+import { BaseRepository } from "../../types";
 
-class UserRepository {
+class UserRepository implements BaseRepository<User> {
   constructor(private manager: EntityManager) { }
 
   async findAll() {
@@ -18,10 +18,26 @@ class UserRepository {
     });
   }
 
-  async create(userEntity: TUser) {
+  async findById(id: number): Promise<User> {
+    return this.manager.findOneBy(User, { id });
+  }
+
+  async create(userEntity: Partial<User>): Promise<User> {
     const salt = await bcrypt.genSalt(10);
     userEntity.password = bcrypt.hashSync(userEntity.password, salt);
     return this.manager.save(User, userEntity);
+  }
+
+  async createMany(data: Omit<User, "id">[]): Promise<User[]> {
+    return [];
+  }
+
+  async delete(id: number): Promise<any> {
+    return {};
+  }
+
+  async update(id: number, data: Partial<User>): Promise<UpdateResult> {
+    return this.manager.update(User, id, data);
   }
 
   compareHash = async (password: string, hash: string) =>

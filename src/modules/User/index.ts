@@ -4,7 +4,7 @@ import UserRepository from "./User.repository";
 import UserService from "./User.service";
 
 const repo = new UserRepository(AppDataSource.manager);
-const service = new UserService(repo);
+export const service = new UserService(repo);
 const controller = new UserController(service);
 
 export default controller;
