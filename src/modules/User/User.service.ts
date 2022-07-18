@@ -42,9 +42,9 @@ export default class UserService {
     try {
       const user: User = await this.findByPseudo(pseudo);
       if (!user) {
-        throw new Error("no user found ");
+        throw new Error("no user found");
       }
-      const result = this.repo.compareHash(password, user.password);
+      const result = await this.repo.compareHash(password, user.password);
 
       if (!result) {
         throw new Error("incorrect password");

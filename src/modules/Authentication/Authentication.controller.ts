@@ -19,14 +19,55 @@ export default class AuthenticationController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { pseudo, password } = req.body;
     try {
+      const { pseudo, password } = req.body;
+      if (!pseudo || !password) {
+        throw new Error("missing parameters");
+      }
       const user = await this.service.authenticate(pseudo, password);
       res.json(user);
     } catch (error) {
       next(error);
     } finally {
       return;
+    }
+  }
+
+  @Post("check")
+  private async checkToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        throw new Error("missing parameter");
+      }
+      const result = this.service.parseToken(token);
+
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  @Post("new-token")
+  private async generateNewToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        throw new Error("missing parameter");
+      }
+      const newToken = await this.service.generateNewToken(token);
+      console.log(newToken)
+      res.json(newToken);
+    } catch (error) {
+      next(error);
     }
   }
 

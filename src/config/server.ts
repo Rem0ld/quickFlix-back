@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 import { Server } from "@overnightjs/core";
 import routes from "../modules";
@@ -14,13 +15,14 @@ export default class MyServer extends Server {
     this.showLogs = true;
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
+    this.app.use(cookieParser());
     this.app.use(morgan("combined"));
     this.app.use(cors());
     this.setupController();
   }
 
   private setupController(): void {
-    logger.info("Setting up controllers")
+    logger.info("Setting up controllers");
     // all controllers goes here
     // connection to db
     // const streamController = new StreamController();

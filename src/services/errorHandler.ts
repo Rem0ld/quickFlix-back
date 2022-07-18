@@ -17,5 +17,9 @@ export default (error: Error, req: Request, res: Response, next: NextFunction) =
     res.status(500).json(error.message);
   }
 
+  if (error.message.includes("Invalid or expired") || error.message.includes("invalid token")) {
+    res.status(511).json("jwt invalid or expired")
+  }
+
   res.status(500).json(error.message);
 };

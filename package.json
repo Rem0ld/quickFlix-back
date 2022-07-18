@@ -9,6 +9,7 @@
       "@typescript-eslint/eslint-plugin": "^5.18.0",
       "babel-node": "^0.0.1-security",
       "bcryptjs": "^2.4.3",
+      "cookie-parser": "^1.4.6",
       "cors": "^2.8.5",
       "dotenv": "^10.0.0",
       "eslint-config-standard": "^16.0.3",
@@ -40,6 +41,7 @@
    },
    "devDependencies": {
       "@types/bcryptjs": "^2.4.2",
+      "@types/cookie-parser": "^1.4.3",
       "@types/cors": "^2.8.12",
       "@types/dotenv": "^8.2.0",
       "@types/express": "^4.17.13",

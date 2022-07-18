@@ -7,13 +7,16 @@ import {
   Patch,
   Delete,
   ClassErrorMiddleware,
+  ClassMiddleware,
 } from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
 import { VideoTypeEnum } from "./Video.entity";
 import { VideoDTO } from "./Video.dto";
+import protectRoutes from "../../middlewares/protectRoutes.middleware";
 
 @Controller("video")
+@ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
 export default class VideoController {
   constructor(private service: VideoService) { }
