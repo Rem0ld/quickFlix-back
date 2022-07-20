@@ -3,13 +3,11 @@ import { logger } from "../libs/logger";
 
 const connection = {
   async create() {
-    await AppDataSource.initialize().then(() => {
-      logger.info("Database is connected");
-    });
+    return AppDataSource.initialize()
   },
 
   async close() {
-    await AppDataSource.destroy();
+    return AppDataSource.destroy();
   },
 
   async clear() {
@@ -18,10 +16,10 @@ const connection = {
     for (let entity of entities) {
       const repository = AppDataSource.getRepository(entity.name);
       promises.push(
-        repository.query(`TRUNCATE table ${entity.tableName} CASCADE;`)
+        repository.query(`delete from "${entity.tableName}" CASCADE;`)
       );
     }
-    await Promise.all(promises);
+    return Promise.all(promises).catch(error => console.log(error));
   },
 };
 
