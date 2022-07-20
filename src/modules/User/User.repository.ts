@@ -25,7 +25,8 @@ class UserRepository implements BaseRepository<User> {
   async create(userEntity: Partial<User>): Promise<User> {
     const salt = await bcrypt.genSalt(10);
     userEntity.password = bcrypt.hashSync(userEntity.password, salt);
-    return this.manager.save(User, userEntity);
+    const user: User = await this.manager.save(User, userEntity);
+    return user;
   }
 
   async createMany(data: Omit<User, "id">[]): Promise<User[]> {
@@ -40,8 +41,9 @@ class UserRepository implements BaseRepository<User> {
     return this.manager.update(User, id, data);
   }
 
-  compareHash = async (password: string, hash: string) =>
-    bcrypt.compareSync(password, hash);
+  compareHash = (password: string, hash: string) => {
+    return bcrypt.compareSync(password, hash);
+  }
 }
 
 export default UserRepository;

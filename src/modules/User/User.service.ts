@@ -44,7 +44,7 @@ export default class UserService {
       if (!user) {
         throw new Error("no user found");
       }
-      const result = await this.repo.compareHash(password, user.password);
+      const result = this.repo.compareHash(password, user.password);
 
       if (!result) {
         throw new Error("incorrect password");

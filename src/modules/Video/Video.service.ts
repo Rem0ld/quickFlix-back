@@ -1,7 +1,9 @@
+import { UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import { RequestBuilder, TVideo } from "../../types";
-import { VideoTypeEnum } from "./Video.entity";
+import { TResultService, RequestBuilder, TVideo } from "../../types";
+import { Video, VideoTypeEnum } from "./Video.entity";
 import VideoRepository from "./Video.repository";
+
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
 export default class VideoService {
@@ -10,8 +12,8 @@ export default class VideoService {
     this.videoRepo = videoRepository;
   }
 
-  async findById(id: string) {
-    if (!id?.length) {
+  async findById(id: string): Promise<Video | null> {
+    if (!id.length) {
       throw new Error("missing ID");
     }
 
@@ -20,7 +22,10 @@ export default class VideoService {
     return video;
   }
 
-  async findAll(limit: number = defaultLimit, skip: number = 0) {
+  async findAll(
+    limit: number = defaultLimit,
+    skip: number = 0
+  ): Promise<TResultService<Video>> {
     // TODO: prepare db request in data layer
     try {
       const total = await this.videoRepo.getCount();
@@ -37,16 +42,16 @@ export default class VideoService {
     episode,
     season,
     type,
-    limit,
-    skip,
+    limit = defaultLimit,
+    skip = 0,
   }: {
     name?: string;
     episode?: string;
     season?: string;
     type?: VideoTypeEnum[];
-    limit: number;
-    skip: number;
-  }) {
+    limit?: number;
+    skip?: number;
+  }): Promise<TResultService<Video>> {
     const request: RequestBuilder = {};
 
     if (name) {
@@ -62,14 +67,33 @@ export default class VideoService {
       request.type = type;
     }
 
-    const videos = await this.videoRepo.findByFields(request, limit, skip);
+    try {
+      const total = await this.videoRepo.getCount();
+      const videos = await this.videoRepo.findByFields(request, limit, skip);
+      return { total, data: videos };
+    } catch (error) {
+      throw new Error(error);
+    }
 
     // if (!videos) throw new Error("Cannot find videos");
-
-    return videos;
   }
 
-  async patch(id: string, data: Partial<TVideo>) { }
+  async patch(id: string, data: Partial<Video>): Promise<UpdateResult> {
+    if (!id.length) {
+      throw new Error("missing id");
+    }
+    if (!Object.keys(data).length) {
+      throw new Error("missing data");
+    }
+
+    try {
+      const updatedVideo = await this.videoRepo.update(+id, data);
+
+      return updatedVideo;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 
   async create(data: Omit<TVideo, "id">, params: { movieJob: boolean }) {
     // TODO: validation to make sure video has everything needed
