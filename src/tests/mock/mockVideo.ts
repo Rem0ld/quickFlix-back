@@ -19,6 +19,23 @@ export const mockVideo: Omit<TVideo, "id"> = {
   posterPath: [],
 };
 
+export const mockVideo2: Omit<TVideo, "id"> = {
+  uuid: uuidv4(),
+  name: "game of thrones",
+  basename: "game of thrones",
+  location: "useretcgaime/etc/jesuisla",
+  ext: "mp4",
+  filename: "game of thrones",
+  type: VideoTypeEnum.TV,
+  episode: 2,
+  season: 1,
+  year: new Date("02/14/2003"),
+  releaseDate: new Date("02/24/2003"),
+  genres: ["action"],
+  trailerYtCode: [],
+  posterPath: [],
+};
+
 export const mockUpdateVideo: Partial<Video> = {
   basename: "game",
 };

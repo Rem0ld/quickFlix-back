@@ -13,7 +13,7 @@ export interface Reader<T> {
 export interface Writer<T> {
   create(data: Omit<T, "id">): Promise<T>;
   createMany(data: Omit<T, "id">[]): Promise<T[]>;
-  update(id: number, data: Partial<T>): Promise<UpdateResult>;
+  update(id: number, data: Partial<T>): Promise<T>;
   delete(id: number): Promise<DeleteResult>;
 }
 
@@ -182,6 +182,7 @@ type Diff<T extends string, U extends string> = ({ [P in T]: P } & {
 
 // Generic typed response, we omit 'json' and we add a new json method with the desired parameter type
 type TypedResponse<T> = Omit<Response, "json"> & { json(data: T): Response };
+
 // An example of a typed response
 type AppResponse<T> = TypedResponse<{
   total: number;

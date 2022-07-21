@@ -37,8 +37,8 @@ class UserRepository implements BaseRepository<User> {
     return {};
   }
 
-  async update(id: number, data: Partial<User>): Promise<UpdateResult> {
-    return this.manager.update(User, id, data);
+  async update(id: number, data: Partial<User>): Promise<User> {
+    return this.manager.save(User, { id, ...data });
   }
 
   compareHash = (password: string, hash: string) => {

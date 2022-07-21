@@ -1,8 +1,7 @@
-import { DeleteResult, TableInheritance, UpdateResult } from "typeorm";
+import { DeleteResult, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
 import { promisifier } from "../../services/promisifier";
-import { Pagination, TResultService, TTvShow } from "../../types";
-import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
+import { TResultService, TTvShow } from "../../types";
 import { TvShow } from "./TvShow.entity";
 import { TvShowRepository } from "./TvShow.repository";
 
@@ -17,22 +16,24 @@ export default class TvShowService {
       throw new Error("missing ID");
     }
 
-    try {
-      const data = await this.repo.findById(+id);
-      return data;
-    } catch (error) {
+    const [result, error] = await promisifier(this.repo.findById(+id));
+    if (error) {
       throw new Error(error);
     }
+    return result;
   }
 
   // TODO: make join with videos
-  async findAll(limit: number = defaultLimit, skip: number = 0): Promise<TResultService<TvShow>> {
+  async findAll(
+    limit: number = defaultLimit,
+    skip: number = 0
+  ): Promise<TResultService<TvShow>> {
     const total = await this.repo.getCount();
-    const [data, error] = await promisifier(this.repo.findAll(limit, skip));
+    const [result, error] = await promisifier(this.repo.findAll(limit, skip));
     if (error) {
-      throw new Error("Cannot find all tvShows, probably due to reaching DB");
+      throw new Error(error);
     }
-    return { total, data };
+    return { total, data: result };
   }
 
   // async findByName({ name }: { name: string }): Promise<TvShow | null> {
@@ -81,13 +82,11 @@ export default class TvShowService {
       throw new Error("missing data");
     }
 
-    try {
-      const result = await this.repo.update(+id, data);
-      return result;
-    } catch (error) {
-      console.error(error);
+    const [result, error] = await promisifier(this.repo.update(+id, data));
+    if (error) {
       throw new Error(error);
     }
+    return result;
   }
 
   async delete(id: string): Promise<DeleteResult> {
@@ -95,12 +94,10 @@ export default class TvShowService {
       throw new Error("missing id");
     }
 
-    try {
-      const result = await this.repo.delete(+id);
-      return result;
-    } catch (error) {
-      console.error(error);
+    const [result, error] = await promisifier(this.repo.delete(+id));
+    if (error) {
       throw new Error(error);
     }
+    return result;
   }
 }

@@ -1,6 +1,7 @@
-import { configJest, tvShowService } from ".";
+import { configJest, tvShowService, videoService } from ".";
 import { TTvShow } from "../../types";
 import { mockTvShow } from "../mock/mockTvShow";
+import { mockVideo, mockVideo2 } from "../mock/mockVideo";
 
 configJest();
 
@@ -23,15 +24,22 @@ describe("find tvShow", () => {
     expect(tvShows.total).toBe(1);
     expect(tvShows.data).toHaveLength(1);
   });
+
   it("should find a tvShow by id", async () => {
-    const tvShows = await tvShowService.findAll();
-    const tvShow = await tvShowService.findById(tvShows[0].id);
+    const { data } = await tvShowService.findAll();
+    const tvShow = await tvShowService.findById(data[0].id.toString());
     expect(tvShow).toHaveProperty("name");
   });
 });
 
 describe("update tvShow", () => {
-  it("should add episode to tvshow", async () => { });
+  it("should add episode to tvshow", async () => {
+    const { data: tvShows } = await tvShowService.findAll();
+    const video = await videoService.create(mockVideo, { movieJob: false });
+    await tvShowService.update(tvShows[0].id.toString(), { videos: [video] });
+    const updated = await tvShowService.findAll();
+    expect(updated.data[0].videos).toHaveLength(1);
+  });
 });
 
 describe("delete tvShow", () => {

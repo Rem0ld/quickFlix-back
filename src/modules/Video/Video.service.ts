@@ -78,7 +78,7 @@ export default class VideoService {
     // if (!videos) throw new Error("Cannot find videos");
   }
 
-  async patch(id: string, data: Partial<Video>): Promise<UpdateResult> {
+  async patch(id: string, data: Partial<Video>): Promise<Video> {
     if (!id.length) {
       throw new Error("missing id");
     }

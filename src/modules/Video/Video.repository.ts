@@ -67,7 +67,7 @@ class VideoRepository implements BaseRepository<Video> {
   }
 
   async update(id: number, data: Partial<Video>) {
-    return this.manager.update(Video, id, data);
+    return this.manager.save(Video, { id, ...data });
   }
 
   async delete(id: number) {

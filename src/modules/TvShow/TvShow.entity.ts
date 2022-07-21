@@ -12,7 +12,7 @@ import { TTvShow } from "../../types";
 import { Video } from "../Video/Video.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
-@Entity()
+@Entity({ name: "tv_show" })
 export class TvShow implements TTvShow {
   @PrimaryGeneratedColumn()
   id: number;

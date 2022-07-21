@@ -11,6 +11,9 @@ import { TvShowRepository } from "../../modules/TvShow/TvShow.repository";
 import TvShowService from "../../modules/TvShow/TvShow.service";
 dotenv.config();
 
+/**
+ * Creates beforeAll connection and afterAll clean DB and close connection
+ */
 export function configJest() {
   beforeAll(async () => {
     await connection.create();
