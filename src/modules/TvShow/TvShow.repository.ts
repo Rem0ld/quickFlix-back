@@ -3,7 +3,7 @@ import {
   EntityManager,
   UpdateResult,
 } from "typeorm";
-import { BaseRepository } from "../../types";
+import { BaseRepository, TTvShow } from "../../types";
 import { TvShow } from "./TvShow.entity";
 
 export class TvShowRepository implements BaseRepository<TvShow> {
@@ -27,11 +27,11 @@ export class TvShowRepository implements BaseRepository<TvShow> {
     return this.manager.findOneBy(TvShow, { id });
   }
 
-  create(data: Omit<TvShow, "id">): Promise<TvShow> {
+  create(data: Omit<TTvShow, "id">): Promise<TvShow> {
     return this.manager.save(TvShow, { ...data });
   }
 
-  createMany(data: Omit<TvShow, "id">[]): Promise<TvShow[]> {
+  createMany(data: Omit<TTvShow, "id">[]): Promise<TvShow[]> {
     return this.manager.save(TvShow, data);
   }
 

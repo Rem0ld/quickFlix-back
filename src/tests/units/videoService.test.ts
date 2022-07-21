@@ -1,55 +1,15 @@
-import { Video, VideoTypeEnum } from "../../modules/Video/Video.entity";
-import VideoRepository from "../../modules/Video/Video.repository";
-import { RequestBuilder, TResultService, TVideo } from "../../types";
-import { AppDataSource } from "../../data-source";
-import connection from "../../config/databases";
-import { v4 as uuidv4 } from "uuid";
-import VideoService from "../../modules/Video/Video.service";
+import { Video } from "../../modules/Video/Video.entity";
+import { TResultService, TVideo } from "../../types";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
+import {
+  mockRequest,
+  mockRequestEpisode,
+  mockUpdateVideo,
+  mockVideo,
+} from "../mock/mockVideo";
+import { configJest, videoService } from ".";
 
-beforeAll(async () => {
-  await connection.create();
-});
-
-afterAll(async () => {
-  await connection.clear();
-  await connection.close();
-});
-
-const videoRepo = new VideoRepository(AppDataSource.manager);
-const videoService = new VideoService(videoRepo);
-
-const mockVideo: Omit<TVideo, "id"> = {
-  uuid: uuidv4(),
-  name: "game of thrones",
-  basename: "game of thrones",
-  location: "useretcgaime",
-  ext: "mp4",
-  filename: "game of thrones",
-  type: VideoTypeEnum.TV,
-  episode: 1,
-  season: 1,
-  year: new Date("02/14/2003"),
-  releaseDate: new Date("02/14/2003"),
-  genres: ["action"],
-  trailerYtCode: [],
-  posterPath: [],
-};
-
-const mockUpdateVideo: Partial<Video> = {
-  basename: "game",
-};
-
-const mockRequest: RequestBuilder = {
-  name: "game",
-  episode: 1,
-  season: 1,
-  type: [VideoTypeEnum.TV, VideoTypeEnum.MOVIE],
-};
-
-const mockRequestEpisode: RequestBuilder = {
-  episode: 1,
-};
+configJest();
 
 describe("Video service unit test", () => {
   describe("add a video", () => {
@@ -100,11 +60,16 @@ describe("Video service unit test", () => {
 
     describe("Update one video", () => {
       it("should update video with the given properties", async () => {
-        const { data }: TResultService<Video> = await videoService.findByFields({
-          name: "game of thrones",
-        });
+        const { data }: TResultService<Video> = await videoService.findByFields(
+          {
+            name: "game of thrones",
+          }
+        );
         expect(data).toHaveLength(1);
-        const result = await videoService.patch(data[0].id.toString(), mockUpdateVideo);
+        const result = await videoService.patch(
+          data[0].id.toString(),
+          mockUpdateVideo
+        );
         expect(result.affected).toBe(1);
         const video: Video = await videoService.findById(data[0].id.toString());
 

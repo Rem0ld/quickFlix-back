@@ -8,11 +8,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { TTvShow } from "../../types";
 import { Video } from "../Video/Video.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
 @Entity()
-export class TvShow extends BaseEntity {
+export class TvShow implements TTvShow {
   @PrimaryGeneratedColumn()
   id: number;
 

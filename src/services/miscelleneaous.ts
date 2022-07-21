@@ -7,7 +7,7 @@ import TvShowService from "../modules/TvShow/TvShow.service";
 import VideoService from "../modules/Video/Video.service";
 import { regExBasename, regexTvShow, regexYearDate } from "../utils/regexes";
 import { parseBasename } from "../utils/stringManipulation";
-import { ExtSubtitle, ExtVideo, TvShow, TVideo, VideoMaker } from "../types";
+import { ExtSubtitle, ExtVideo, TTvShow, TVideo, VideoMaker } from "../types";
 import { logger } from "../libs/logger";
 import { EntityManager, Repository } from "typeorm";
 
@@ -146,7 +146,7 @@ export async function makeVideo(
   if (!isTvShow)
     return { countVideo, movieJob, countTvShowCreated, countUpdatedTvShow };
 
-  let tvShow: TvShow | null = await TvShowService.findByName({
+  let tvShow: TTvShow | null = await TvShowService.findByName({
     name: basename,
   });
 

@@ -3,6 +3,7 @@ import { Video, VideoTypeEnum } from "./modules/Video/Video.entity";
 import { TvShow } from "./modules/TvShow/TvShow.entity";
 import { Watched } from "./modules/Watched/Watched.entity";
 import { DeleteResult, UpdateResult } from "typeorm";
+import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity";
 
 export interface Reader<T> {
   findAll(limit: number, skip: number): Promise<T[]>;
@@ -81,14 +82,18 @@ export type TTvShow = {
   numberSeason: number;
   numberEpisode: number;
   ongoing: boolean;
-  originCountry: string[];
-  trailerYtCode: string[];
-  posterPath: string[];
+  originCountry?: string[];
+  trailerYtCode?: string[];
+  posterPath?: string[];
   genres: string[];
   resume?: string;
   score?: number;
   firstAirDate: Date;
   averageLength?: number;
+  videos?: Video[];
+  userWatchedTvShow?: WatchedTvShow[];
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type TWatched = {
@@ -101,7 +106,7 @@ export type TWatched = {
   user: number;
 };
 
-export type WatchedTvShow = {
+export type TWatchedTvShow = {
   id: number;
   tvShow: number;
   user: number;
@@ -116,14 +121,14 @@ export type TUser = {
   isAdmin: boolean;
 };
 
-export type Subtitle = {
+export type TSubtitle = {
   id: number;
   name: string;
   ext: string;
   path: string;
 };
 
-export type MovieDbJob = {
+export type TMovieDbJob = {
   id: number;
   video: TVideo;
   status: TJobStatus;
@@ -133,7 +138,7 @@ export type MovieDbJob = {
 
 export type TResultService<T> = {
   total: number;
-  data: T | T[];
+  data: T[];
 }
 
 export type Pagination = {
@@ -152,7 +157,7 @@ export type PaginatedResponse<T> = {
 export type ExtSubtitle = "srt" | "vtt" | "sfv";
 export type ExtVideo = "avi" | "mp4" | "mkv";
 
-export type VideoMaker = {
+export type TVideoMaker = {
   countVideo: number;
   movieJob: number;
   countTvShowCreated: number;

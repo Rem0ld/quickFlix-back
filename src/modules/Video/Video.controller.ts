@@ -37,7 +37,7 @@ export default class VideoController {
 
     try {
       const { data, total } = await this.service.findAll(+limit, +skip);
-      const result = data.map(el => new VideoDTO(el).serialize());
+      const result = data.length || data.map(el => new VideoDTO(el).serialize());
 
       res.json({
         total,
