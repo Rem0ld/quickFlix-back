@@ -35,13 +35,19 @@ describe("find tvShow", () => {
 describe("update tvShow", () => {
   it("should add episode to tvshow", async () => {
     const { data: tvShows } = await tvShowService.findAll();
-    const video = await videoService.create(mockVideo, { movieJob: false });
-    await tvShowService.update(tvShows[0].id.toString(), { videos: [video] });
-    const updated = await tvShowService.findAll();
-    expect(updated.data[0].videos).toHaveLength(1);
+    const video = await videoService.create(mockVideo, { movieJob: false })
+    await tvShowService.update(tvShows[0].id.toString(), { videos: [video] })
+    const updated = await tvShowService.findAll()
+    expect(updated.data[0].videos).toHaveLength(1)
   });
 });
 
 describe("delete tvShow", () => {
-  it("should delete the tvShow and update all videos referenced", async () => { });
+  it("should delete the tvShow and update all videos referenced", async () => {
+    const { data: tvShows } = await tvShowService.findAll();
+    console.log("🚀 ~ file: TvShowService.test.ts ~ line 48 ~ it ~ tvShows", tvShows)
+    const result = await tvShowService.delete(tvShows[0].id.toString())
+    console.log("🚀 ~ file: TvShowService.test.ts ~ line 50 ~ it ~ result", result)
+
+  });
 });
