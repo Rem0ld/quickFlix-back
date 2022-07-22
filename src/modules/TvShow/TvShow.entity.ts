@@ -17,7 +17,7 @@ export class TvShow implements TTvShow {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "id_movie_db" })
+  @Column({ name: "id_movie_db", nullable: true })
   idMovieDb: string;
 
   @Index()
@@ -27,42 +27,44 @@ export class TvShow implements TTvShow {
   @Column()
   location: string;
 
-  @Column({ name: "number_episode" })
+  @Column({ name: "number_episode", nullable: true })
   numberEpisode: number;
 
-  @Column({ name: "number_season" })
+  @Column({ name: "number_season", nullable: true })
   numberSeason: number;
 
-  @Column()
+  @Column({ nullable: true })
   ongoing: boolean;
 
-  @Column("text", { name: 'origin_country', array: true })
+  @Column("text", { name: 'origin_country', array: true, nullable: true })
   originCountry: string[];
 
-  @Column("text", { name: 'poster_path', array: true })
+  @Column("text", { name: 'poster_path', array: true, nullable: true })
   posterPath: string[];
 
-  @Column()
+  @Column({ nullable: true })
   resume: string;
 
-  @Column()
+  @Column({ nullable: true })
   score: number;
 
-  @Column("text", { array: true })
+  @Column("text", { array: true, nullable: true })
   genres: string[];
 
   @Column({
     name: "first_air_date",
     type: "timestamp",
+    nullable: true
   })
   firstAirDate: Date;
 
-  @Column("text", { name: 'trailer_yt_code', array: true })
+  @Column("text", { name: 'trailer_yt_code', array: true, nullable: true })
   trailerYtCode: string[];
 
   @Column({
     name: "average_length",
     type: "float",
+    nullable: true
   })
   averageLength: number;
 

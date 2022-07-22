@@ -11,7 +11,7 @@ export class Watched {
   @Column({ name: "times_watched", type: "float" })
   timesWatched: number;
 
-  @Column()
+  @Column({ default: false })
   finished: boolean;
 
   @ManyToOne(() => Video, video => video.userWatchedVideo)
