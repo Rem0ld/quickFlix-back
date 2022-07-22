@@ -10,7 +10,7 @@ export default function dynamicQueryBuilder<T>(
   const builder = AppDataSource.createQueryBuilder(entity, entityName);
   for (const el in data) {
     if (!Array.isArray(data[el])) {
-      builder.andWhere(`${entityName}.${el} LIKE :${el}`, {
+      builder.andWhere(`${entityName}.${el}::text LIKE :${el}`, {
         [el]: `${data[el]}%`,
       });
     } else {
