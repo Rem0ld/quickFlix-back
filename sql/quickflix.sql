@@ -39,8 +39,8 @@ CREATE TABLE "video" (
   "filename" varchar,
   "ext" varchar(3),
   "location" varchar,
-  "episode" varchar,
-  "season" varchar,
+  "episode" integer,
+  "season" integer,
   "year" date,
   "release_date" date,
   "type" type_video,
@@ -142,9 +142,9 @@ ALTER TABLE "watched" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DE
 
 ALTER TABLE "watched" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "video" ADD FOREIGN KEY ("video_id_ref") REFERENCES "video" ("id") ON DELETE CASCADE;
+ALTER TABLE "video" ADD FOREIGN KEY ("video_id_ref") REFERENCES "video" ("id") ON DELETE SET NULL;
 
-ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
+ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE SET NULL;
 
 ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
 
