@@ -2,23 +2,30 @@ import { Response } from "express";
 import { Video, VideoTypeEnum } from "./modules/Video/Video.entity";
 import { TvShow } from "./modules/TvShow/TvShow.entity";
 import { Watched } from "./modules/Watched/Watched.entity";
-import { DeleteResult, UpdateResult } from "typeorm";
+import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity";
+import MissingDataPayloadException from "./services/Error";
 
-export interface Reader<T> {
+export interface IReader<T> {
   getCount(): Promise<number>;
   findAll(limit: number, skip: number, id?: number): Promise<T[]>;
   findById(id: number): Promise<T>;
 }
 
-export interface Writer<T> {
-  create(data: Omit<T, "id">): Promise<T>;
-  createMany(data: Omit<T, "id">[]): Promise<T[]>;
-  update(id: number, data: Partial<T>): Promise<T>;
+export interface IWriter<T> {
+  create(data: DeepPartial<T>): Promise<T>;
+  createMany(data: DeepPartial<T>[]): Promise<T[]>;
+  update(id: number, data: Partial<T>): Promise<UpdateResult>;
   delete(id: number): Promise<DeleteResult>;
 }
 
-type BaseRepository<T> = Reader<T> & Writer<T>;
+export type BaseRepository<T> = IReader<T> & IWriter<T>;
+
+export type Result<T, E> = [T | T[] | null, E | null];
+export type TResultService<T> = {
+  total: number;
+  data: T[];
+};
 
 export type VideoType = "movie" | "tv" | "trailer" | "teaser";
 export type TJobStatus = "todo" | "done" | "error";
@@ -139,11 +146,6 @@ export type TMovieDbJob = {
   error: string[];
   type: VideoType;
 };
-
-export type TResultService<T> = {
-  total: number;
-  data: T[];
-}
 
 export type Pagination = {
   limit: number;
