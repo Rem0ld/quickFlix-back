@@ -6,6 +6,10 @@ import { BaseRepository } from "../../types";
 class UserRepository implements BaseRepository<User> {
   constructor(private manager: EntityManager) { }
 
+  async getCount(): Promise<number> {
+    return this.manager.count(User);
+  }
+
   async findAll() {
     return this.manager.find(User);
   }
@@ -43,7 +47,7 @@ class UserRepository implements BaseRepository<User> {
 
   compareHash = (password: string, hash: string) => {
     return bcrypt.compareSync(password, hash);
-  }
+  };
 }
 
 export default UserRepository;

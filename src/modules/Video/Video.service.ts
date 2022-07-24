@@ -1,8 +1,8 @@
 import { DeepPartial, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import MissingDataPayloadError from "../../services/Error";
+import MissingDataPayloadException from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
-import { TResultService, RequestBuilder, TVideo } from "../../types";
+import { TResultService, RequestBuilder, Result } from "../../types";
 import { Video, VideoTypeEnum } from "./Video.entity";
 import VideoRepository from "./Video.repository";
 
@@ -14,30 +14,36 @@ export default class VideoService {
     this.videoRepo = videoRepository;
   }
 
-  async findById(id: string): Promise<Video | null> {
+  async findById(
+    id: string
+  ): Promise<Result<Video, MissingDataPayloadException | Error>> {
     if (!id.length) {
-      throw new MissingDataPayloadError("id")
+      throw new MissingDataPayloadException("id");
     }
 
     const [result, error] = await promisifier(this.videoRepo.findById(+id));
     if (error) {
-      throw new Error(error)
+      [null, new Error(error)];
     }
 
-    return result;
+    return [result, null];
   }
 
   async findAll(
     limit: number = defaultLimit,
     skip: number = 0
-  ): Promise<TResultService<Video>> {
+  ): Promise<
+    Result<TResultService<Video>, MissingDataPayloadException | Error>
+  > {
     // TODO: prepare db request in data layer
     const total = await this.videoRepo.getCount();
-    const [result, error] = await promisifier(this.videoRepo.findAll(limit, skip))
+    const [result, error] = await promisifier(
+      this.videoRepo.findAll(limit, skip)
+    );
     if (error) {
-      throw new Error(error)
+      [null, new Error(error)];
     }
-    return { data: result, total };
+    return [{ data: result, total }, null];
   }
 
   async findByFields({
@@ -71,9 +77,11 @@ export default class VideoService {
     }
 
     const total = await this.videoRepo.getCount();
-    const [result, error] = await promisifier(this.videoRepo.findByFields(request, limit, skip))
+    const [result, error] = await promisifier(
+      this.videoRepo.findByFields(request, limit, skip)
+    );
     if (error) {
-      throw new Error(error)
+      throw new Error(error);
     }
 
     return { total, data: result };
@@ -83,46 +91,50 @@ export default class VideoService {
 
   async patch(id: string, data: Partial<Video>): Promise<Video> {
     if (!id.length) {
-      throw new MissingDataPayloadError("id")
+      return [null, new MissingDataPayloadException("id")];
     }
 
     if (!Object.keys(data).length) {
-      throw new MissingDataPayloadError()
+      return [null, new MissingDataPayloadException()];
     }
 
-    const [result, error] = await promisifier(this.videoRepo.update(+id, data))
+    const [result, error] = await promisifier(this.videoRepo.update(+id, data));
     if (error) {
-      throw new Error(error)
+      throw new Error(error);
+      return [null, new Error(error)];
     }
 
     return result;
   }
 
-  async create(data: DeepPartial<Video>, params: { movieJob: boolean }) {
+  async create(
+    data: DeepPartial<Video>,
+    params: { movieJob: boolean }
+  ): Promise<Result<Video, MissingDataPayloadException | Error>> {
     // TODO: validation to make sure video has everything needed
     if (!data?.name?.length) {
-      throw new MissingDataPayloadError("name")
+      return [null, new MissingDataPayloadException("name")];
     }
     const [result, error] = await promisifier(this.videoRepo.create(data));
     if (error) {
-      throw new Error(error)
+      return [null, new Error(error)];
     }
 
     if (params.movieJob) {
       // await movieJobService.create({ id: video._id });
     }
 
-    return result;
+    return [result, null];
   }
 
   async deleteOneById(id: string) {
     if (!id.length) {
-      throw new MissingDataPayloadError("id")
+      throw new MissingDataPayloadException("id");
     }
 
     const [result, error] = await promisifier(this.videoRepo.delete(+id));
     if (error) {
-      throw new Error(error)
+      throw new Error(error);
     }
 
     // await movieJobService.deletOneByVideoId(id);
@@ -132,9 +144,9 @@ export default class VideoService {
 
   // TODO: add some kind of validation here to be sure admin is doing it
   async deleteAll() {
-    const [_, error] = await promisifier(this.videoRepo.deleteAll())
+    const [_, error] = await promisifier(this.videoRepo.deleteAll());
     if (error) {
-      throw new Error(error)
+      throw new Error(error);
     }
     return;
     // const movieJob = await movieDbJobModel.deleteMany();

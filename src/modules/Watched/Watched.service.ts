@@ -1,6 +1,6 @@
 import { DeepPartial, DeleteResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import MissingDataPayloadError from "../../services/Error";
+import MissingDataPayloadException from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
 import { TResultService, TWatched } from "../../types";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
@@ -15,9 +15,9 @@ export default class WatchedService {
 
   async findByVideoId(
     id: string
-  ): Promise<Watched | MissingDataPayloadError | Error> {
+  ): Promise<Watched | MissingDataPayloadException | Error> {
     if (!id.length) {
-      throw new MissingDataPayloadError("id");
+      throw new MissingDataPayloadException("id");
     }
 
     const [result, error] = await promisifier(this.repo.findById(+id));
@@ -46,7 +46,7 @@ export default class WatchedService {
 
   async create(data: DeepPartial<Watched>): Promise<WatchedTvShow | Error> {
     if (!data.video || !data.user) {
-      throw new MissingDataPayloadError("video | user");
+      throw new MissingDataPayloadException("video | user");
     }
 
     const [result, error] = await promisifier(this.repo.create(data));
@@ -63,7 +63,7 @@ export default class WatchedService {
 
   async delete(id: string): Promise<DeleteResult> {
     if (!id.length) {
-      throw new MissingDataPayloadError("id");
+      throw new MissingDataPayloadException("id");
     }
 
     const [result, error] = await promisifier(this.repo.delete(+id));

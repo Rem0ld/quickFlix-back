@@ -1,6 +1,6 @@
 import { DeepPartial } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import MissingDataPayloadError from "../../services/Error";
+import MissingDataPayloadException from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
 import { TResultService } from "../../types";
 import { WatchedTvShow } from "./WatchedTvShow.entity";
@@ -13,7 +13,7 @@ export default class WatchedTvShowService {
 
   async findById(id: string): Promise<WatchedTvShow | null> {
     if (!id.length) {
-      throw new MissingDataPayloadError("id");
+      throw new MissingDataPayloadException("id");
     }
 
     const [result, error] = await promisifier(this.repo.findById(+id));

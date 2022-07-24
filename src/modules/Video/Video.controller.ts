@@ -37,7 +37,8 @@ export default class VideoController {
 
     try {
       const { data, total } = await this.service.findAll(+limit, +skip);
-      const result = data.length || data.map(el => new VideoDTO(el).serialize());
+      const result =
+        data.length || data.map(el => new VideoDTO(el).serialize());
 
       res.json({
         total,
@@ -128,17 +129,17 @@ export default class VideoController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try {
-      const video = await this.service.create(req.body, { movieJob: true });
-
-      res.json({
-        video,
-      });
-    } catch (error) {
+    const [result, error] = await this.service.create(req.body, {
+      movieJob: true,
+    });
+    if (error) {
       next(error);
-    } finally {
       return;
     }
+
+    res.json({
+      result,
+    });
   }
 
   @Patch(":id")
