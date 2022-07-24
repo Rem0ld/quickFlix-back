@@ -26,7 +26,7 @@ export class Watched {
   userWatchedTvShow: WatchedTvShow[];
 
   @CreateDateColumn({ name: "created_at" })
-  createdAt: Timestamp;
+  createdAt: Date;
 
   @UpdateDateColumn(({ name: "updated_at" }))
   updatedAt: Date;

@@ -1,97 +1,73 @@
-import { defaultLimit } from "../../config/defaultConfig";
-import { Request, Response, NextFunction } from 'express';
-import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Patch, Delete, ClassErrorMiddleware } from "@overnightjs/core"
+import { Request, Response, NextFunction } from "express";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  ClassErrorMiddleware,
+} from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
-import { regexIsSubtitle } from "../../utils/regexes";
 import WatchedTvShowService from "../WatchedTvShow/WatchedTvShow.service";
 
 @Controller("watched-tv-show")
 @ClassErrorMiddleware(errorHandler)
 export default class WatchedTvShowController {
+  constructor(private service: WatchedTvShowService) { }
+
   @Get()
-  private async find(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { populate } = req.query;
-    let data;
-
-    if (populate) {
-      data = await watchedTvShowModel.find().populate("videos.watchedId")
-
-    } else {
-      data = await watchedTvShowModel.find();
-    }
-
-    res.json(data)
-    return;
+  private async find(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
   }
 
   @Get(":id")
-  private async findById(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { id } = req.params
-    const data = await watchedTvShowModel.findById(id)
-
-    res.json(data)
-    return;
+  private async findById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
   }
 
   @Post("by-name")
-  private async findByName(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { tvShow } = req.body;
-
-    if (!tvShow) {
-      res.json("Missing arguments")
-      return;
-    }
-
-    const result = await watchedTvShowModel.findOne({ tvShow }).populate("videos.watchedId")
-
-    res.json(result)
+  private async findByName(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
   }
 
   @Post()
-  private async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { name, videoId, watchedId } = req.body;
-
-    if (!name || !videoId || !watchedId) {
-      res.json("Missing arguments")
-      return;
-    }
-
-    const result = await WatchedTvShowService.update(name, req.body)
-
-    res.json(result)
+  private async create(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
   }
 
   @Patch()
-  private async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { name, videoId, watchedId } = req.body;
-
-    if (!name || !videoId || !watchedId) {
-      res.json("Missing arguments")
-      return;
-    }
-
-    const result = await WatchedTvShowService.update(name, req.body)
-
-    res.json(result)
+  private async patch(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
   }
 
   @Delete(":id")
-  private async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { id } = req.params
-
-    if (!id) {
-      res.json("Missing ID")
-      return;
-    }
-
-    const data = await watchedTvShowModel.findByIdAndDelete(id)
-
-    res.json(data)
-    return;
+  private async delete(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
   }
 
   // TODO: middleware to check if admin
   @Delete()
-  private async deleteAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-  }
+  private async deleteAll(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> { }
 }
