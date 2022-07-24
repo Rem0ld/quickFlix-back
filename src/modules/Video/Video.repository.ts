@@ -1,4 +1,4 @@
-import { EntityManager } from "typeorm";
+import { DeepPartial, EntityManager } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
 import { BaseRepository, RequestBuilder, TVideo } from "../../types";
 import { Video } from "./Video.entity";
@@ -52,11 +52,11 @@ export default class VideoRepository implements BaseRepository<Video> {
       .getMany();
   }
 
-  async create(videoEntity: Omit<TVideo, "id">) {
+  async create(videoEntity: DeepPartial<Video>) {
     return this.manager.save(Video, { ...videoEntity, uuid: uuidv4() });
   }
 
-  async createMany(data: Omit<Video, "id">[]): Promise<Video[]> {
+  async createMany(data: DeepPartial<Video[]>): Promise<Video[]> {
     return this.manager.save(Video, data);
   }
 

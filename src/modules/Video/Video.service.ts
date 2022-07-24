@@ -1,5 +1,7 @@
-import { UpdateResult } from "typeorm";
+import { DeepPartial, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
+import MissingDataPayloadError from "../../services/Error";
+import { promisifier } from "../../services/promisifier";
 import { TResultService, RequestBuilder, TVideo } from "../../types";
 import { Video, VideoTypeEnum } from "./Video.entity";
 import VideoRepository from "./Video.repository";
@@ -14,12 +16,15 @@ export default class VideoService {
 
   async findById(id: string): Promise<Video | null> {
     if (!id.length) {
-      throw new Error("missing ID");
+      throw new MissingDataPayloadError("id")
     }
 
-    const video = await this.videoRepo.findById(+id);
+    const [result, error] = await promisifier(this.videoRepo.findById(+id));
+    if (error) {
+      throw new Error(error)
+    }
 
-    return video;
+    return result;
   }
 
   async findAll(
@@ -27,14 +32,12 @@ export default class VideoService {
     skip: number = 0
   ): Promise<TResultService<Video>> {
     // TODO: prepare db request in data layer
-    try {
-      const total = await this.videoRepo.getCount();
-      const videos = await this.videoRepo.findAll(limit, skip);
-      return { data: videos, total };
-    } catch (error) {
-      console.error(error);
-      throw new Error("Cannot find all videos, probably due to reaching DB");
+    const total = await this.videoRepo.getCount();
+    const [result, error] = await promisifier(this.videoRepo.findAll(limit, skip))
+    if (error) {
+      throw new Error(error)
     }
+    return { data: result, total };
   }
 
   async findByFields({
@@ -67,73 +70,73 @@ export default class VideoService {
       request.type = type;
     }
 
-    try {
-      const total = await this.videoRepo.getCount();
-      const videos = await this.videoRepo.findByFields(request, limit, skip);
-      return { total, data: videos };
-    } catch (error) {
-      throw new Error(error);
+    const total = await this.videoRepo.getCount();
+    const [result, error] = await promisifier(this.videoRepo.findByFields(request, limit, skip))
+    if (error) {
+      throw new Error(error)
     }
+
+    return { total, data: result };
 
     // if (!videos) throw new Error("Cannot find videos");
   }
 
   async patch(id: string, data: Partial<Video>): Promise<Video> {
     if (!id.length) {
-      throw new Error("missing id");
+      throw new MissingDataPayloadError("id")
     }
+
     if (!Object.keys(data).length) {
-      throw new Error("missing data");
+      throw new MissingDataPayloadError()
     }
 
-    try {
-      const updatedVideo = await this.videoRepo.update(+id, data);
-
-      return updatedVideo;
-    } catch (error) {
-      throw new Error(error);
+    const [result, error] = await promisifier(this.videoRepo.update(+id, data))
+    if (error) {
+      throw new Error(error)
     }
+
+    return result;
   }
 
-  async create(data: Omit<TVideo, "id">, params: { movieJob: boolean }) {
+  async create(data: DeepPartial<Video>, params: { movieJob: boolean }) {
     // TODO: validation to make sure video has everything needed
     if (!data?.name?.length) {
-      throw new Error("invalid video object, missing name");
+      throw new MissingDataPayloadError("name")
     }
-    const video = await this.videoRepo.create(data);
-
-    if (!video) {
-      return video;
+    const [result, error] = await promisifier(this.videoRepo.create(data));
+    if (error) {
+      throw new Error(error)
     }
 
     if (params.movieJob) {
       // await movieJobService.create({ id: video._id });
     }
 
-    return video;
+    return result;
   }
 
   async deleteOneById(id: string) {
     if (!id.length) {
-      throw new Error("Missing id");
+      throw new MissingDataPayloadError("id")
     }
 
-    const video = await this.videoRepo.delete(+id);
+    const [result, error] = await promisifier(this.videoRepo.delete(+id));
+    if (error) {
+      throw new Error(error)
+    }
 
     // await movieJobService.deletOneByVideoId(id);
 
-    return video;
+    return result;
   }
 
   // TODO: add some kind of validation here to be sure admin is doing it
   async deleteAll() {
-    try {
-      await this.videoRepo.deleteAll();
-      return;
-    } catch (error) {
-      console.error(error);
-      throw new Error("Cannot delete all from table video");
+    const [_, error] = await promisifier(this.videoRepo.deleteAll())
+    if (error) {
+      throw new Error(error)
     }
+    return;
     // const movieJob = await movieDbJobModel.deleteMany();
     // const tvShow = await tvShowModel.deleteMany();
   }
