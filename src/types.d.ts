@@ -6,7 +6,8 @@ import { DeleteResult, UpdateResult } from "typeorm";
 import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity";
 
 export interface Reader<T> {
-  findAll(limit: number, skip: number): Promise<T[]>;
+  getCount(): Promise<number>;
+  findAll(limit: number, skip: number, id?: number): Promise<T[]>;
   findById(id: number): Promise<T>;
 }
 
@@ -110,6 +111,9 @@ export type TWatchedTvShow = {
   id: number;
   tvShow: number;
   user: number;
+  watched: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type TRole = "admin" | "simple";

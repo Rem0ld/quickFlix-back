@@ -1,4 +1,3 @@
-import { TvShow } from "./TvShow.entity";
 import { TTvShow } from "../../types"
 import baseDTO from "../../utils/BaseDTO";
 import { Video } from "../Video/Video.entity";

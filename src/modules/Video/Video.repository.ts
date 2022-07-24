@@ -5,7 +5,7 @@ import { Video } from "./Video.entity";
 import { v4 as uuidv4 } from "uuid";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
 
-class VideoRepository implements BaseRepository<Video> {
+export default class VideoRepository implements BaseRepository<Video> {
   constructor(private manager: EntityManager) { }
 
   async getCount() {
@@ -46,16 +46,10 @@ class VideoRepository implements BaseRepository<Video> {
     limit: number = defaultLimit,
     skip: number = 0
   ) {
-    try {
-      const result = await dynamicQueryBuilder(data, Video, "video")
-        .take(limit)
-        .skip(skip)
-        .getMany();
-      return result;
-    } catch (error) {
-      // TODO: make a class for sql errors
-      throw new Error("Problem with sql request");
-    }
+    return dynamicQueryBuilder(data, Video, "video")
+      .take(limit)
+      .skip(skip)
+      .getMany();
   }
 
   async create(videoEntity: Omit<TVideo, "id">) {
@@ -82,5 +76,3 @@ class VideoRepository implements BaseRepository<Video> {
     return this.manager.clear(Video);
   }
 }
-
-export default VideoRepository;

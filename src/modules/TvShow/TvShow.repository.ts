@@ -40,9 +40,9 @@ export class TvShowRepository implements BaseRepository<TvShow> {
 
   delete(id: number): Promise<DeleteResult> {
     return this.manager
-      .createQueryBuilder(TvShow, TvShow.name)
+      .createQueryBuilder(TvShow, this.name)
       .delete()
-      .where("id= :id", { id: id })
+      .where(`${this.name}.id= :id`, { id })
       .execute();
   }
 }
