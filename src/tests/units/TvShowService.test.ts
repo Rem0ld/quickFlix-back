@@ -45,9 +45,8 @@ describe("update tvShow", () => {
 describe("delete tvShow", () => {
   it("should delete the tvShow and update all videos referenced", async () => {
     const { data: tvShows } = await tvShowService.findAll();
-    console.log("🚀 ~ file: TvShowService.test.ts ~ line 48 ~ it ~ tvShows", tvShows)
     const result = await tvShowService.delete(tvShows[0].id.toString())
-    console.log("🚀 ~ file: TvShowService.test.ts ~ line 50 ~ it ~ result", result)
 
+    expect(result.affected).toEqual(1)
   });
 });

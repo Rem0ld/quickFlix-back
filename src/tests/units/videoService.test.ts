@@ -53,7 +53,6 @@ describe("Video service unit test", () => {
           Video,
           "video"
         ).getMany();
-        console.log("🚀 ~ file: videoService.test.ts ~ line 56 ~ it ~ result", result)
 
         expect(result.length).toBeGreaterThan(0);
       });
