@@ -15,6 +15,14 @@ import { VideoTypeEnum } from "./Video.entity";
 import { VideoDTO } from "./Video.dto";
 import protectRoutes from "../../middlewares/protectRoutes.middleware";
 
+type query = {
+  name?: string;
+  episode?: string;
+  season?: string;
+  type?: VideoTypeEnum[];
+  limit: string;
+  skip: string;
+};
 @Controller("video")
 @ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
@@ -27,30 +35,23 @@ export default class VideoController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { limit = defaultLimit, skip = 0 } = req.query;
+    let { limit = defaultLimit, skip = 0 } = req.query;
 
-    // if (+limit === -1) {
-    //   const data = await videoModel.find(request);
-    //   res.json(data);
-    //   return;
-    // }
-
-    try {
-      const { data, total } = await this.service.findAll(+limit, +skip);
-      const result =
-        data.length || data.map(el => new VideoDTO(el).serialize());
-
-      res.json({
-        total,
-        limit: +limit,
-        skip: +skip,
-        data: result,
-      });
-    } catch (error) {
-      next(error);
-    } finally {
-      return;
+    if (+limit === 0) {
+      skip = 0;
     }
+
+    const [result, error] = await this.service.findAll(+limit, +skip);
+    if (error) {
+      next(error);
+    }
+
+    res.json({
+      total: result.total,
+      limit: +limit,
+      skip: +skip,
+      data: result?.data ? result.data.map(el => el.serialize()) : [],
+    });
   }
 
   @Get(":id")
@@ -61,15 +62,12 @@ export default class VideoController {
   ): Promise<void> {
     const { id } = req.params;
 
-    try {
-      const video = await this.service.findById(id);
-
-      res.json(video);
-    } catch (error) {
+    const [result, error] = await this.service.findById(id);
+    if (error) {
       next(error);
-    } finally {
-      return;
     }
+
+    res.json(result ? result.serialize() : {});
   }
 
   // @Post("by-name")
@@ -99,28 +97,31 @@ export default class VideoController {
 
   @Post("by-fields")
   private async findOneByFields(
-    req: Request,
+    req: Request<unknown, unknown, unknown, query>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { name, episode, season, type, limit, skip } = req.query;
+    const { name, episode, season, type, limit = defaultLimit, skip = 0 } = req.query;
 
-    try {
-      const result = await this.service.findByFields({
-        name: name.toString(),
-        episode: episode.toString(),
-        season: season.toString(),
-        type: type as VideoTypeEnum[],
-        limit: +limit,
-        skip: +skip,
-      });
-
-      res.json(result);
-    } catch (error) {
+    const [result, error] = await this.service.findByFields({
+      name: name,
+      episode: episode,
+      season: season,
+      type: type,
+      limit: +limit,
+      skip: +skip,
+    });
+    if (error) {
       next(error);
-    } finally {
-      return;
     }
+
+    console.log(result)
+    res.json({
+      total: result.total,
+      limit: +limit,
+      skip: +skip,
+      data: result?.data ? result.data.map(el => el.serialize()) : [],
+    });
   }
 
   @Post()

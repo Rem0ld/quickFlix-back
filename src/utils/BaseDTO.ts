@@ -10,4 +10,8 @@ export default class baseDTO<T> {
     }
     return result;
   }
+
+  deserialize() {
+    return this
+  }
 }

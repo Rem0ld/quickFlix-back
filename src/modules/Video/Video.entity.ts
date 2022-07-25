@@ -40,7 +40,7 @@ export class Video implements TVideo {
   @Column()
   basename: string;
 
-  @Column()
+  @Column({ unique: true })
   filename: string;
 
   @Column({

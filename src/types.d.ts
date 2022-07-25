@@ -15,13 +15,13 @@ export interface IReader<T> {
 export interface IWriter<T> {
   create(data: DeepPartial<T>): Promise<T>;
   createMany(data: DeepPartial<T>[]): Promise<T[]>;
-  update(id: number, data: Partial<T>): Promise<UpdateResult>;
+  update(id: number, data: Partial<T>): Promise<T>;
   delete(id: number): Promise<DeleteResult>;
 }
 
 export type BaseRepository<T> = IReader<T> & IWriter<T>;
 
-export type Result<T, E> = [T | T[] | null, E | null];
+export type Result<T, E> = [T | null, E?];
 export type TResultService<T> = {
   total: number;
   data: T[];
