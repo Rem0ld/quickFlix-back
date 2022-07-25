@@ -1,8 +1,9 @@
-import { DeleteResult, EntityManager, UpdateResult } from "typeorm";
+import { DeleteResult, EntityManager } from "typeorm";
 import { BaseRepository, TTvShow } from "../../types";
+import { TvShowDTO } from "./TvShow.dto";
 import { TvShow } from "./TvShow.entity";
 
-export class TvShowRepository implements BaseRepository<TvShow> {
+export class TvShowRepository implements BaseRepository<TvShowDTO> {
   constructor(
     private manager: EntityManager,
     private name: string = "tv_show"
@@ -12,33 +13,43 @@ export class TvShowRepository implements BaseRepository<TvShow> {
     return this.manager.count(TvShow);
   }
 
-  findAll(limit: number, skip: number): Promise<TvShow[]> {
-    return this.manager
+  async findAll(limit: number, skip: number): Promise<TvShowDTO[]> {
+    const result = await this.manager
       .getRepository(TvShow)
       .createQueryBuilder(this.name)
       .leftJoinAndSelect("tv_show.videos", "video")
       .take(limit)
       .skip(skip)
       .getMany();
+
+    return result.map(el => new TvShowDTO(el))
   }
 
-  findById(id: number): Promise<TvShow> {
-    return this.manager.findOneBy(TvShow, { id });
+  async findById(id: number): Promise<TvShowDTO> {
+    const result = await this.manager.findOneBy(TvShow, { id });
+
+    return new TvShowDTO(result)
   }
 
-  create(data: Omit<TTvShow, "id">): Promise<TvShow> {
-    return this.manager.save(TvShow, { ...data });
+  async create(data: Omit<TTvShow, "id">): Promise<TvShowDTO> {
+    const result = await this.manager.save(TvShow, { ...data });
+
+    return new TvShowDTO(result)
   }
 
-  createMany(data: Omit<TTvShow, "id">[]): Promise<TvShow[]> {
-    return this.manager.save(TvShow, data);
+  async createMany(data: Omit<TTvShow, "id">[]): Promise<TvShowDTO[]> {
+    const result = await this.manager.save(TvShow, data);
+
+    return result.map(el => new TvShowDTO(el))
   }
 
-  update(id: number, data: Partial<TvShow>): Promise<TvShow> {
-    return this.manager.save(TvShow, { id, ...data });
+  async update(id: number, data: Partial<TvShow>): Promise<TvShowDTO> {
+    const result = await this.manager.save(TvShow, { id, ...data });
+
+    return new TvShowDTO(result)
   }
 
-  delete(id: number): Promise<DeleteResult> {
+  async delete(id: number): Promise<DeleteResult> {
     return this.manager
       .createQueryBuilder(TvShow, this.name)
       .delete()

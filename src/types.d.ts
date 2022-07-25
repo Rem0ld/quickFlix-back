@@ -5,6 +5,7 @@ import { Watched } from "./modules/Watched/Watched.entity";
 import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity";
 import MissingDataPayloadException from "./services/Error";
+import { User } from "./modules/User/User.entity";
 
 export interface IReader<T> {
   getCount(): Promise<number>;
@@ -110,8 +111,8 @@ export type TWatched = {
   length?: number;
   finished: boolean;
   stoppedAt?: number;
-  video: number;
-  user: number;
+  video: Video;
+  user: User;
 };
 
 export type TWatchedTvShow = {

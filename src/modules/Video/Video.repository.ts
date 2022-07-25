@@ -1,4 +1,8 @@
-import { DeepPartial, EntityManager, NoVersionOrUpdateDateColumnError } from "typeorm";
+import {
+  DeepPartial,
+  EntityManager,
+  NoVersionOrUpdateDateColumnError,
+} from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
 import { BaseRepository, RequestBuilder, TVideo } from "../../types";
 import { Video } from "./Video.entity";
@@ -57,7 +61,7 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
       .skip(skip)
       .getMany();
 
-    return result.map(el => new VideoDTO(el))
+    return result.map(el => new VideoDTO(el));
   }
 
   async create(videoEntity: DeepPartial<Video>) {
@@ -82,7 +86,7 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
     return this.manager
       .createQueryBuilder(Video, "video")
       .delete()
-      .where("id= :id", { id: id })
+      .where("id= :id", { id })
       .execute();
   }
 
