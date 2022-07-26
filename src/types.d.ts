@@ -4,7 +4,6 @@ import { TvShow } from "./modules/TvShow/TvShow.entity";
 import { Watched } from "./modules/Watched/Watched.entity";
 import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity";
-import MissingDataPayloadException from "./services/Error";
 import { User } from "./modules/User/User.entity";
 
 export interface IReader<T> {
@@ -117,9 +116,9 @@ export type TWatched = {
 
 export type TWatchedTvShow = {
   id: number;
-  tvShow: number;
-  user: number;
-  watched: number;
+  tvShow: TvShow;
+  user: User;
+  watched: Watched;
   createdAt?: Date;
   updatedAt?: Date;
 };

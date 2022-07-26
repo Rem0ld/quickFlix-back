@@ -1,6 +1,6 @@
-export const promisifier = async (
+export const promisifier = async <T>(
   promise: any
-): Promise<[any | null, string | null]> => {
+): Promise<[T, string]> => {
   try {
     const result = await promise;
     return [result, null];

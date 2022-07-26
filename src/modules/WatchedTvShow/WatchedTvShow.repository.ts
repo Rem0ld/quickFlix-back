@@ -1,8 +1,11 @@
 import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
 import { BaseRepository, TWatchedTvShow } from "../../types";
+import { WatchedTvShowDTO } from "./WatchedTvShow.dto";
 import { WatchedTvShow } from "./WatchedTvShow.entity";
 
-export class WatchedTvShowRepository implements BaseRepository<WatchedTvShow> {
+export class WatchedTvShowRepository
+  implements BaseRepository<WatchedTvShowDTO>
+{
   constructor(
     private manager: EntityManager,
     private name: string = "watched_tv_show"
@@ -16,8 +19,8 @@ export class WatchedTvShowRepository implements BaseRepository<WatchedTvShow> {
     limit: number,
     skip: number,
     id?: number
-  ): Promise<WatchedTvShow[]> {
-    return this.manager
+  ): Promise<WatchedTvShowDTO[]> {
+    const result = await this.manager
       .getRepository(WatchedTvShow)
       .createQueryBuilder(this.name)
       .where(`${this.name}.user = :id`, { id })
@@ -26,27 +29,37 @@ export class WatchedTvShowRepository implements BaseRepository<WatchedTvShow> {
       .take(limit)
       .skip(skip)
       .getMany();
+
+    return result.map(el => new WatchedTvShowDTO(el));
   }
 
-  async findById(id: number): Promise<WatchedTvShow> {
-    return this.manager.findOneBy(WatchedTvShow, { id });
+  async findById(id: number): Promise<WatchedTvShowDTO> {
+    const result = await this.manager.findOneBy(WatchedTvShow, { id });
+
+    return new WatchedTvShowDTO(result);
   }
 
-  async create(data: DeepPartial<WatchedTvShow>): Promise<WatchedTvShow> {
-    return this.manager.save(WatchedTvShow, data);
+  async create(data: DeepPartial<WatchedTvShow>): Promise<WatchedTvShowDTO> {
+    const result = await this.manager.save(WatchedTvShow, data);
+
+    return new WatchedTvShowDTO(result);
   }
 
   async createMany(
     data: DeepPartial<WatchedTvShow[]>
-  ): Promise<WatchedTvShow[]> {
-    return this.manager.save(WatchedTvShow, data);
+  ): Promise<WatchedTvShowDTO[]> {
+    const result = await this.manager.save(WatchedTvShow, data);
+
+    return result.map(el => new WatchedTvShowDTO(el));
   }
 
   async update(
     id: number,
     data: Partial<WatchedTvShow>
-  ): Promise<WatchedTvShow> {
-    return this.manager.save(WatchedTvShow, { id, ...data });
+  ): Promise<WatchedTvShowDTO> {
+    const result = await this.manager.save(WatchedTvShow, { id, ...data });
+
+    return new WatchedTvShowDTO(result);
   }
 
   async delete(id: number): Promise<DeleteResult> {
