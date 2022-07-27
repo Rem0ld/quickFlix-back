@@ -10,9 +10,9 @@ import VideoRepository from "./Video.repository";
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
 export default class VideoService {
-  videoRepo: VideoRepository;
+  repo: VideoRepository;
   constructor(videoRepository: VideoRepository) {
-    this.videoRepo = videoRepository;
+    this.repo = videoRepository;
   }
 
   async findById(
@@ -22,7 +22,7 @@ export default class VideoService {
       return err(new MissingDataPayloadException("id"));
     }
 
-    const [result, error] = await promisifier<VideoDTO>(this.videoRepo.findById(+id));
+    const [result, error] = await promisifier<VideoDTO>(this.repo.findById(+id));
     if (error) {
       return err(new Error(error));
     }
@@ -37,9 +37,9 @@ export default class VideoService {
     Result<TResultService<VideoDTO>, MissingDataPayloadException | Error>
   > {
     // TODO: prepare db request in data layer
-    const total = await this.videoRepo.getCount();
+    const total = await this.repo.getCount();
     const [result, error] = await promisifier<VideoDTO[]>(
-      this.videoRepo.findAll(limit, skip)
+      this.repo.findAll(limit, skip)
     );
     if (error) {
       return err(new Error(error));
@@ -79,9 +79,9 @@ export default class VideoService {
       request.type = type;
     }
 
-    const total = await this.videoRepo.getCount();
+    const total = await this.repo.getCount();
     const [result, error] = await promisifier<VideoDTO[]>(
-      this.videoRepo.findByFields(request, limit, skip)
+      this.repo.findByFields(request, limit, skip)
     );
     if (error) {
       return err(new Error(error));
@@ -103,7 +103,7 @@ export default class VideoService {
       return err(new MissingDataPayloadException());
     }
 
-    const [result, error] = await promisifier<VideoDTO>(this.videoRepo.update(+id, data));
+    const [result, error] = await promisifier<VideoDTO>(this.repo.update(+id, data));
     if (error) {
       return err(new Error(error));
     }
@@ -119,7 +119,7 @@ export default class VideoService {
     if (!data?.name?.length) {
       return err(new MissingDataPayloadException("name"));
     }
-    const [result, error] = await promisifier<VideoDTO>(this.videoRepo.create(data));
+    const [result, error] = await promisifier<VideoDTO>(this.repo.create(data));
     if (error) {
       return err(new Error(error));
     }
@@ -138,7 +138,7 @@ export default class VideoService {
       return err(new MissingDataPayloadException("id"));
     }
 
-    const [result, error] = await promisifier<DeleteResult>(this.videoRepo.delete(+id));
+    const [result, error] = await promisifier<DeleteResult>(this.repo.delete(+id));
     if (error) {
       return err(new Error(error));
     }
@@ -150,7 +150,7 @@ export default class VideoService {
 
   // TODO: add some kind of validation here to be sure admin is doing it
   async deleteAll(): Promise<Result<void, Error>> {
-    const [_, error] = await promisifier<DeleteResult>(this.videoRepo.deleteAll());
+    const [_, error] = await promisifier<DeleteResult>(this.repo.deleteAll());
     if (error) {
       return err(new Error(error));
     }

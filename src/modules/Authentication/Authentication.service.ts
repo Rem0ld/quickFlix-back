@@ -3,6 +3,9 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Timestamp } from "typeorm";
 import { User } from "../User/User.entity";
 import { UserDTO } from "../User/User.dto";
+import MissingDataPayloadException, { err, ok } from "../../services/Error";
+import { Result } from "../../types";
+import { promisifier } from "../../services/promisifier";
 
 export default class AuthenticationService {
   private fiveDays: number;
@@ -10,42 +13,44 @@ export default class AuthenticationService {
     this.fiveDays = 1000 * 3600 * 24 * 5;
   }
 
-  authenticate(pseudo: string, password: string) {
+  async authenticate(pseudo: string, password: string) {
     if (!pseudo.length || !password.length) {
-      throw new Error("missing password or pseudo");
+      err(new MissingDataPayloadException("pseudo or password"));
     }
-    try {
-      const user = this.service.authenticate(pseudo, password);
-      return user;
-    } catch (error) {
-      throw new Error(error);
+
+    const [result, error] = await this.service.authenticate(pseudo, password);
+    if (error) {
+      err(error);
     }
+
+    return ok(result);
   }
 
   decodeToken(token: string) {
-    if (!token.length) {
-      throw new Error("missing parameter");
-    }
     return jwt.verify(token, process.env.SECRET);
   }
 
   // Should check if token is still valid
-  verifyToken(token: string) {
-    try {
-      const decoded: any = this.decodeToken(token);
-      const now = new Date().getTime();
-      return decoded?.exp > now / 1000;
-    } catch (error) {
-      throw new Error(error);
+  verifyToken(token: string): Result<boolean, Error> {
+    const decoded: any = this.decodeToken(token);
+
+    if (!decoded) {
+      err(new Error("cannot verify token"));
     }
+
+    const now = new Date().getTime();
+    return ok(decoded.exp > now / 1000);
   }
 
   // Should return the token decoded
   parseToken(token: string) {
-    const isValid = this.verifyToken(token);
+    const [isValid, error] = this.verifyToken(token);
+    if (error) {
+      err(error);
+    }
 
     if (!isValid) {
-      throw new Error("Invalid or expired token");
+      err(new Error("Invalid or expired token"));
     }
 
     const decoded = this.decodeToken(token);
@@ -54,20 +59,19 @@ export default class AuthenticationService {
 
   async generateNewToken(token: string) {
     if (!token.length) {
-      throw new Error("token string should have length");
+      err(new Error("token string should have length"));
     }
 
-    try {
-      const decoded: any = this.parseToken(token);
-      const { pseudo } = decoded;
-      const user = new UserDTO(
-        await this.service.findByPseudo(pseudo)
-      ).protectPassword();
-      const newToken = this.service.generateToken(user);
-
-      return newToken;
-    } catch (error) {
-      throw new Error(error);
+    const decoded: any = this.parseToken(token);
+    const { pseudo } = decoded;
+    const [userDto, error] = await promisifier<UserDTO>(
+      this.service.findByPseudo(pseudo)
+    );
+    if (error) {
+      err(new Error("something wrong happen"));
     }
+    const newToken = this.service.generateToken(userDto.protectPassword());
+
+    return ok(newToken);
   }
 }

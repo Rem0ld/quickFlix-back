@@ -23,8 +23,7 @@ export class UserDTO extends baseDTO<TUser> {
   }
 
   protectPassword() {
-    const obj = Object.assign({}, this)
-    delete obj.password
-    return obj;
+    delete this.password
+    return this;
   }
 }

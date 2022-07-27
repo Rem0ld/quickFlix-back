@@ -1,7 +1,9 @@
 import { DeleteResult, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
+import MissingDataPayloadException, { err, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
-import { TResultService, TTvShow } from "../../types";
+import { Result, TResultService, TTvShow } from "../../types";
+import { TvShowDTO } from "./TvShow.dto";
 import { TvShow } from "./TvShow.entity";
 import { TvShowRepository } from "./TvShow.repository";
 
@@ -11,23 +13,23 @@ export default class TvShowService {
     this.repo = repo;
   }
 
-  async findById(id: string): Promise<TvShow | null> {
+  async findById(id: string): Promise<Result<TvShowDTO, Error>> {
     if (!id?.length) {
-      throw new Error("missing ID");
+      err(new MissingDataPayloadException("id"))
     }
 
-    const [result, error] = await promisifier(this.repo.findById(+id));
+    const [result, error] = await promisifier<TvShowDTO>(this.repo.findById(+id));
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return result;
+    return ok(result)
   }
 
   // TODO: make join with videos
   async findAll(
     limit: number = defaultLimit,
     skip: number = 0
-  ): Promise<TResultService<TvShow>> {
+  ): Promise<TResultService<TvShowDTO>> {
     const total = await this.repo.getCount();
     const [result, error] = await promisifier(this.repo.findAll(limit, skip));
     if (error) {
@@ -46,7 +48,7 @@ export default class TvShowService {
   async create(
     data: Omit<TTvShow, "id">,
     params?: { movieJob: boolean; id: string }
-  ): Promise<TvShow> {
+  ): Promise<TvShowDTO> {
     // TODO: Add more validation here
     if (!Object.keys(data).length) {
       throw new Error("missing data");
@@ -73,7 +75,7 @@ export default class TvShowService {
     // }
   }
 
-  async update(id: string, data: Partial<TvShow>): Promise<UpdateResult> {
+  async update(id: string, data: Partial<TvShow>): Promise<Result<UpdateResult, Error>> {
     if (!id.length) {
       throw new Error("missing id");
     }
@@ -89,7 +91,7 @@ export default class TvShowService {
     return result;
   }
 
-  async delete(id: string): Promise<DeleteResult> {
+  async delete(id: string): Promise<Result<DeleteResult, Error>> {
     if (!id.length) {
       throw new Error("missing id");
     }

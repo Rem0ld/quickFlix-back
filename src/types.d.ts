@@ -5,6 +5,7 @@ import { Watched } from "./modules/Watched/Watched.entity";
 import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity";
 import { User } from "./modules/User/User.entity";
+import { UserDTO } from "./modules/User/User.dto";
 
 export interface IReader<T> {
   getCount(): Promise<number>;
@@ -21,10 +22,15 @@ export interface IWriter<T> {
 
 export type BaseRepository<T> = IReader<T> & IWriter<T>;
 
-export type Result<T, E> = [T | null, E?];
+export type Result<T, E> = [T?, E?];
 export type TResultService<T> = {
   total: number;
   data: T[];
+};
+
+export type TUserWithToken = {
+  user: UserDTO;
+  token: string;
 };
 
 export type VideoType = "movie" | "tv" | "trailer" | "teaser";

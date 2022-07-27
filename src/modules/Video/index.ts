@@ -3,9 +3,8 @@ import VideoController from "./Video.controller";
 import VideoRepository from "./Video.repository";
 import VideoService from "./Video.service";
 
-const manager = AppDataSource.manager;
-const repo = new VideoRepository(manager);
+const repo = new VideoRepository(AppDataSource.manager);
 const service = new VideoService(repo);
-const videoController = new VideoController(service);
+const controller = new VideoController(service);
 
-export default videoController;
+export default controller;

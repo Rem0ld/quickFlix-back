@@ -2,6 +2,9 @@ import { User } from "./User.entity";
 import UserRepository from "./User.repository";
 import jwt from "jsonwebtoken";
 import { UserDTO } from "./User.dto";
+import { promisifier } from "../../services/promisifier";
+import MissingDataPayloadException, { err, ok } from "../../services/Error";
+import { Result, TUserWithToken } from "../../types";
 
 export default class UserService {
   repo: UserRepository;
@@ -9,61 +12,66 @@ export default class UserService {
     this.repo = repo;
   }
 
-  async findAll(): Promise<User[]> {
-    return this.repo.findAll();
+  async findAll(): Promise<Result<UserDTO[], Error>> {
+    const [result, error] = await promisifier<UserDTO[]>(this.repo.findAll());
+    if (error) {
+      err(error);
+    }
+    return ok(result);
   }
 
-  async findByPseudo(pseudo: string): Promise<User | null> {
+  async findByPseudo(pseudo: string): Promise<Result<UserDTO, Error>> {
     if (!pseudo.length) {
-      throw new Error("missing pseudo");
+      err(new MissingDataPayloadException("missing pseudo"));
     }
 
-    try {
-      const user = await this.repo.findByPseudo(pseudo);
-
-      if (!user) {
-        throw new Error("no user found");
-      }
-
-      return user;
-    } catch (error) {
-      throw new Error(error);
+    const [result, error] = await promisifier<UserDTO>(
+      this.repo.findByPseudo(pseudo)
+    );
+    if (error) {
+      err(new Error(error));
     }
+
+    return ok(result);
   }
 
-  async create(data: Partial<User>): Promise<User | null> {
-    return this.repo.create(data);
+  async create(data: Partial<User>): Promise<Result<UserDTO, Error>> {
+    const [result, error] = await promisifier<UserDTO>(this.repo.create(data));
+    if (error) {
+      err(new Error(error));
+    }
+
+    return ok(result);
   }
 
   async update(id: string, data: Partial<User>) { }
   async delete(id: string) { }
 
-  async authenticate(pseudo: string, password: string) {
-    try {
-      const user: User = await this.findByPseudo(pseudo);
-      if (!user) {
-        throw new Error("no user found");
-      }
-      const result = this.repo.compareHash(password, user.password);
-
-      if (!result) {
-        throw new Error("incorrect password");
-      }
-
-      const protectedUser = new UserDTO(user).protectPassword();
-
-      return {
-        user: protectedUser,
-        token: this.generateToken(protectedUser),
-      };
-    } catch (error) {
-      throw new Error(error);
+  async authenticate(
+    pseudo: string,
+    password: string
+  ): Promise<Result<TUserWithToken, Error>> {
+    const [user, error] = await promisifier<UserDTO>(this.findByPseudo(pseudo));
+    if (error) {
+      err(new Error("no user found with this pseudo"));
     }
+    const result = this.repo.compareHash(password, user.password);
+
+    if (!result) {
+      err(new Error("incorrect password"));
+    }
+
+    const protectedUser = new UserDTO(user).protectPassword();
+
+    return ok({
+      user: protectedUser,
+      token: this.generateToken(protectedUser),
+    });
   }
 
   generateToken(user: Partial<Omit<User, "password">>) {
     return jwt.sign(user, process.env.SECRET, {
-      expiresIn: "10d"
+      expiresIn: "10d",
     });
   }
 }
