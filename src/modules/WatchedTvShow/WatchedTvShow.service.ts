@@ -1,8 +1,9 @@
-import { DeepPartial } from "typeorm";
+import { DeepPartial, DeleteResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import MissingDataPayloadException from "../../services/Error";
+import MissingDataPayloadException, { err, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
-import { TResultService } from "../../types";
+import { Result, TResultService } from "../../types";
+import { WatchedTvShowDTO } from "./WatchedTvShow.dto";
 import { WatchedTvShow } from "./WatchedTvShow.entity";
 import { WatchedTvShowRepository } from "./WatchedTvShow.repository";
 export default class WatchedTvShowService {
@@ -11,49 +12,65 @@ export default class WatchedTvShowService {
     this.repo = repo;
   }
 
-  async findById(id: string): Promise<WatchedTvShow | null> {
+  async findById(id: string): Promise<Result<WatchedTvShowDTO, Error>> {
     if (!id.length) {
-      throw new MissingDataPayloadException("id");
+      err(new MissingDataPayloadException("id"));
     }
 
-    const [result, error] = await promisifier(this.repo.findById(+id));
+    const [result, error] = await promisifier<WatchedTvShowDTO>(
+      this.repo.findById(+id)
+    );
+
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
 
-    return result;
+    return ok(result);
   }
 
   async findAll(
     limit: number = defaultLimit,
     skip: number = 0,
     id: string
-  ): Promise<TResultService<WatchedTvShow>> {
-    const count = await this.repo.getCount();
-    const [result, error] = await promisifier(this.repo.findAll(limit, skip, +id));
+  ): Promise<Result<TResultService<WatchedTvShow>, Error>> {
+    const total = await this.repo.getCount();
+    const [result, error] = await promisifier<WatchedTvShowDTO[]>(
+      this.repo.findAll(limit, skip, +id)
+    );
+
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return { total: count, data: result };
+    return ok({ total, data: result });
   }
 
-  async create(data: DeepPartial<WatchedTvShow>): Promise<WatchedTvShow | Error> {
+  async create(
+    data: DeepPartial<WatchedTvShow>
+  ): Promise<Result<WatchedTvShowDTO, Error>> {
     if (!data.tvShow || !data.user || !data.watched) {
-      throw new Error("missing data to create");
+      err(new MissingDataPayloadException("data"));
     }
 
-    const [result, error] = await promisifier(this.repo.create(data));
+    const [result, error] = await promisifier<WatchedTvShowDTO>(
+      this.repo.create(data)
+    );
+
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return result;
+
+    return ok(result);
   }
 
-  async delete(id: string) {
-    const [result, error] = await promisifier(this.repo.delete(+id));
+  async delete(id: string): Promise<Result<DeleteResult, Error>> {
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.delete(+id)
+    );
+
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return result;
+
+    return ok(result);
   }
 }

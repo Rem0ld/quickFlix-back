@@ -15,27 +15,30 @@ export default class TvShowService {
 
   async findById(id: string): Promise<Result<TvShowDTO, Error>> {
     if (!id?.length) {
-      err(new MissingDataPayloadException("id"))
+      err(new MissingDataPayloadException("id"));
     }
 
-    const [result, error] = await promisifier<TvShowDTO>(this.repo.findById(+id));
+    const [result, error] = await promisifier<TvShowDTO>(
+      this.repo.findById(+id)
+    );
     if (error) {
       err(new Error(error));
     }
-    return ok(result)
+    return ok(result);
   }
 
-  // TODO: make join with videos
   async findAll(
     limit: number = defaultLimit,
     skip: number = 0
-  ): Promise<TResultService<TvShowDTO>> {
+  ): Promise<Result<TResultService<TvShowDTO>, Error>> {
     const total = await this.repo.getCount();
-    const [result, error] = await promisifier(this.repo.findAll(limit, skip));
+    const [result, error] = await promisifier<TvShowDTO[]>(
+      this.repo.findAll(limit, skip)
+    );
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return { total, data: result };
+    return ok({ total, data: result });
   }
 
   // async findByName({ name }: { name: string }): Promise<TvShow | null> {
@@ -48,10 +51,10 @@ export default class TvShowService {
   async create(
     data: Omit<TTvShow, "id">,
     params?: { movieJob: boolean; id: string }
-  ): Promise<TvShowDTO> {
+  ): Promise<Result<TvShowDTO, Error>> {
     // TODO: Add more validation here
     if (!Object.keys(data).length) {
-      throw new Error("missing data");
+      err(new MissingDataPayloadException("data"));
     }
 
     // try {
@@ -62,11 +65,14 @@ export default class TvShowService {
     //   throw new Error(error);
     // }
 
-    const [result, error] = await promisifier(this.repo.create(data));
+    const [result, error] = await promisifier<TvShowDTO>(
+      this.repo.create(data)
+    );
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return result;
+
+    return ok(result);
     // if (params?.movieJob) {
     //   await movieJobService.create({
     //     id: params.id,
@@ -75,31 +81,41 @@ export default class TvShowService {
     // }
   }
 
-  async update(id: string, data: Partial<TvShow>): Promise<Result<UpdateResult, Error>> {
+  async patch(
+    id: string,
+    data: Partial<TvShow>
+  ): Promise<Result<TvShowDTO, Error>> {
     if (!id.length) {
-      throw new Error("missing id");
+      err(new MissingDataPayloadException("id"));
     }
 
     if (!Object.keys(data).length) {
-      throw new Error("missing data");
+      err(new MissingDataPayloadException("data"));
     }
 
-    const [result, error] = await promisifier(this.repo.update(+id, data));
+    const [result, error] = await promisifier<TvShowDTO>(
+      this.repo.update(+id, data)
+    );
+
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return result;
+    return ok(result);
   }
 
   async delete(id: string): Promise<Result<DeleteResult, Error>> {
     if (!id.length) {
-      throw new Error("missing id");
+      err(new MissingDataPayloadException("id"));
     }
 
-    const [result, error] = await promisifier(this.repo.delete(+id));
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.delete(+id)
+    );
+
     if (error) {
-      throw new Error(error);
+      err(new Error(error));
     }
-    return result;
+
+    return ok(result);
   }
 }

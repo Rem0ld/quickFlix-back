@@ -36,7 +36,7 @@ describe("update tvShow", () => {
   it("should add episode to tvshow", async () => {
     const { data: tvShows } = await tvShowService.findAll();
     const video = await videoService.create(mockVideo, { movieJob: false })
-    await tvShowService.update(tvShows[0].id.toString(), { videos: [video] })
+    await tvShowService.patch(tvShows[0].id.toString(), { videos: [video] })
     const updated = await tvShowService.findAll()
     expect(updated.data[0].videos).toHaveLength(1)
   });

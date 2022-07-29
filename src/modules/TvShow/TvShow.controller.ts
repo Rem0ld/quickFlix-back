@@ -35,16 +35,19 @@ export default class TvShowController {
     //   return;
     // }
 
-    const { data, total } = await this.service.findAll(
+    const [result, error] = await this.service.findAll(
       +limit,
       +skip,
     );
+    if (error) {
+      next(error)
+    }
 
     res.json({
-      total,
+      total: result.total,
       limit,
       skip,
-      data,
+      data: result.data,
     });
     return;
   }
