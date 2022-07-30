@@ -1,3 +1,5 @@
+import { readFile, readFileSync } from "fs";
+import { open } from "fs/promises";
 import path from "path";
 import { basePath } from "../../config/defaultConfig";
 import { go } from "../../services/miscelleneaous";
@@ -26,10 +28,10 @@ export default class DiscoverService {
     const result = await go(
       basePath + path.sep + this.pathVideos,
       this.tempFile,
-      this.regVideo
+      this.regVideo,
+      []
     );
 
-    console.log(result)
-    return result
+    return { data: result, total: result.length }
   }
 }

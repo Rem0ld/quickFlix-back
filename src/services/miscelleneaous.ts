@@ -1,5 +1,5 @@
 import { opendir, readFile, rm } from "fs/promises";
-import { appendFile, readSync } from "fs";
+import { appendFile, opendirSync, readSync } from "fs";
 import path from "path";
 import { findBaseFolder } from "../utils/fileManipulation";
 import TvShowService from "../modules/TvShow/TvShow.service";
@@ -19,15 +19,12 @@ export async function go(
   root: string,
   tempFileName: string,
   regex: RegExp,
-  list = []
+  list: any
 ): Promise<any> {
   try {
-    const dir = await opendir(root);
-    for await (const dirent of dir) {
-      if (dir.readSync() === null) {
-        return Promise.resolve(list);
-      }
-
+    const dir = opendirSync(root);
+    let dirent;
+    while ((dirent = dir.readSync()) !== null) {
       if (dirent.isFile()) {
         if (regex.test(dirent.name)) {
           const parsed = path.parse(dir.path + path.sep + dirent.name);
@@ -35,9 +32,11 @@ export async function go(
           list.push(parsed)
         }
       } else {
-        await go(dir.path + "/" + dirent.name, tempFileName, regex);
+        await go(dir.path + "/" + dirent.name, tempFileName, regex, list);
       }
     }
+    await dir.close()
+    return list
   } catch (err) {
     console.error(err);
   }
