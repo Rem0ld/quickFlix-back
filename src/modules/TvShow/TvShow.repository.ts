@@ -2,6 +2,7 @@ import { DeleteResult, EntityManager } from "typeorm";
 import { BaseRepository, TTvShow } from "../../types";
 import { TvShowDTO } from "./TvShow.dto";
 import { TvShow } from "./TvShow.entity";
+import dynamicQueryBuilder from "../../utils/queryBuilder";
 
 export class TvShowRepository implements BaseRepository<TvShowDTO> {
   constructor(
@@ -22,31 +23,41 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
       .skip(skip)
       .getMany();
 
-    return result.map(el => new TvShowDTO(el))
+    return result.map(el => new TvShowDTO(el));
   }
 
   async findById(id: number): Promise<TvShowDTO> {
     const result = await this.manager.findOneBy(TvShow, { id });
 
-    return new TvShowDTO(result)
+    return new TvShowDTO(result);
+  }
+
+  async findByName(name: string): Promise<TvShowDTO> {
+    const result = await dynamicQueryBuilder(
+      { name },
+      TvShow,
+      "tv_show"
+    ).getOne();
+
+    return new TvShowDTO(result);
   }
 
   async create(data: Omit<TTvShow, "id">): Promise<TvShowDTO> {
     const result = await this.manager.save(TvShow, { ...data });
 
-    return new TvShowDTO(result)
+    return new TvShowDTO(result);
   }
 
   async createMany(data: Omit<TTvShow, "id">[]): Promise<TvShowDTO[]> {
     const result = await this.manager.save(TvShow, data);
 
-    return result.map(el => new TvShowDTO(el))
+    return result.map(el => new TvShowDTO(el));
   }
 
   async update(id: number, data: Partial<TvShow>): Promise<TvShowDTO> {
     const result = await this.manager.save(TvShow, { id, ...data });
 
-    return new TvShowDTO(result)
+    return new TvShowDTO(result);
   }
 
   async delete(id: number): Promise<DeleteResult> {

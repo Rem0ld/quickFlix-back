@@ -8,9 +8,7 @@ import { TvShow } from "./TvShow.entity";
 import { TvShowRepository } from "./TvShow.repository";
 
 export default class TvShowService {
-  repo: TvShowRepository;
-  constructor(repo: TvShowRepository) {
-    this.repo = repo;
+  constructor(private repo: TvShowRepository) {
   }
 
   async findById(id: string): Promise<Result<TvShowDTO, Error>> {
@@ -41,12 +39,19 @@ export default class TvShowService {
     return ok({ total, data: result });
   }
 
-  // async findByName({ name }: { name: string }): Promise<TvShow | null> {
-  //   const re = new RegExp(`${name}`, "i");
-  //   const result = await tvShowModel.findOne({ name: re });
+  async findByName(name: string): Promise<Result<TvShowDTO, Error>> {
+    if (!name.length) {
+      err(new MissingDataPayloadException("name"))
+    }
+    const [result, error] = await promisifier<TvShowDTO>(
+      this.repo.findByName(name)
+    );
+    if (error) {
+      err(new Error(error));
+    }
 
-  //   return result;
-  // }
+    return ok(result);
+  }
 
   async create(
     data: Omit<TTvShow, "id">,
