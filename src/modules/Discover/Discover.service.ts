@@ -1,10 +1,12 @@
+import Ffmpeg, { FfmpegCommand } from "fluent-ffmpeg";
 import { readFile, readFileSync } from "fs";
 import { open } from "fs/promises";
 import path from "path";
 import { basePath } from "../../config/defaultConfig";
 import { logger } from "../../libs/logger";
 import { go } from "../../services/miscelleneaous";
-import { regexTvShow, regexVideo } from "../../utils/regexes";
+import { promisifier } from "../../services/promisifier";
+import { regExBasename, regexTvShow, regexVideo } from "../../utils/regexes";
 import { TvShowDTO } from "../TvShow/TvShow.dto";
 import TvShowService from "../TvShow/TvShow.service";
 import { VideoDTO } from "../Video/Video.dto";
@@ -35,31 +37,57 @@ export default class DiscoverService {
       []
     );
 
-    return { data: result, total: result.length }
+    const entries = await this.addEntries(result);
+
+    return { data: result, total: result.length };
   }
 
   async addEntries(list: path.ParsedPath[]) {
-    const result: { videos: VideoDTO[], tvShows: TvShowDTO[] } = { videos: [], tvShows: [] }
+    const result: { videos: VideoDTO[]; tvShows: TvShowDTO[] } = {
+      videos: [],
+      tvShows: [],
+    };
 
     for (const el of list) {
-      const data = await this.addEntry(el)
-      result.videos.push(data.video)
-      if (data.tvShow) {
-        result.tvShows.push(data.tvShow)
-      }
+      const data = await this.addEntry(el);
+      // result.videos.push(data.video)
+      // if (data.tvShow) {
+      //   result.tvShows.push(data.tvShow)
+      // }
     }
   }
 
-  async addEntry(el: path.ParsedPath): Promise<{ video: VideoDTO, tvShow?: TvShowDTO }> {
-    const isTvShow = el.name.match(regexTvShow)
-    let tvShow: TvShowDTO
+  async addEntry(
+    el: path.ParsedPath
+  ): Promise<{ video: VideoDTO; tvShow?: TvShowDTO }> {
+    const isTvShow = el.name.match(regexTvShow);
+    let tvShow: TvShowDTO;
 
     if (isTvShow) {
-      const [result, error] = await this.tvShowSer.findByName(el.name)
+      const index = el.name.split("/").findIndex(el => el === this.pathVideos);
+      const name = el.name.split("/")[index + 1];
+      const [result, error] = await this.tvShowSer.findByName(name);
+
       if (error) {
-        logger.error(error)
+        logger.error(error);
       }
-      tvShow = result
+
+      if (!Object.keys(result).length) {
+        const [result, error] = await this.tvShowSer.create({
+          name,
+          location: el.dir,
+        });
+        if (error) {
+          logger.error(error);
+        }
+        tvShow = result;
+        logger.info("tv Show created");
+      } else {
+        tvShow = result;
+        logger.info("tv show found");
+      }
     }
+
+    return;
   }
 }

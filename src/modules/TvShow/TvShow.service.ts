@@ -1,4 +1,4 @@
-import { DeleteResult, UpdateResult } from "typeorm";
+import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
 import MissingDataPayloadException, { err, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
@@ -8,8 +8,7 @@ import { TvShow } from "./TvShow.entity";
 import { TvShowRepository } from "./TvShow.repository";
 
 export default class TvShowService {
-  constructor(private repo: TvShowRepository) {
-  }
+  constructor(private repo: TvShowRepository) { }
 
   async findById(id: string): Promise<Result<TvShowDTO, Error>> {
     if (!id?.length) {
@@ -41,7 +40,7 @@ export default class TvShowService {
 
   async findByName(name: string): Promise<Result<TvShowDTO, Error>> {
     if (!name.length) {
-      err(new MissingDataPayloadException("name"))
+      err(new MissingDataPayloadException("name"));
     }
     const [result, error] = await promisifier<TvShowDTO>(
       this.repo.findByName(name)
@@ -54,7 +53,7 @@ export default class TvShowService {
   }
 
   async create(
-    data: Omit<TTvShow, "id">,
+    data: DeepPartial<TvShowDTO>,
     params?: { movieJob: boolean; id: string }
   ): Promise<Result<TvShowDTO, Error>> {
     // TODO: Add more validation here
@@ -122,5 +121,15 @@ export default class TvShowService {
     }
 
     return ok(result);
+  }
+
+  async deleteAll(): Promise<Result<void, Error>> {
+    const [result, error] = await promisifier<void>(this.repo.deleteAll())
+
+    if (error) {
+      err(new Error(error))
+    }
+
+    return ok(result)
   }
 }

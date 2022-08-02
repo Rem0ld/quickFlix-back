@@ -1,4 +1,4 @@
-import { DeleteResult, EntityManager } from "typeorm";
+import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
 import { BaseRepository, TTvShow } from "../../types";
 import { TvShowDTO } from "./TvShow.dto";
 import { TvShow } from "./TvShow.entity";
@@ -42,13 +42,13 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
     return new TvShowDTO(result);
   }
 
-  async create(data: Omit<TTvShow, "id">): Promise<TvShowDTO> {
+  async create(data: DeepPartial<TvShowDTO>): Promise<TvShowDTO> {
     const result = await this.manager.save(TvShow, { ...data });
 
     return new TvShowDTO(result);
   }
 
-  async createMany(data: Omit<TTvShow, "id">[]): Promise<TvShowDTO[]> {
+  async createMany(data: DeepPartial<TvShowDTO[]>): Promise<TvShowDTO[]> {
     const result = await this.manager.save(TvShow, data);
 
     return result.map(el => new TvShowDTO(el));
@@ -66,5 +66,9 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
       .delete()
       .where(`${this.name}.id= :id`, { id })
       .execute();
+  }
+
+  async deleteAll(): Promise<void> {
+    return this.manager.clear(TvShow)
   }
 }

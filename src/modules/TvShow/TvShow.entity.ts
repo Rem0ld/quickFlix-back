@@ -36,10 +36,10 @@ export class TvShow implements TTvShow {
   @Column({ nullable: true })
   ongoing: boolean;
 
-  @Column("text", { name: 'origin_country', array: true, nullable: true })
+  @Column("text", { name: "origin_country", array: true, nullable: true })
   originCountry: string[];
 
-  @Column("text", { name: 'poster_path', array: true, nullable: true })
+  @Column("text", { name: "poster_path", array: true, nullable: true })
   posterPath: string[];
 
   @Column({ nullable: true })
@@ -54,29 +54,35 @@ export class TvShow implements TTvShow {
   @Column({
     name: "first_air_date",
     type: "timestamp",
-    nullable: true
+    nullable: true,
   })
   firstAirDate: Date;
 
-  @Column("text", { name: 'trailer_yt_code', array: true, nullable: true })
+  @Column("text", { name: "trailer_yt_code", array: true, nullable: true })
   trailerYtCode: string[];
 
   @Column({
     name: "average_length",
     type: "float",
-    nullable: true
+    nullable: true,
   })
   averageLength: number;
 
-  @OneToMany(() => Video, video => video.tvShow)
+  @OneToMany(() => Video, video => video.tvShow, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
   videos: Video[];
 
-  @OneToMany(() => WatchedTvShow, watchedTvShow => watchedTvShow.tvShow)
+  @OneToMany(() => WatchedTvShow, watchedTvShow => watchedTvShow.tvShow, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
   userWatchedTvShow: WatchedTvShow[];
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
-  @UpdateDateColumn(({ name: "updated_at" }))
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 }
