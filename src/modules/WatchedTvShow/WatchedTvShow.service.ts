@@ -14,7 +14,7 @@ export default class WatchedTvShowService {
 
   async findById(id: string): Promise<Result<WatchedTvShowDTO, Error>> {
     if (!id.length) {
-      err(new MissingDataPayloadException("id"));
+      return err(new MissingDataPayloadException("id"));
     }
 
     const [result, error] = await promisifier<WatchedTvShowDTO>(
@@ -22,7 +22,7 @@ export default class WatchedTvShowService {
     );
 
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -39,7 +39,7 @@ export default class WatchedTvShowService {
     );
 
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
     return ok({ total, data: result });
   }
@@ -48,7 +48,7 @@ export default class WatchedTvShowService {
     data: DeepPartial<WatchedTvShow>
   ): Promise<Result<WatchedTvShowDTO, Error>> {
     if (!data.tvShow || !data.user || !data.watched) {
-      err(new MissingDataPayloadException("data"));
+      return err(new MissingDataPayloadException("data"));
     }
 
     const [result, error] = await promisifier<WatchedTvShowDTO>(
@@ -56,7 +56,7 @@ export default class WatchedTvShowService {
     );
 
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -68,7 +68,7 @@ export default class WatchedTvShowService {
     );
 
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);

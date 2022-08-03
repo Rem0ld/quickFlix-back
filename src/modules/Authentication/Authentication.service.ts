@@ -15,12 +15,12 @@ export default class AuthenticationService {
 
   async authenticate(pseudo: string, password: string) {
     if (!pseudo.length || !password.length) {
-      err(new MissingDataPayloadException("pseudo or password"));
+      return err(new MissingDataPayloadException("pseudo or password"));
     }
 
     const [result, error] = await this.service.authenticate(pseudo, password);
     if (error) {
-      err(error);
+      return err(error);
     }
 
     return ok(result);
@@ -35,7 +35,7 @@ export default class AuthenticationService {
     const decoded: any = this.decodeToken(token);
 
     if (!decoded) {
-      err(new Error("cannot verify token"));
+      return err(new Error("cannot verify token"));
     }
 
     const now = new Date().getTime();
@@ -46,11 +46,11 @@ export default class AuthenticationService {
   parseToken(token: string) {
     const [isValid, error] = this.verifyToken(token);
     if (error) {
-      err(error);
+      return err(error);
     }
 
     if (!isValid) {
-      err(new Error("Invalid or expired token"));
+      return err(new Error("Invalid or expired token"));
     }
 
     const decoded = this.decodeToken(token);
@@ -59,7 +59,7 @@ export default class AuthenticationService {
 
   async generateNewToken(token: string) {
     if (!token.length) {
-      err(new Error("token string should have length"));
+      return err(new Error("token string should have length"));
     }
 
     const decoded: any = this.parseToken(token);
@@ -68,7 +68,7 @@ export default class AuthenticationService {
       this.service.findByPseudo(pseudo)
     );
     if (error) {
-      err(new Error("something wrong happen"));
+      return err(new Error("something wrong happen"));
     }
     const newToken = this.service.generateToken(userDto.protectPassword());
 

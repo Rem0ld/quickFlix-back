@@ -1,7 +1,17 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Timestamp,
+  UpdateDateColumn,
+} from "typeorm";
 import { User } from "../User/User.entity";
 import { Video } from "../Video/Video.entity";
-import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity"
+import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
 @Entity()
 export class Watched {
@@ -14,11 +24,15 @@ export class Watched {
   @Column({ default: false })
   finished: boolean;
 
-  @ManyToOne(() => Video, video => video.userWatchedVideo)
+  @ManyToOne(() => Video, video => video.userWatchedVideo, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "video_id" })
   video: Video;
 
-  @ManyToOne(() => User, user => user.userWatchedVideo)
+  @ManyToOne(() => User, user => user.userWatchedVideo, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn({ name: "user_id" })
   user: User;
 
@@ -28,6 +42,6 @@ export class Watched {
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
-  @UpdateDateColumn(({ name: "updated_at" }))
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 }

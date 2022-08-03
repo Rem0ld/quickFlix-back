@@ -22,7 +22,9 @@ export default class VideoService {
       return err(new MissingDataPayloadException("id"));
     }
 
-    const [result, error] = await promisifier<VideoDTO>(this.repo.findById(+id));
+    const [result, error] = await promisifier<VideoDTO>(
+      this.repo.findById(+id)
+    );
     if (error) {
       return err(new Error(error));
     }
@@ -103,7 +105,9 @@ export default class VideoService {
       return err(new MissingDataPayloadException());
     }
 
-    const [result, error] = await promisifier<VideoDTO>(this.repo.update(+id, data));
+    const [result, error] = await promisifier<VideoDTO>(
+      this.repo.update(+id, data)
+    );
     if (error) {
       return err(new Error(error));
     }
@@ -113,7 +117,7 @@ export default class VideoService {
 
   async create(
     data: DeepPartial<VideoDTO>,
-    params: { movieJob: boolean }
+    params?: { movieJob: boolean }
   ): Promise<Result<VideoDTO, MissingDataPayloadException | Error>> {
     // TODO: validation to make sure video has everything needed
     if (!data?.name?.length) {
@@ -124,7 +128,7 @@ export default class VideoService {
       return err(new Error(error));
     }
 
-    if (params.movieJob) {
+    if (params?.movieJob) {
       // await movieJobService.create({ id: video._id });
     }
 
@@ -138,7 +142,9 @@ export default class VideoService {
       return err(new MissingDataPayloadException("id"));
     }
 
-    const [result, error] = await promisifier<DeleteResult>(this.repo.delete(+id));
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.delete(+id)
+    );
     if (error) {
       return err(new Error(error));
     }
@@ -149,12 +155,14 @@ export default class VideoService {
   }
 
   // TODO: add some kind of validation here to be sure admin is doing it
-  async deleteAll(): Promise<Result<void, Error>> {
-    const [_, error] = await promisifier<DeleteResult>(this.repo.deleteAll());
+  async deleteAll(): Promise<Result<DeleteResult, Error>> {
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.deleteAll()
+    );
     if (error) {
       return err(new Error(error));
     }
-    return ok(null);
+    return ok(result);
     // const movieJob = await movieDbJobModel.deleteMany();
     // const tvShow = await tvShowModel.deleteMany();
   }

@@ -24,7 +24,7 @@ type query = {
   skip: string;
 };
 @Controller("video")
-@ClassMiddleware([protectRoutes])
+// @ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
 export default class VideoController {
   constructor(private service: VideoService) { }
@@ -101,7 +101,14 @@ export default class VideoController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { name, episode, season, type, limit = defaultLimit, skip = 0 } = req.query;
+    const {
+      name,
+      episode,
+      season,
+      type,
+      limit = defaultLimit,
+      skip = 0,
+    } = req.query;
 
     const [result, error] = await this.service.findByFields({
       name: name,
@@ -115,7 +122,7 @@ export default class VideoController {
       next(error);
     }
 
-    console.log(result)
+    console.log(result);
     res.json({
       total: result.total,
       limit: +limit,
@@ -177,15 +184,10 @@ export default class VideoController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try {
-      await this.service.deleteAll();
-
-      res.statusCode = 204;
-      res.statusMessage = "All entries has been removed";
-      res.end();
-    } catch (error) {
+    const [result, error] = await this.service.deleteAll();
+    if (error) {
       next(error);
     }
-    return;
+    res.json(result);
   }
 }

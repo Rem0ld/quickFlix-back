@@ -1,5 +1,6 @@
 import {
   DeepPartial,
+  DeleteResult,
   EntityManager,
   NoVersionOrUpdateDateColumnError,
 } from "typeorm";
@@ -9,6 +10,7 @@ import { Video } from "./Video.entity";
 import { v4 as uuidv4 } from "uuid";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { VideoDTO } from "./Video.dto";
+import { DeleteExpression } from "typescript";
 
 export default class VideoRepository implements BaseRepository<VideoDTO> {
   constructor(private manager: EntityManager) { }
@@ -90,7 +92,7 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
       .execute();
   }
 
-  async deleteAll() {
-    return this.manager.clear(Video);
+  async deleteAll(): Promise<DeleteResult> {
+    return this.manager.getRepository(Video).delete({});
   }
 }

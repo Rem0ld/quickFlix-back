@@ -68,7 +68,7 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
       .execute();
   }
 
-  async deleteAll(): Promise<void> {
-    return this.manager.clear(TvShow)
+  async deleteAll(): Promise<DeleteResult> {
+    return this.manager.getRepository(TvShow).delete({});
   }
 }

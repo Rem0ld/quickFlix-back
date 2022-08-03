@@ -68,16 +68,10 @@ export class TvShow implements TTvShow {
   })
   averageLength: number;
 
-  @OneToMany(() => Video, video => video.tvShow, {
-    nullable: true,
-    onDelete: "SET NULL",
-  })
+  @OneToMany(() => Video, video => video.tvShow)
   videos: Video[];
 
-  @OneToMany(() => WatchedTvShow, watchedTvShow => watchedTvShow.tvShow, {
-    nullable: true,
-    onDelete: "SET NULL",
-  })
+  @OneToMany(() => WatchedTvShow, watchedTvShow => watchedTvShow.tvShow)
   userWatchedTvShow: WatchedTvShow[];
 
   @CreateDateColumn({ name: "created_at" })

@@ -81,6 +81,7 @@ export class Video implements TVideo {
 
   @Column({
     type: "float",
+    nullable: true
   })
   length: number;
 

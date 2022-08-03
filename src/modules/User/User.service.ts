@@ -15,21 +15,21 @@ export default class UserService {
   async findAll(): Promise<Result<UserDTO[], Error>> {
     const [result, error] = await promisifier<UserDTO[]>(this.repo.findAll());
     if (error) {
-      err(error);
+      return err(new Error(error));
     }
     return ok(result);
   }
 
   async findByPseudo(pseudo: string): Promise<Result<UserDTO, Error>> {
     if (!pseudo.length) {
-      err(new MissingDataPayloadException("missing pseudo"));
+      return err(new MissingDataPayloadException("missing pseudo"));
     }
 
     const [result, error] = await promisifier<UserDTO>(
       this.repo.findByPseudo(pseudo)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -38,7 +38,7 @@ export default class UserService {
   async create(data: Partial<User>): Promise<Result<UserDTO, Error>> {
     const [result, error] = await promisifier<UserDTO>(this.repo.create(data));
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -53,12 +53,12 @@ export default class UserService {
   ): Promise<Result<TUserWithToken, Error>> {
     const [user, error] = await promisifier<UserDTO>(this.findByPseudo(pseudo));
     if (error) {
-      err(new Error("no user found with this pseudo"));
+      return err(new Error("no user found with this pseudo"));
     }
     const result = this.repo.compareHash(password, user.password);
 
     if (!result) {
-      err(new Error("incorrect password"));
+      return err(new Error("incorrect password"));
     }
 
     const protectedUser = new UserDTO(user).protectPassword();

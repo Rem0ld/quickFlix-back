@@ -12,14 +12,14 @@ export default class TvShowService {
 
   async findById(id: string): Promise<Result<TvShowDTO, Error>> {
     if (!id?.length) {
-      err(new MissingDataPayloadException("id"));
+      return err(new MissingDataPayloadException("id"));
     }
 
     const [result, error] = await promisifier<TvShowDTO>(
       this.repo.findById(+id)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
     return ok(result);
   }
@@ -33,20 +33,20 @@ export default class TvShowService {
       this.repo.findAll(limit, skip)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
     return ok({ total, data: result });
   }
 
   async findByName(name: string): Promise<Result<TvShowDTO, Error>> {
     if (!name.length) {
-      err(new MissingDataPayloadException("name"));
+      return err(new MissingDataPayloadException("name"));
     }
     const [result, error] = await promisifier<TvShowDTO>(
       this.repo.findByName(name)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -58,7 +58,7 @@ export default class TvShowService {
   ): Promise<Result<TvShowDTO, Error>> {
     // TODO: Add more validation here
     if (!Object.keys(data).length) {
-      err(new MissingDataPayloadException("data"));
+      return err(new MissingDataPayloadException("data"));
     }
 
     // try {
@@ -73,7 +73,7 @@ export default class TvShowService {
       this.repo.create(data)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -90,11 +90,11 @@ export default class TvShowService {
     data: Partial<TvShow>
   ): Promise<Result<TvShowDTO, Error>> {
     if (!id.length) {
-      err(new MissingDataPayloadException("id"));
+      return err(new MissingDataPayloadException("id"));
     }
 
     if (!Object.keys(data).length) {
-      err(new MissingDataPayloadException("data"));
+      return err(new MissingDataPayloadException("data"));
     }
 
     const [result, error] = await promisifier<TvShowDTO>(
@@ -102,14 +102,14 @@ export default class TvShowService {
     );
 
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
     return ok(result);
   }
 
   async delete(id: string): Promise<Result<DeleteResult, Error>> {
     if (!id.length) {
-      err(new MissingDataPayloadException("id"));
+      return err(new MissingDataPayloadException("id"));
     }
 
     const [result, error] = await promisifier<DeleteResult>(
@@ -117,19 +117,21 @@ export default class TvShowService {
     );
 
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
   }
 
-  async deleteAll(): Promise<Result<void, Error>> {
-    const [result, error] = await promisifier<void>(this.repo.deleteAll())
+  async deleteAll(): Promise<Result<DeleteResult, Error>> {
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.deleteAll()
+    );
 
     if (error) {
-      err(new Error(error))
+      return err(new Error(error));
     }
 
-    return ok(result)
+    return ok(result);
   }
 }

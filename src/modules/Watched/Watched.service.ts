@@ -15,7 +15,7 @@ export default class WatchedService {
 
   async findByVideoId(id: string): Promise<Result<WatchedDTO, Error>> {
     if (!id.length) {
-      err(new MissingDataPayloadException("id"));
+      return err(new MissingDataPayloadException("id"));
     }
 
     const [result, error] = await promisifier<WatchedDTO>(
@@ -23,7 +23,7 @@ export default class WatchedService {
     );
 
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -39,7 +39,7 @@ export default class WatchedService {
       this.repo.findAll(limit, skip, +id)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok({ total, data: result });
@@ -54,7 +54,7 @@ export default class WatchedService {
       this.repo.create(data)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);
@@ -73,7 +73,7 @@ export default class WatchedService {
       this.repo.delete(+id)
     );
     if (error) {
-      err(new Error(error));
+      return err(new Error(error));
     }
 
     return ok(result);

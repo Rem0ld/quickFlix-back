@@ -58,7 +58,7 @@ export default class TvShowController {
   ): Promise<void> {
     const { id } = req.params;
 
-    const [result, error] = await promisifier(this.service.findById(id));
+    const [result, error] = await this.service.findById(id);
     if (error) {
       next(error);
     }
@@ -77,7 +77,7 @@ export default class TvShowController {
       name
     );
 
-    const [result, error] = await promisifier(this.service.findByName(name));
+    const [result, error] = await this.service.findByName(name);
     if (error) {
       next(error);
     }
@@ -125,11 +125,11 @@ export default class TvShowController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const [result, error] = await promisifier<void>(this.service.deleteAll())
+    const [result, error] = await this.service.deleteAll();
     if (error) {
-      next(error)
+      next(error);
     }
 
-    res.json(result)
+    res.json(result);
   }
 }
