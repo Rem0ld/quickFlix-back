@@ -1,24 +1,6 @@
-import path from "path";
-import { rm } from "fs/promises";
-import fetch from "node-fetch";
 import { Request, Response, NextFunction } from "express";
 import { Controller, Get, ClassErrorMiddleware } from "@overnightjs/core";
-import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import errorHandler from "../../services/errorHandler";
-import { regexIsSubtitle, regexTvShow, regexVideo } from "../../utils/regexes";
-import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
-import TvShowService from "../TvShow/TvShow.service";
-import { go } from "../../services/miscelleneaous";
-import {
-  getImages,
-  getGenres,
-  getVideoPath,
-  getTvShowDetails,
-} from "../../services/apiService";
-import { appendFile, existsSync } from "fs";
-import ffmpeg, { FfmpegCommand, FfprobeStream } from "fluent-ffmpeg";
-import { logger } from "../../libs/logger";
-import VideoService from "../Video/Video.service";
 import { accessFolder } from "../../utils/fileManipulation";
 import DiscoverService from "./Discover.service";
 
@@ -33,24 +15,7 @@ export default class DiscoverController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    let result2;
-
-    /**
-     * Should work like this but if video exists it will not be added in TVShow
-     * TODO: Create a job just to create tvshows
-     */
     const list = await this.service.findInDirectory()
-    // await go(p, "subtitle", regexIsSubtitle);
-
-    // const result = await createEntry(tempFile, "video", videos);
-    // await rm(tempFile);
-
-    // if (tvShows) {
-    //   await go(videosPath + tvShows, tempFile, regexVideo);
-    //   result2 = await createEntry(tempFile, "video", tvShows);
-    //   await rm(tempFile);
-    // }
-
     res.json(list);
   }
 

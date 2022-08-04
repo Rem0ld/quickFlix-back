@@ -1,6 +1,6 @@
 import { DeepPartial, DeleteResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import MissingDataPayloadException, { err, ok } from "../../services/Error";
+import { MissingDataPayloadException, err, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
 import { Result, TResultService } from "../../types";
 import { WatchedTvShowDTO } from "./WatchedTvShow.dto";

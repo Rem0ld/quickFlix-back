@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Timestamp } from "typeorm";
 import { User } from "../User/User.entity";
 import { UserDTO } from "../User/User.dto";
-import MissingDataPayloadException, { err, ok } from "../../services/Error";
+import { err, ok, MissingDataPayloadException } from "../../services/Error";
 import { Result } from "../../types";
 import { promisifier } from "../../services/promisifier";
 

@@ -23,7 +23,7 @@ export enum VideoTypeEnum {
 }
 
 @Entity()
-@Unique(["uuid"])
+@Unique(["uuid", "name", "filename"])
 export class Video implements TVideo {
   @PrimaryGeneratedColumn()
   id: number;

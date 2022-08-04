@@ -3,7 +3,7 @@ import UserRepository from "./User.repository";
 import jwt from "jsonwebtoken";
 import { UserDTO } from "./User.dto";
 import { promisifier } from "../../services/promisifier";
-import MissingDataPayloadException, { err, ok } from "../../services/Error";
+import { MissingDataPayloadException, err, ok } from "../../services/Error";
 import { Result, TUserWithToken } from "../../types";
 
 export default class UserService {

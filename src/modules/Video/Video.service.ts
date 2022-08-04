@@ -1,6 +1,11 @@
 import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import MissingDataPayloadException, { ok, err } from "../../services/Error";
+import {
+  MissingDataPayloadException,
+  ok,
+  err,
+  ResourceNotExist,
+} from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
 import { TResultService, RequestBuilder, Result } from "../../types";
 import { VideoDTO } from "./Video.dto";
@@ -28,17 +33,20 @@ export default class VideoService {
     if (error) {
       return err(new Error(error));
     }
+    if (!Object.keys(result).length) {
+      return err(new ResourceNotExist(id));
+    }
 
     return ok(result);
   }
 
   async findAll(
-    limit: number = defaultLimit,
-    skip: number = 0
-  ): Promise<
-    Result<TResultService<VideoDTO>, MissingDataPayloadException | Error>
-  > {
-    // TODO: prepare db request in data layer
+    limit: number,
+    skip: number
+  ): Promise<Result<TResultService<VideoDTO>, Error>> {
+    if (limit === 0) {
+      skip = 0;
+    }
     const total = await this.repo.getCount();
     const [result, error] = await promisifier<VideoDTO[]>(
       this.repo.findAll(limit, skip)
@@ -46,6 +54,7 @@ export default class VideoService {
     if (error) {
       return err(new Error(error));
     }
+
     return ok({ data: result, total });
   }
 
@@ -90,7 +99,6 @@ export default class VideoService {
     }
 
     return ok({ data: result, total });
-    // if (!videos) throw new Error("Cannot find videos");
   }
 
   async patch(
@@ -98,11 +106,11 @@ export default class VideoService {
     data: Partial<Video>
   ): Promise<Result<VideoDTO, MissingDataPayloadException | Error>> {
     if (!id.length) {
-      return err(new MissingDataPayloadException("id"));
+      return err(new MissingDataPayloadException("id", data));
     }
 
     if (!Object.keys(data).length) {
-      return err(new MissingDataPayloadException());
+      return err(new MissingDataPayloadException("data", data));
     }
 
     const [result, error] = await promisifier<VideoDTO>(
@@ -121,7 +129,7 @@ export default class VideoService {
   ): Promise<Result<VideoDTO, MissingDataPayloadException | Error>> {
     // TODO: validation to make sure video has everything needed
     if (!data?.name?.length) {
-      return err(new MissingDataPayloadException("name"));
+      return err(new MissingDataPayloadException("name", data));
     }
     const [result, error] = await promisifier<VideoDTO>(this.repo.create(data));
     if (error) {
