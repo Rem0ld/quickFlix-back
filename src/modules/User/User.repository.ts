@@ -1,7 +1,7 @@
 import { DeleteResult, EntityManager, UpdateResult } from "typeorm";
 import { User } from "./User.entity";
 import bcrypt from "bcryptjs";
-import { BaseRepository } from "../../types";
+import { BaseRepository, TResultService } from "../../types";
 import { UserDTO } from "./User.dto";
 
 class UserRepository implements BaseRepository<UserDTO> {
@@ -11,10 +11,15 @@ class UserRepository implements BaseRepository<UserDTO> {
     return this.manager.count(User);
   }
 
-  async findAll() {
-    const result = await this.manager.find(User);
+  async findAll(limit: number, skip: number): Promise<TResultService<UserDTO>> {
+    const result = await this.manager
+      .getRepository(User)
+      .createQueryBuilder("user")
+      .take(limit)
+      .skip(skip)
+      .getManyAndCount();
 
-    return result.map(el => new UserDTO(el));
+    return { data: result[0].map(el => new UserDTO(el)), total: result[1] };
   }
 
   async findByPseudo(pseudo: string) {

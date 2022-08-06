@@ -1,5 +1,5 @@
 import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
-import { BaseRepository } from "../../types";
+import { BaseRepository, TResultService } from "../../types";
 import { WatchedDTO } from "./Watched.dto";
 import { Watched } from "./Watched.entity";
 
@@ -17,7 +17,7 @@ export default class WatchedRepository implements BaseRepository<WatchedDTO> {
     limit: number,
     skip: number,
     id: number
-  ): Promise<WatchedDTO[]> {
+  ): Promise<TResultService<WatchedDTO>> {
     const result = await this.manager
       .getRepository(Watched)
       .createQueryBuilder(this.name)
@@ -25,9 +25,9 @@ export default class WatchedRepository implements BaseRepository<WatchedDTO> {
       .leftJoinAndSelect(`${this.name}.video`, "video")
       .take(limit)
       .skip(skip)
-      .getMany();
+      .getManyAndCount();
 
-    return result.map(el => new WatchedDTO(el));
+    return { data: result[0].map(el => new WatchedDTO(el)), total: result[1] };
   }
 
   async findById(id: number): Promise<WatchedDTO> {

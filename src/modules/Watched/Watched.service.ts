@@ -35,14 +35,14 @@ export default class WatchedService {
     id: string
   ): Promise<Result<TResultService<WatchedDTO>, Error>> {
     const total = await this.repo.getCount();
-    const [result, error] = await promisifier<WatchedDTO[]>(
+    const [result, error] = await promisifier<TResultService<WatchedDTO>>(
       this.repo.findAll(limit, skip, +id)
     );
     if (error) {
       return err(new Error(error));
     }
 
-    return ok({ total, data: result });
+    return ok(result);
   }
 
   async create(data: DeepPartial<Watched>): Promise<Result<WatchedDTO, Error>> {

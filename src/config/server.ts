@@ -23,18 +23,6 @@ export default class MyServer extends Server {
 
   private setupController(): void {
     logger.info("Setting up controllers");
-    // all controllers goes here
-    // connection to db
-    // const streamController = new StreamController();
-    // const imagesController = new ImageController();
-    // const movieDbJobController = new MovieDbJobController();
-    // const subtitleController = new SubtitleController();
-    // const tvShowController = new TvShowController();
-    // const discoverController = new DiscoverController();
-    // const watchedController = new WatchedController();
-    // const watchedTvShowController = new WatchedTvShowController();
-    // const encodingJobController = new EncodingJobController();
-
     super.addControllers(routes);
   }
 

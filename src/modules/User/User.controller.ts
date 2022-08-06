@@ -1,9 +1,6 @@
-import { defaultLimit } from "../../config/defaultConfig";
 import { Request, Response, NextFunction } from "express";
 import {
   Controller,
-  Middleware,
-  ErrorMiddleware,
   Get,
   Post,
   Put,
@@ -14,6 +11,7 @@ import {
 import errorHandler from "../../services/errorHandler";
 import UserService from "./User.service";
 import { User } from "./User.entity";
+import { defaultLimit } from "../../config/defaultConfig";
 
 @Controller("user")
 @ClassErrorMiddleware(errorHandler)
@@ -26,15 +24,19 @@ export default class UserController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try {
-      const users = await this.service.findAll();
+    let { limit = defaultLimit, skip = 0 } = req.query;
 
-      res.json(users);
-    } catch (error) {
-      next(error);
-    } finally {
-      return;
+    const [result, error] = await this.service.findAll(+limit, +skip)
+    if (error) {
+      next(error)
     }
+
+    res.json({
+      total: result.total,
+      limit: +limit,
+      skip: +skip,
+      data: result?.data ? result.data.map(el => el.serialize()) : []
+    })
   }
 
   @Get(":id")

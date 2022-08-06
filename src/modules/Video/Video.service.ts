@@ -47,15 +47,14 @@ export default class VideoService {
     if (limit === 0) {
       skip = 0;
     }
-    const total = await this.repo.getCount();
-    const [result, error] = await promisifier<VideoDTO[]>(
+    const [result, error] = await promisifier<TResultService<VideoDTO>>(
       this.repo.findAll(limit, skip)
     );
     if (error) {
       return err(new Error(error));
     }
 
-    return ok({ data: result, total });
+    return ok(result);
   }
 
   async findByFields({
@@ -90,15 +89,14 @@ export default class VideoService {
       request.type = type;
     }
 
-    const total = await this.repo.getCount();
-    const [result, error] = await promisifier<VideoDTO[]>(
+    const [result, error] = await promisifier<TResultService<VideoDTO>>(
       this.repo.findByFields(request, limit, skip)
     );
     if (error) {
       return err(new Error(error));
     }
 
-    return ok({ data: result, total });
+    return ok(result);
   }
 
   async patch(

@@ -1,16 +1,10 @@
-import {
-  DeepPartial,
-  DeleteResult,
-  EntityManager,
-  NoVersionOrUpdateDateColumnError,
-} from "typeorm";
+import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
-import { BaseRepository, RequestBuilder, TVideo } from "../../types";
+import { BaseRepository, RequestBuilder, TResultService } from "../../types";
 import { Video } from "./Video.entity";
 import { v4 as uuidv4 } from "uuid";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { VideoDTO } from "./Video.dto";
-import { DeleteExpression } from "typescript";
 
 export default class VideoRepository implements BaseRepository<VideoDTO> {
   constructor(private manager: EntityManager) { }
@@ -19,22 +13,25 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
     return this.manager.count(Video);
   }
 
-  async findAll(limit: number, skip: number): Promise<VideoDTO[]> {
-    const result = await this.manager
-      .getRepository(Video)
-      .createQueryBuilder("video")
-      .take(limit)
-      .skip(skip)
-      .getMany();
-
-    return result.map(el => new VideoDTO(el));
-  }
-
   async findById(id: number): Promise<VideoDTO> {
     const result = await this.manager.findOneBy(Video, {
       id,
     });
     return new VideoDTO(result);
+  }
+
+  async findAll(
+    limit: number,
+    skip: number
+  ): Promise<TResultService<VideoDTO>> {
+    const result = await this.manager
+      .getRepository(Video)
+      .createQueryBuilder("video")
+      .take(limit)
+      .skip(skip)
+      .getManyAndCount();
+
+    return { data: result[0].map(el => new VideoDTO(el)), total: result[1] };
   }
 
   async findBy(
@@ -57,13 +54,13 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
     data: RequestBuilder,
     limit: number = defaultLimit,
     skip: number = 0
-  ) {
+  ): Promise<TResultService<VideoDTO>> {
     const result = await dynamicQueryBuilder(data, Video, "video")
       .take(limit)
       .skip(skip)
-      .getMany();
+      .getManyAndCount();
 
-    return result.map(el => new VideoDTO(el));
+    return { data: result[0].map(el => new VideoDTO(el)), total: result[1] };
   }
 
   async create(videoEntity: DeepPartial<Video>) {

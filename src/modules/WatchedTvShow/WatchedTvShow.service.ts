@@ -34,14 +34,14 @@ export default class WatchedTvShowService {
     id: string
   ): Promise<Result<TResultService<WatchedTvShow>, Error>> {
     const total = await this.repo.getCount();
-    const [result, error] = await promisifier<WatchedTvShowDTO[]>(
+    const [result, error] = await promisifier<TResultService<WatchedTvShowDTO>>(
       this.repo.findAll(limit, skip, +id)
     );
 
     if (error) {
       return err(new Error(error));
     }
-    return ok({ total, data: result });
+    return ok(result);
   }
 
   async create(

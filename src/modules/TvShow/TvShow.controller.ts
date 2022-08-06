@@ -27,14 +27,7 @@ export default class TvShowController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { limit = defaultLimit, skip = 0, populate = false } = req.query;
-
-    // if (+limit === -1) {
-    //   const data =
-
-    //   res.json(data)
-    //   return;
-    // }
+    const { limit = defaultLimit, skip = 0 } = req.query;
 
     const [result, error] = await this.service.findAll(+limit, +skip);
     if (error) {
@@ -43,11 +36,10 @@ export default class TvShowController {
 
     res.json({
       total: result.total,
-      limit,
-      skip,
-      data: result.data,
+      limit: +limit,
+      skip: +skip,
+      data: result?.data ? result.data.map(el => el.serialize()) : [],
     });
-    return;
   }
 
   @Get(":id")
@@ -62,7 +54,7 @@ export default class TvShowController {
     if (error) {
       next(error);
     }
-    res.json(result);
+    res.json(result.serialize());
   }
 
   @Post("by-name")
@@ -72,17 +64,13 @@ export default class TvShowController {
     next: NextFunction
   ): Promise<void> {
     const { name } = req.body;
-    console.log(
-      "🚀 ~ file: TvShow.controller.ts ~ line 75 ~ TvShowController ~ name",
-      name
-    );
 
     const [result, error] = await this.service.findByName(name);
     if (error) {
       next(error);
     }
 
-    res.json(result);
+    res.json(result.serialize());
   }
 
   @Post()

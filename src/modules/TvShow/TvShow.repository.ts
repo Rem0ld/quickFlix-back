@@ -1,5 +1,5 @@
 import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
-import { BaseRepository, TTvShow } from "../../types";
+import { BaseRepository, TResultService, TTvShow } from "../../types";
 import { TvShowDTO } from "./TvShow.dto";
 import { TvShow } from "./TvShow.entity";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
@@ -14,16 +14,19 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
     return this.manager.count(TvShow);
   }
 
-  async findAll(limit: number, skip: number): Promise<TvShowDTO[]> {
+  async findAll(
+    limit: number,
+    skip: number
+  ): Promise<TResultService<TvShowDTO>> {
     const result = await this.manager
       .getRepository(TvShow)
       .createQueryBuilder(this.name)
       .leftJoinAndSelect("tv_show.videos", "video")
       .take(limit)
       .skip(skip)
-      .getMany();
+      .getManyAndCount();
 
-    return result.map(el => new TvShowDTO(el));
+    return { data: result[0].map(el => new TvShowDTO(el)), total: result[1] };
   }
 
   async findById(id: number): Promise<TvShowDTO> {

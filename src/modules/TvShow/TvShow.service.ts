@@ -29,13 +29,13 @@ export default class TvShowService {
     skip: number = 0
   ): Promise<Result<TResultService<TvShowDTO>, Error>> {
     const total = await this.repo.getCount();
-    const [result, error] = await promisifier<TvShowDTO[]>(
+    const [result, error] = await promisifier<TResultService<TvShowDTO>>(
       this.repo.findAll(limit, skip)
     );
     if (error) {
       return err(new Error(error));
     }
-    return ok({ total, data: result });
+    return ok(result);
   }
 
   async findByName(name: string): Promise<Result<TvShowDTO, Error>> {

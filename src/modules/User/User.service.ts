@@ -4,7 +4,11 @@ import jwt from "jsonwebtoken";
 import { UserDTO } from "./User.dto";
 import { promisifier } from "../../services/promisifier";
 import { MissingDataPayloadException, err, ok } from "../../services/Error";
-import { Result, TUserWithToken } from "../../types";
+import {
+  Result,
+  TResultService,
+  TUserWithToken,
+} from "../../types";
 
 export default class UserService {
   repo: UserRepository;
@@ -12,8 +16,16 @@ export default class UserService {
     this.repo = repo;
   }
 
-  async findAll(): Promise<Result<UserDTO[], Error>> {
-    const [result, error] = await promisifier<UserDTO[]>(this.repo.findAll());
+  async findAll(
+    limit: number,
+    skip: number
+  ): Promise<Result<TResultService<UserDTO>, Error>> {
+    if ((limit = 0)) {
+      skip = 0;
+    }
+    const [result, error] = await promisifier<TResultService<UserDTO>>(
+      this.repo.findAll(limit, skip)
+    );
     if (error) {
       return err(new Error(error));
     }
@@ -22,7 +34,7 @@ export default class UserService {
 
   async findByPseudo(pseudo: string): Promise<Result<UserDTO, Error>> {
     if (!pseudo.length) {
-      return err(new MissingDataPayloadException("missing pseudo"));
+      return err(new MissingDataPayloadException("pseudo"));
     }
 
     const [result, error] = await promisifier<UserDTO>(
