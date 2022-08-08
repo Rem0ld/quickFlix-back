@@ -4,7 +4,7 @@ import { logger } from "../../libs/logger";
 import { err, ok } from "../../services/Error";
 import { go } from "../../services/miscelleneaous";
 import { Result } from "../../types";
-import { regExBasename, regexTvShow, regexVideo } from "../../utils/regexes";
+import { regExBasename, regexTvShow, regexVideo, regexYearDate } from "../../utils/regexes";
 import { parseBasename } from "../../utils/stringManipulation";
 import { TvShowDTO } from "../TvShow/TvShow.dto";
 import TvShowService from "../TvShow/TvShow.service";
@@ -140,6 +140,7 @@ export default class DiscoverService {
       type: isTvShow ? VideoTypeEnum.TV : VideoTypeEnum.MOVIE,
       season: +season,
       episode: +episode,
+      year: el.name.match(regexYearDate)[0] || null
     });
     if (error2) {
       return err(error2);

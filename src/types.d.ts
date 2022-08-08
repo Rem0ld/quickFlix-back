@@ -149,7 +149,7 @@ export type TMovieDbJob = {
   id: number;
   video: TVideo;
   status: TJobStatus;
-  error: string[];
+  error?: string[];
   type: VideoType;
 };
 

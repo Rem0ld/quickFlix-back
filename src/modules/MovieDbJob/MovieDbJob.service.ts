@@ -1,9 +1,28 @@
 import { Types } from "mongoose";
+import { DeleteResult } from "typeorm";
 import { movieDbJobModel } from "../../schemas/MovieDbJob";
-import { MovieDbJob, Pagination, TVideo, VideoType } from "../../types";
+import {
+  MovieDbJob,
+  Pagination,
+  Result,
+  TResultService,
+  TVideo,
+  VideoType,
+} from "../../types";
+import { MovieDbJobDTO } from "./MovieDbJob.dto";
+import MovieDbJobRepository from "./MovieDbJob.repository";
 
-class MovieDbJobService {
-  async find({ limit, skip, populate }: Pagination): Promise<MovieDbJob[]> {
+export default class MovieDbJobService {
+  repo: MovieDbJobRepository;
+  constructor(repo: MovieDbJobRepository) {
+    this.repo = repo;
+  }
+
+  async find({
+    limit,
+    skip,
+    populate,
+  }: Pagination): Promise<Result<MovieDbJobDTO, Error>> {
     if (populate) {
       const movieJobs = await movieDbJobModel
         .find()
@@ -18,17 +37,21 @@ class MovieDbJobService {
     return movieDbJobModel.find().limit(limit).skip(skip);
   }
 
-  async findById(id: string): Promise<MovieDbJob | undefined | null> {
+  async findById(
+    id: string
+  ): Promise<Result<TResultService<MovieDbJobDTO>, Error>> {
     return movieDbJobModel.findById(id);
   }
 
-  async findByVideoId(id: string): Promise<MovieDbJob | undefined | null> {
+  async findByVideoId(id: string): Promise<Result<MovieDbJobDTO, Error>> {
     return movieDbJobModel.findOne({
       video: id,
     });
   }
 
-  async findActive(params: { type: VideoType }): Promise<MovieDbJob[] | undefined | null> {
+  async findActive(params: {
+    type: VideoType;
+  }): Promise<Result<TResultService<MovieDbJobDTO>, Error>> {
     const data = await movieDbJobModel
       .find({
         status: "todo",
@@ -41,23 +64,31 @@ class MovieDbJobService {
     return data;
   }
 
-  async create({ id, type = "movie" }: { id: string, type?: VideoType }): Promise<MovieDbJob | null> {
-    return movieDbJobModel.findOneAndUpdate({
-      video: id,
-    }, { video: id, type }, { upsert: true });
+  async create({
+    id,
+    type = "movie",
+  }: {
+    id: string;
+    type?: VideoType;
+  }): Promise<Result<MovieDbJobDTO, Error>> {
+    return movieDbJobModel.findOneAndUpdate(
+      {
+        video: id,
+      },
+      { video: id, type },
+      { upsert: true }
+    );
   }
 
-  async update(id: string, data: Partial<MovieDbJob>): Promise<MovieDbJob | null | undefined> {
+  async update(
+    id: string,
+    data: Partial<MovieDbJob>
+  ): Promise<Result<MovieDbJobDTO, Error>> {
     return movieDbJobModel.findByIdAndUpdate(id, data);
   }
 
-  async deleteOneById(id: string): Promise<MovieDbJob | false | null> {
+  async deleteOneById(id: string): Promise<Result<DeleteResult, Error>> {
     const movieJob = movieDbJobModel.findByIdAndDelete(id);
-
-    if (movieJob === null) {
-      console.error("cannot find movie job");
-      return false;
-    }
 
     return movieJob;
   }
@@ -75,5 +106,3 @@ class MovieDbJobService {
     return movieJob;
   }
 }
-
-export const movieJobService = new MovieDbJobService();

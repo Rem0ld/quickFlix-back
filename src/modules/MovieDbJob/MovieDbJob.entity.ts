@@ -20,7 +20,7 @@ export class MovieDbJob {
   @Column()
   status: jobStatusType;
 
-  @Column({ array: true })
+  @Column({ array: true, nullable: true })
   errors: string[];
 
   @Column()
