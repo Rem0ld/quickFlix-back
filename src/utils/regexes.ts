@@ -5,7 +5,7 @@ export const regexTvShow =
   /s(\d{1,2})e(\d{1,2})|(\d{1,})x(\d{1,})|(?<!x|h|\d)(\d{1})(\d{2})(?!p|\d)/i;
 // Adding I, to get Star wars movie
 export const regExBasename =
-  /([ .,\w']+?)(I,|Season|$|-|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/;
+  /([ .,\w']+?)(\[|I,|Season|$|-|mp3|[s|S]\d{1,}|\(.*\)|[A-Z]{2,}|\W\d{4}\W?.*)/;
 export const regexIsSubtitle = /vtt|srt|sfv/i;
 export const regexVideo = /avi|mkv|mp4/;
 export const regexYearDate = /\d{4}(?!p)/;

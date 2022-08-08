@@ -5,6 +5,7 @@ import { err, ok } from "../../services/Error";
 import { go } from "../../services/miscelleneaous";
 import { Result } from "../../types";
 import { regExBasename, regexTvShow, regexVideo } from "../../utils/regexes";
+import { parseBasename } from "../../utils/stringManipulation";
 import { TvShowDTO } from "../TvShow/TvShow.dto";
 import TvShowService from "../TvShow/TvShow.service";
 import { VideoDTO } from "../Video/Video.dto";
@@ -103,11 +104,8 @@ export default class DiscoverService {
     el: path.ParsedPath,
     tvShow: TvShowDTO | undefined
   ): Promise<Result<VideoDTO, Error>> {
+    const isTvShow = el.name.match(regexTvShow);
     const [result, error] = await this.videoSer.findByFields({ name: el.name });
-    console.log(
-      "🚀 ~ file: Discover.service.ts ~ line 112 ~ DiscoverService ~ result",
-      result
-    );
     if (error) {
       return err(error);
     }
@@ -115,18 +113,26 @@ export default class DiscoverService {
       return ok(result.data[0]);
     }
 
-    const isTvShow = el.name.match(regexTvShow);
-    const splitDir = el.dir.split(path.sep);
-    let name = splitDir.find((_, i, arr) => arr[i - 1] === this.pathVideos);
-    if (!name) {
-      name = el.name;
+    let name = "",
+      season = "",
+      episode = "";
+
+    if (isTvShow) {
+      const splitDir = el.dir.split(path.sep);
+      name = parseBasename(
+        splitDir.find((_, i, arr) => arr[i - 1] === this.pathVideos)
+      );
+      name = `${name} s${season}e${episode}`;
+      season = isTvShow && (isTvShow[1] || isTvShow[3] || isTvShow[5]);
+      episode = isTvShow && (isTvShow[2] || isTvShow[4] || isTvShow[6]);
+    } else {
+      const match = el.name.match(regExBasename)[1];
+      name = parseBasename(match);
     }
-    const season = isTvShow && (isTvShow[1] || isTvShow[3] || isTvShow[5]);
-    const episode = isTvShow && (isTvShow[2] || isTvShow[4] || isTvShow[6]);
 
     const [data, error2] = await this.videoSer.create({
-      name: isTvShow ? `${name} s${season}e${episode}` : name,
-      basename: name ? name.toLowerCase() : el.name,
+      name: name,
+      basename: name,
       filename: el.name,
       location: el.dir,
       ext: el.ext,
