@@ -1,8 +1,16 @@
 import { TMovieDbJob } from "../../types";
 import baseDTO from "../../utils/BaseDTO";
+import { jobStatusType } from "../EncodingJob/EncodingJob.entity";
+import { Video, VideoTypeEnum } from "../Video/Video.entity";
 
 export class MovieDbJobDTO extends baseDTO<TMovieDbJob> {
   id: number;
+  status: jobStatusType;
+  errors: string[];
+  type: VideoTypeEnum;
+  video: Video;
+  createdAt: Date;
+  updatedAt: Date;
 
   constructor(data: TMovieDbJob) {
     super();
