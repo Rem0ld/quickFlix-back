@@ -17,7 +17,7 @@ export class MovieDbJob {
   id: number;
 
   @Index()
-  @Column()
+  @Column({ default: "todo" })
   status: jobStatusType;
 
   @Column({ array: true, nullable: true })
