@@ -4,6 +4,7 @@ import { promisifier } from "../../services/promisifier";
 import { Result, TResultService, VideoType } from "../../types";
 import { VideoTypeEnum } from "../Video/Video.entity";
 import { MovieDbJobDTO } from "./MovieDbJob.dto";
+import { MovieDbJob } from "./MovieDbJob.entity";
 import MovieDbJobRepository from "./MovieDbJob.repository";
 
 export default class MovieDbJobService {
@@ -41,10 +42,9 @@ export default class MovieDbJobService {
     return ok(result);
   }
 
-  async findByVideoId(id: string): Promise<Result<MovieDbJobDTO, Error>> { }
-
-  async findActive(params: {
-    type: VideoType;
+  async findBy(data: {
+    video?: string;
+    type?: VideoType;
   }): Promise<Result<TResultService<MovieDbJobDTO>, Error>> { }
 
   async create(
@@ -68,12 +68,39 @@ export default class MovieDbJobService {
     return ok(result);
   }
 
-  async update(
+  async patch(
     id: string,
-    data: Partial<MovieDbJobDTO>
-  ): Promise<Result<MovieDbJobDTO, Error>> { }
+    data: Partial<MovieDbJob>
+  ): Promise<Result<MovieDbJobDTO, Error>> {
+    if (!id.length) {
+      return err(new MissingDataPayloadException("id", data));
+    }
+    if (!Object.keys(data).length) {
+      return err(new MissingDataPayloadException("data", data));
+    }
 
-  async deleteOneById(id: string): Promise<Result<DeleteResult, Error>> { }
+    const [result, error] = await promisifier<MovieDbJobDTO>(
+      this.repo.update(+id, data)
+    );
+    if (error) {
+      return err(error);
+    }
 
-  async deletOneByVideoId(id: string): Promise<MovieDbJob | false | null> { }
+    return ok(result);
+  }
+
+  async deleteOneById(id: string): Promise<Result<DeleteResult, Error>> {
+    if (!id.length) {
+      return err(new MissingDataPayloadException("id", id));
+    }
+
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.delete(+id)
+    );
+    if (error) {
+      return err(new Error(error));
+    }
+
+    return ok(result);
+  }
 }
