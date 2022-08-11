@@ -61,14 +61,6 @@ export default class TvShowService {
       return err(new MissingDataPayloadException("data"));
     }
 
-    // try {
-    //   const result = await this.repo.create(data);
-    //   return result;
-    // } catch (error) {
-    //   console.error(error);
-    //   throw new Error(error);
-    // }
-
     const [result, error] = await promisifier<TvShowDTO>(
       this.repo.create(data)
     );
@@ -77,12 +69,6 @@ export default class TvShowService {
     }
 
     return ok(result);
-    // if (params?.movieJob) {
-    //   await movieJobService.create({
-    //     id: params.id,
-    //     type: "tv",
-    //   });
-    // }
   }
 
   async patch(

@@ -5,7 +5,7 @@ import { Result, TResultService, VideoType } from "../../types";
 import { VideoTypeEnum } from "../Video/Video.entity";
 import { MovieDbJobDTO } from "./MovieDbJob.dto";
 import { MovieDbJob } from "./MovieDbJob.entity";
-import MovieDbJobRepository from "./MovieDbJob.repository";
+import { MovieDbJobRepository } from "./MovieDbJob.repository";
 
 export default class MovieDbJobService {
   repo: MovieDbJobRepository;
@@ -42,24 +42,27 @@ export default class MovieDbJobService {
     return ok(result);
   }
 
-  async findBy(data: {
-    video?: string;
-    type?: VideoType;
-  }): Promise<Result<TResultService<MovieDbJobDTO>, Error>> { }
+  // async findBy(data: {
+  //   video?: string;
+  //   type?: VideoType;
+  // }): Promise<Result<TResultService<MovieDbJobDTO>, Error>> { }
 
   async create(
-    videoId: string,
+    id: number,
     type: VideoTypeEnum = VideoTypeEnum.MOVIE
   ): Promise<Result<MovieDbJobDTO, Error>> {
-    if (!videoId.length) {
-      return err(new MissingDataPayloadException("id"));
+    let data: MovieDbJob = new MovieDbJob()
+
+    if (type === "tv") {
+      data.tvShowId = id
+      data.type = VideoTypeEnum.TV
+    } else {
+      data.videoId = id
+      data.type = VideoTypeEnum.MOVIE
     }
 
     const [result, error] = await promisifier<MovieDbJobDTO>(
-      this.repo.create({
-        video: videoId,
-        type,
-      })
+      this.repo.create(data)
     );
     if (error) {
       return err(new Error(error));

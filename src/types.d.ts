@@ -143,9 +143,10 @@ export type TSubtitle = {
 
 export type TMovieDbJob = {
   id: number;
-  video: TVideo;
+  videoId?: number;
+  tvShowId?: number;
   status: TJobStatus;
-  error?: string[];
+  errors?: string;
   type: VideoType;
 };
 

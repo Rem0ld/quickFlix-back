@@ -3,7 +3,7 @@ import { BaseRepository, TResultService } from "../../types";
 import { MovieDbJobDTO } from "./MovieDbJob.dto";
 import { MovieDbJob } from "./MovieDbJob.entity";
 
-export default class MovieDbJobRepository
+export class MovieDbJobRepository
   implements BaseRepository<MovieDbJobDTO>
 {
   constructor(private manager: EntityManager) { }

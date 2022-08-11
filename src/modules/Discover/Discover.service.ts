@@ -4,8 +4,14 @@ import { logger } from "../../libs/logger";
 import { err, ok } from "../../services/Error";
 import { go } from "../../services/miscelleneaous";
 import { Result } from "../../types";
-import { regExBasename, regexTvShow, regexVideo, regexYearDate } from "../../utils/regexes";
+import {
+  regExBasename,
+  regexTvShow,
+  regexVideo,
+  regexYearDate,
+} from "../../utils/regexes";
 import { parseBasename } from "../../utils/stringManipulation";
+import MovieDbJobService from "../MovieDbJob/MovieDbJob.service";
 import { TvShowDTO } from "../TvShow/TvShow.dto";
 import TvShowService from "../TvShow/TvShow.service";
 import { VideoDTO } from "../Video/Video.dto";
@@ -15,14 +21,16 @@ import VideoService from "../Video/Video.service";
 export default class DiscoverService {
   videoSer: VideoService;
   tvShowSer: TvShowService;
+  mvJobSer: MovieDbJobService;
   pathVideos: string;
   pathTvShows: string;
   tempFile: string;
   regVideo: RegExp = regexVideo;
   regTvShow: RegExp = regexTvShow;
-  constructor(vs: VideoService, ts: TvShowService) {
+  constructor(vs: VideoService, ts: TvShowService, ms: MovieDbJobService) {
     this.videoSer = vs;
     this.tvShowSer = ts;
+    this.mvJobSer = ms;
     this.pathVideos =
       process.env.NODE_ENV === "development" ? "videos" : "Videos";
     this.pathTvShows = process.env.NODE_ENV === "development" ? null : "Series";
@@ -97,6 +105,8 @@ export default class DiscoverService {
       return err(error);
     }
 
+    const [movieJob, error2] = await this.mvJobSer.create(result.id, VideoTypeEnum.TV)
+
     return ok(result);
   }
 
@@ -130,6 +140,7 @@ export default class DiscoverService {
       name = parseBasename(match);
     }
 
+    const year = el.name.match(regexYearDate)
     const [data, error2] = await this.videoSer.create({
       name: name,
       basename: name,
@@ -138,13 +149,14 @@ export default class DiscoverService {
       ext: el.ext,
       tvShow: tvShow,
       type: isTvShow ? VideoTypeEnum.TV : VideoTypeEnum.MOVIE,
-      season: +season,
-      episode: +episode,
-      year: el.name.match(regexYearDate)[0] || null
+      season: +season || null,
+      episode: +episode || null,
+      year: year?.length ? new Date(year[0]) : null
     });
     if (error2) {
       return err(error2);
     }
+    const [movieJob] = await this.mvJobSer.create(data.id, VideoTypeEnum.MOVIE)
 
     return ok(data);
   }
