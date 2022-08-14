@@ -14,6 +14,7 @@ import { TVideo } from "../../types";
 import { TvShow } from "../TvShow/TvShow.entity";
 import { Watched } from "../Watched/Watched.entity";
 import { v4 as uuidv4 } from "uuid";
+import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
 
 export enum VideoTypeEnum {
   MOVIE = "movie",
@@ -119,6 +120,13 @@ export class Video implements TVideo {
   })
   @JoinColumn({ name: "tv_show_id" })
   tvShow: TvShow;
+
+  @ManyToOne(type => MovieDbJob, movieDbJob => movieDbJob.videoId, {
+    nullable: true,
+    onDelete: "CASCADE"
+  })
+  @JoinColumn({ name: "movie_db_job_id" })
+  movieDbJob: MovieDbJob;
 
   @OneToMany(() => Watched, watched => watched.video)
   userWatchedVideo: Watched[];

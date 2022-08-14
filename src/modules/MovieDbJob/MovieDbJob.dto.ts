@@ -6,7 +6,7 @@ import { Video, VideoTypeEnum } from "../Video/Video.entity";
 export class MovieDbJobDTO extends baseDTO<TMovieDbJob> {
   id: number;
   status: jobStatusType;
-  errors: string;
+  errors?: string[];
   type: VideoTypeEnum;
   videoId?: number;
   tvShowId?: number;

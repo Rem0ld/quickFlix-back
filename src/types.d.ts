@@ -146,7 +146,7 @@ export type TMovieDbJob = {
   videoId?: number;
   tvShowId?: number;
   status: TJobStatus;
-  errors?: string;
+  errors?: string[];
   type: VideoType;
 };
 

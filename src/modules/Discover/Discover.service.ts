@@ -132,9 +132,9 @@ export default class DiscoverService {
       name = parseBasename(
         splitDir.find((_, i, arr) => arr[i - 1] === this.pathVideos)
       );
-      name = `${name} s${season}e${episode}`;
       season = isTvShow && (isTvShow[1] || isTvShow[3] || isTvShow[5]);
       episode = isTvShow && (isTvShow[2] || isTvShow[4] || isTvShow[6]);
+      name = `${name} s${season}e${episode}`;
     } else {
       const match = el.name.match(regExBasename)[1];
       name = parseBasename(match);

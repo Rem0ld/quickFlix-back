@@ -4,11 +4,14 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { TTvShow } from "../../types";
+import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
 import { Video } from "../Video/Video.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
@@ -73,6 +76,13 @@ export class TvShow implements TTvShow {
 
   @OneToMany(() => WatchedTvShow, watchedTvShow => watchedTvShow.tvShow)
   userWatchedTvShow: WatchedTvShow[];
+
+  @ManyToOne(type => MovieDbJob, movieDbJob => movieDbJob.tvShowId, {
+    nullable: true,
+    onDelete: "CASCADE",
+  })
+  @JoinColumn({ name: "movie_db_job_id" })
+  movieDbJob: MovieDbJob;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;

@@ -20,14 +20,12 @@ export class MovieDbJob {
   @Column({ default: "todo" })
   status: jobStatusType;
 
-  @Column({ nullable: true })
-  errors: string;
+  @Column("text", { array: true, nullable: true })
+  errors: string[];
 
   @Column()
   type: VideoTypeEnum;
 
-  // @ManyToOne(() => Video, video => video.id)
-  // @JoinColumn({ name: "video_id" })
   @Column({ name: "video_id", nullable: true })
   videoId: number;
 
