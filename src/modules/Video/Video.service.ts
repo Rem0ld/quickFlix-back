@@ -42,13 +42,14 @@ export default class VideoService {
 
   async findAll(
     limit: number,
-    skip: number
+    skip: number,
+    rest: Record<string, any>
   ): Promise<Result<TResultService<VideoDTO>, Error>> {
     if (limit === 0) {
       skip = 0;
     }
     const [result, error] = await promisifier<TResultService<VideoDTO>>(
-      this.repo.findAll(limit, skip)
+      this.repo.findAll(limit, skip, rest)
     );
     if (error) {
       return err(new Error(error));

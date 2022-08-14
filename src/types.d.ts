@@ -9,7 +9,11 @@ import { UserDTO } from "./modules/User/User.dto";
 
 export interface IReader<T> {
   getCount(): Promise<number>;
-  findAll(limit: number, skip: number, id?: number): Promise<TResultService<T>>;
+  findAll(
+    limit: number,
+    skip: number,
+    rest?: Record<string, any>
+  ): Promise<TResultService<T>>;
   findById(id: number): Promise<T>;
 }
 

@@ -1,11 +1,10 @@
 import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
 import { BaseRepository, TResultService } from "../../types";
+import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { MovieDbJobDTO } from "./MovieDbJob.dto";
 import { MovieDbJob } from "./MovieDbJob.entity";
 
-export class MovieDbJobRepository
-  implements BaseRepository<MovieDbJobDTO>
-{
+export class MovieDbJobRepository implements BaseRepository<MovieDbJobDTO> {
   constructor(private manager: EntityManager) { }
 
   async getCount(): Promise<number> {
@@ -15,11 +14,9 @@ export class MovieDbJobRepository
   async findAll(
     limit: number,
     skip: number,
-    id?: number
+    rest: Record<string, any>
   ): Promise<TResultService<MovieDbJobDTO>> {
-    const result = await this.manager
-      .getRepository(MovieDbJob)
-      .createQueryBuilder("movie_job")
+    const result = await dynamicQueryBuilder(rest, MovieDbJob, "movie_db_job")
       .take(limit)
       .skip(skip)
       .getManyAndCount();

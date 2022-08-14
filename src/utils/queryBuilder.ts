@@ -25,7 +25,7 @@ export default function dynamicQueryBuilder<T>(
   for (const el in data) {
     if (!Array.isArray(data[el])) {
       builder.andWhere(`LOWER(${entityName}.${el}::text) LIKE LOWER(:${el})`, {
-        [el]: `${data[el]}%`,
+        [el]: `%${data[el]}%`,
       });
     } else {
       builder.andWhere(`${entityName}.${el} IN (:...${el})`, {

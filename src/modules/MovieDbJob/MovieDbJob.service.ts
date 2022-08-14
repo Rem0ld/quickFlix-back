@@ -2,6 +2,7 @@ import { DeleteResult } from "typeorm";
 import { err, MissingDataPayloadException, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
 import { Result, TResultService, VideoType } from "../../types";
+import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { VideoTypeEnum } from "../Video/Video.entity";
 import { MovieDbJobDTO } from "./MovieDbJob.dto";
 import { MovieDbJob } from "./MovieDbJob.entity";
@@ -15,10 +16,11 @@ export default class MovieDbJobService {
 
   async find(
     limit: number,
-    skip: number
+    skip: number,
+    rest: Record<string, any>
   ): Promise<Result<TResultService<MovieDbJobDTO>, Error>> {
     const [result, error] = await promisifier<TResultService<MovieDbJobDTO>>(
-      this.repo.findAll(limit, skip)
+      this.repo.findAll(limit, skip, rest)
     );
     if (error) {
       return err(new Error(error));
@@ -51,14 +53,14 @@ export default class MovieDbJobService {
     id: number,
     type: VideoTypeEnum = VideoTypeEnum.MOVIE
   ): Promise<Result<MovieDbJobDTO, Error>> {
-    let data: MovieDbJob = new MovieDbJob()
+    let data: MovieDbJob = new MovieDbJob();
 
     if (type === "tv") {
-      data.tvShowId = id
-      data.type = VideoTypeEnum.TV
+      data.tvShowId = id;
+      data.type = VideoTypeEnum.TV;
     } else {
-      data.videoId = id
-      data.type = VideoTypeEnum.MOVIE
+      data.videoId = id;
+      data.type = VideoTypeEnum.MOVIE;
     }
 
     const [result, error] = await promisifier<MovieDbJobDTO>(

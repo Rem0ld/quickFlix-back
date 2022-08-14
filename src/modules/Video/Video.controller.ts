@@ -35,9 +35,9 @@ export default class VideoController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    let { limit = defaultLimit, skip = 0 } = req.query;
+    let { limit = defaultLimit, skip = 0, ...rest } = req.query;
 
-    const [result, error] = await this.service.findAll(+limit, +skip);
+    const [result, error] = await this.service.findAll(+limit, +skip, rest);
     if (error) {
       next(error);
     }

@@ -22,11 +22,10 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
 
   async findAll(
     limit: number,
-    skip: number
+    skip: number,
+    rest: Record<string, any>
   ): Promise<TResultService<VideoDTO>> {
-    const result = await this.manager
-      .getRepository(Video)
-      .createQueryBuilder("video")
+    const result = await dynamicQueryBuilder(rest, Video, "video")
       .take(limit)
       .skip(skip)
       .getManyAndCount();

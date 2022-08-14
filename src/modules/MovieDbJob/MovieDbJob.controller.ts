@@ -12,10 +12,9 @@ export default class MovieDbJobController {
 
   @Get()
   async find(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { limit = defaultLimit, skip = 0 } = req.query;
+    const { limit = defaultLimit, skip = 0, ...rest } = req.query;
 
-    const [result, error] = await this.service.find(+limit, +skip)
-    console.log("🚀 ~ file: MovieDbJob.controller.ts ~ line 18 ~ MovieDbJobController ~ find ~ result", result)
+    const [result, error] = await this.service.find(+limit, +skip, rest)
     if (error) {
       next(error)
     }
