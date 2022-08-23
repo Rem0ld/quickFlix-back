@@ -1,24 +1,14 @@
-import fs, { access, constants, Stats } from "fs";
+import fs, { Stats } from "fs";
 import { NextFunction, Request, Response } from "express";
-import {
-  Controller,
-  Middleware,
-  ErrorMiddleware,
-  Get,
-  Post,
-  Put,
-  Delete,
-} from "@overnightjs/core";
+import { Controller, ErrorMiddleware, Get } from "@overnightjs/core";
 import path from "path";
 import mime from "mime";
 import errorHandler from "../../services/errorHandler";
-import { TVideo } from "../../types";
-import VideoService from "../Video/Video.service";
 import StreamService from "./Stream.service";
 
 @Controller("stream")
 export default class StreamController {
-  constructor(private service: StreamService) { }
+  constructor(private service: StreamService) {}
 
   @Get(":id")
   @ErrorMiddleware(errorHandler)
@@ -69,7 +59,7 @@ export default class StreamController {
         autoClose: true,
       })
 
-        .on("end", function () { })
+        .on("end", function () {})
 
         .on("error", function (err) {
           next(err);

@@ -1,8 +1,9 @@
-import path from "path";
 import fetch from "node-fetch";
 import { downloadImage, fileExists } from "../utils/fileManipulation";
 import { detailDbUrl, apikeyUrl, imageDbUrl } from "../config/defaultConfig";
 import { VideoType } from "../types";
+import { promisifier } from "./promisifier";
+import { logger } from "../libs/logger";
 
 /**
  * Fetch details for a tvShow
@@ -10,21 +11,22 @@ import { VideoType } from "../types";
  * @returns Object {genres, ongoing, numberSeason, numberEpisode, originCountry}
  */
 export async function getTvShowDetails(id: string) {
-  try {
-    const response = await fetch(`${detailDbUrl}/tv/${id}${apikeyUrl}`);
-    const result = await response.json();
-    if (!result) return {};
-
-    return {
-      genres: result.genres.map((el: { name: string, id: number }) => el.name),
-      ongoing: result.in_production,
-      numberSeason: result.number_of_seasons,
-      numberEpisode: result.number_of_episodes,
-      originCountry: result.origin_country,
-    };
-  } catch (error) {
-    return {};
+  const [response, error] = await promisifier<any>(
+    fetch(`${detailDbUrl}/tv/${id}${apikeyUrl}`)
+  );
+  if (error) {
+    logger.error(error);
   }
+  const result = await response.json();
+  if (!result) return {};
+
+  return {
+    genres: result.genres.map((el: { name: string; id: number }) => el.name),
+    ongoing: result.in_production,
+    numberSeason: result.number_of_seasons,
+    numberEpisode: result.number_of_episodes,
+    originCountry: result.origin_country,
+  };
 }
 
 /**
@@ -33,15 +35,18 @@ export async function getTvShowDetails(id: string) {
  * @returns genres of the video
  */
 export async function getGenres(id: string) {
-  try {
-    const response = await fetch(`${detailDbUrl}/movie/${id}${apikeyUrl}`);
-    const result = await response.json();
-    if (!result) return [];
-
-    return result.genres.map((genre: { name: string, id: number }) => genre.name);
-  } catch (error) {
+  const [response, error] = await promisifier<any>(
+    fetch(`${detailDbUrl}/movie/${id}${apikeyUrl}`)
+  );
+  if (error) {
+    logger.error(error);
+  }
+  const result = await response.json();
+  if (!result || !result.genres) {
     return [];
   }
+
+  return result.genres.map((genre: { name: string; id: number }) => genre.name);
 }
 
 /**
@@ -51,25 +56,29 @@ export async function getGenres(id: string) {
  * @returns String[] of youtube key
  */
 export async function getVideoPath(id: string, type: VideoType) {
-  try {
-    const response = await fetch(`${detailDbUrl}/${type}/${id}/videos${apikeyUrl}`);
-    const { results } = await response.json();
-    if (!results) return [];
-
-    let result = [],
-      i = 0;
-
-    while (i < results.length && result.length < 5) {
-      if (results[i].type.includes("Teaser") || results[i].type.includes("Trailer")) {
-        result.push(results[i].key);
-      }
-      i++;
-    }
-
-    return result;
-  } catch (error) {
-    return [];
+  const [response, error] = await promisifier<any>(
+    fetch(`${detailDbUrl}/${type}/${id}/videos${apikeyUrl}`)
+  );
+  if (error) {
+    logger.error(error);
   }
+  const { results } = await response.json();
+  if (!results) return [];
+
+  const result = [];
+  let i = 0;
+
+  while (i < results.length && result.length < 5) {
+    if (
+      results[i].type.includes("Teaser") ||
+      results[i].type.includes("Trailer")
+    ) {
+      result.push(results[i].key);
+    }
+    i++;
+  }
+
+  return result;
 }
 
 /**
@@ -85,5 +94,5 @@ export async function getImages(filepath: string): Promise<void> {
   if (!fileExists(imagePath)) {
     downloadImage(imageDbUrl + filepath, imagePath);
   }
-  return undefined
+  return undefined;
 }

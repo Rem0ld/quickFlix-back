@@ -3,18 +3,18 @@ import { AppDataSource } from "../data-source";
 import { RequestBuilder } from "../types";
 
 const builder = {
-  $in: (entityName: string, el: { key: string, value: [] }) => {
-    return `${entityName}.${el.key} IN (:...${el.value})`
-  }
-}
+  $in: (entityName: string, el: { key: string; value: [] }) => {
+    return `${entityName}.${el.key} IN (:...${el.value})`;
+  },
+};
 /**
  * for(let el in obj)
  * const result = builder[el]
- * 
+ *
  * string => like
  * number => =
  * array => in
- * 
+ *
  */
 export default function dynamicQueryBuilder<T>(
   data: RequestBuilder,

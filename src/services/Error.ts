@@ -12,9 +12,9 @@ export class MissingDataPayloadException extends Error {
 export class ResourceNotExist extends Error {
   constructor(identifier: string) {
     super();
-    this.message = `Resource ${identifier} does not exist`
+    this.message = `Resource ${identifier} does not exist`;
   }
 }
 
-export const ok = <T, E>(value: T): Result<T, E> => ([value, null])
-export const err = <T, E>(error: E): Result<T, E> => ([null, error])
+export const ok = <T, E>(value: T): Result<T, E> => [value, null];
+export const err = <T, E>(error: E): Result<T, E> => [null, error];

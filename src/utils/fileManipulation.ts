@@ -1,14 +1,21 @@
-import { accessSync, constants, createWriteStream, existsSync, mkdirSync, readdirSync } from "fs";
+import {
+  accessSync,
+  constants,
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+} from "fs";
 import client from "https";
 import path from "path";
 
 export function accessFolder(folderPath: string) {
   try {
-    accessSync(folderPath, constants.R_OK)
-  }catch(error) {
-    return false
+    accessSync(folderPath, constants.R_OK);
+  } catch (error) {
+    return false;
   }
-  return true
+  return true;
 }
 
 export function fileExists(filepath: string) {
@@ -40,9 +47,12 @@ export async function findFiles(dir: string) {
   return readdirSync(dir, { withFileTypes: true });
 }
 
-export async function downloadImage(url: string, filepath: string): Promise<string> {
+export async function downloadImage(
+  url: string,
+  filepath: string
+): Promise<string> {
   if (!existsSync(path.dirname(filepath))) {
-    mkdirSync(path.dirname(filepath), { recursive: true })
+    mkdirSync(path.dirname(filepath), { recursive: true });
   }
   return new Promise((resolve, reject) => {
     client.get(url, res => {
