@@ -1,10 +1,10 @@
 import { createLogger, format, transports } from "winston";
 
 export const logger = createLogger({
-  level: 'info',
+  level: "info",
   format: format.combine(
     format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
+      format: "YYYY-MM-DD HH:mm:ss",
     }),
     format.errors({ stack: true }),
     format.splat(),
@@ -15,20 +15,30 @@ export const logger = createLogger({
     // - Write to all logs with level `info` and below to `quick-start-combined.log`.
     // - Write all logs error (and below) to `quick-start-error.log`.
     //
-    new transports.File({ filename: 'quick-start-error.log', level: 'error' }),
-    new transports.File({ filename: 'quick-start-combined.log' })
-  ]
+    new transports.File({
+      filename: `logs/${new Date()
+        .toLocaleDateString()
+        .split(" ")[0]
+        .replace(/\//g, "-")}-error.log`,
+      level: "error",
+    }),
+    new transports.File({
+      filename: `logs/${new Date()
+        .toLocaleDateString()
+        .split(" ")[0]
+        .replace(/\//g, "-")}-combined.log`,
+    }),
+  ],
 });
 
 //
 // If we're not in production then **ALSO** log to the `console`
 // with the colorized simple format.
 //
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new transports.Console({
-    format: format.combine(
-      format.colorize(),
-      format.simple()
-    )
-  }));
+if (process.env.NODE_ENV !== "production") {
+  logger.add(
+    new transports.Console({
+      format: format.combine(format.colorize(), format.simple()),
+    })
+  );
 }
