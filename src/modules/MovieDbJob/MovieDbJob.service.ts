@@ -1,9 +1,11 @@
 import { DeleteResult } from "typeorm";
 import { err, MissingDataPayloadException, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
-import { Result, TResultService, VideoType } from "../../types";
-import dynamicQueryBuilder from "../../utils/queryBuilder";
-import { VideoTypeEnum } from "../Video/Video.entity";
+import { Result, TResultService } from "../../types";
+import { TvShowDTO } from "../TvShow/TvShow.dto";
+import { TvShow } from "../TvShow/TvShow.entity";
+import { VideoDTO } from "../Video/Video.dto";
+import { Video, VideoTypeEnum } from "../Video/Video.entity";
 import { MovieDbJobDTO } from "./MovieDbJob.dto";
 import { MovieDbJob } from "./MovieDbJob.entity";
 import { MovieDbJobRepository } from "./MovieDbJob.repository";
@@ -22,6 +24,7 @@ export default class MovieDbJobService {
     const [result, error] = await promisifier<TResultService<MovieDbJobDTO>>(
       this.repo.findAll(limit, skip, rest)
     );
+
     if (error) {
       return err(new Error(error));
     }
@@ -50,16 +53,18 @@ export default class MovieDbJobService {
   // }): Promise<Result<TResultService<MovieDbJobDTO>, Error>> { }
 
   async create(
-    id: number,
+    payload: VideoDTO | TvShowDTO,
     type: VideoTypeEnum = VideoTypeEnum.MOVIE
   ): Promise<Result<MovieDbJobDTO, Error>> {
-    let data: MovieDbJob = new MovieDbJob();
+    const data: MovieDbJob = new MovieDbJob();
 
     if (type === "tv") {
-      data.tvShowId = id;
+      const tvShow = payload as TvShow;
+      data.tvShow = tvShow;
       data.type = VideoTypeEnum.TV;
     } else {
-      data.videoId = id;
+      const video = payload as Video;
+      data.video = video;
       data.type = VideoTypeEnum.MOVIE;
     }
 
@@ -101,6 +106,17 @@ export default class MovieDbJobService {
 
     const [result, error] = await promisifier<DeleteResult>(
       this.repo.delete(+id)
+    );
+    if (error) {
+      return err(new Error(error));
+    }
+
+    return ok(result);
+  }
+
+  async delete(): Promise<Result<DeleteResult, Error>> {
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.deleteAll()
     );
     if (error) {
       return err(new Error(error));

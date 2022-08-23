@@ -1,12 +1,11 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
-  ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -48,7 +47,7 @@ export class TvShow implements TTvShow {
   @Column({ nullable: true })
   resume: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "real", nullable: true })
   score: number;
 
   @Column("text", { array: true, nullable: true })
@@ -77,11 +76,11 @@ export class TvShow implements TTvShow {
   @OneToMany(() => WatchedTvShow, watchedTvShow => watchedTvShow.tvShow)
   userWatchedTvShow: WatchedTvShow[];
 
-  @ManyToOne(type => MovieDbJob, movieDbJob => movieDbJob.tvShowId, {
+  @OneToOne(() => MovieDbJob, movieDbJob => movieDbJob.tvShow, {
     nullable: true,
     onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "movie_db_job_id" })
+  @JoinColumn()
   movieDbJob: MovieDbJob;
 
   @CreateDateColumn({ name: "created_at" })

@@ -1,10 +1,10 @@
-import { TTvShow } from "../../types"
+import { TTvShow } from "../../types";
 import baseDTO from "../../utils/BaseDTO";
+import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
 import { Video } from "../Video/Video.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
-
-export class TvShowDTO extends baseDTO<TTvShow>{
+export class TvShowDTO extends baseDTO<TTvShow> {
   id: number;
   idMovieDb?: string;
   name: string;
@@ -21,14 +21,15 @@ export class TvShowDTO extends baseDTO<TTvShow>{
   posterPath: string[];
   firstAirDate: Date;
   videos?: Video[];
+  movieDbJob?: MovieDbJob;
   userWatchedTvShow?: WatchedTvShow[];
   createdAt: Date;
   updatedAt: Date;
 
   constructor(data: TTvShow) {
     super();
-    for (let el in data) {
-      this[el] = data[el]
+    for (const el in data) {
+      this[el] = data[el];
     }
   }
 }

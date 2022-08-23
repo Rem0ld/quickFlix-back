@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -60,7 +61,7 @@ export class Video implements TVideo {
 
   @Column({
     type: "date",
-    nullable: true
+    nullable: true,
   })
   year: Date;
 
@@ -74,7 +75,7 @@ export class Video implements TVideo {
   })
   type: VideoTypeEnum;
 
-  @Column({ nullable: true })
+  @Column({ type: "real", nullable: true })
   score: number;
 
   @Column({ nullable: true })
@@ -82,7 +83,7 @@ export class Video implements TVideo {
 
   @Column({
     type: "float",
-    nullable: true
+    nullable: true,
   })
   length: number;
 
@@ -107,25 +108,25 @@ export class Video implements TVideo {
   @Column("text", { name: "poster_path", array: true, nullable: true })
   posterPath: string[];
 
-  @ManyToOne(type => Video, video => video.id, {
+  @ManyToOne(() => Video, video => video.id, {
     nullable: true,
     onDelete: "SET NULL",
   })
   @JoinColumn({ name: "video_id_ref" })
   video: Video;
 
-  @ManyToOne(type => TvShow, tvShow => tvShow.videos, {
+  @ManyToOne(() => TvShow, tvShow => tvShow.videos, {
     nullable: true,
     onDelete: "SET NULL",
   })
   @JoinColumn({ name: "tv_show_id" })
   tvShow: TvShow;
 
-  @ManyToOne(type => MovieDbJob, movieDbJob => movieDbJob.videoId, {
+  @OneToOne(() => MovieDbJob, movieDbJob => movieDbJob.video, {
     nullable: true,
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   })
-  @JoinColumn({ name: "movie_db_job_id" })
+  @JoinColumn()
   movieDbJob: MovieDbJob;
 
   @OneToMany(() => Watched, watched => watched.video)

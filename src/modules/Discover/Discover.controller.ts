@@ -7,7 +7,7 @@ import DiscoverService from "./Discover.service";
 @Controller("discover")
 @ClassErrorMiddleware(errorHandler)
 export default class DiscoverController {
-  constructor(private service: DiscoverService) { }
+  constructor(private service: DiscoverService) {}
 
   @Get("")
   private async discover(
@@ -15,8 +15,17 @@ export default class DiscoverController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const list = await this.service.findInDirectory()
+    const list = await this.service.findInDirectory();
     res.json(list);
+  }
+
+  @Get("details")
+  private async details(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const jobs = await this.service.getDetailsFromExternalApi();
   }
 
   // @Get("subtitles")
@@ -107,24 +116,6 @@ export default class DiscoverController {
   //   });
   // }
 
-  /**
-   * We need to do 2 calls: Movies and Tvshows, we have distinction in movieJob
-   * For Movies:
-   * first we call on multi -> [0]
-   *    we get id, overview, poster_path, release_date, vote_average, poster_path
-   * then we call on  `https://api.themoviedb.org/3/movie/${movieId}${apiKey}`
-   *    we get genres...
-   * then we call on `https://api.themoviedb.org/3/movie/${movieId}/videos${apiKey}
-   *    we get youtube key teaser (5 first)
-   *
-   * For TvShows:
-   * first we call on multi -> [0]
-   *    we get id, overview, poster_path, first_air_date, vote_average, origin_country
-   * then we call on `https://api.themoviedb.org/3/tv/${movieId}${apiKey}`
-   *    we get genres, number_of_episodes, number_of_seasons, in_production
-   * then we call on `https://api.themoviedb.org/3/tv/${movieId}/videos${apiKey}`
-   *
-   */
   // @Get("details")
   // private async details(
   //   req: Request,
@@ -200,7 +191,6 @@ export default class DiscoverController {
   //       }
 
   //       try {
-  //         // @ts-ignore
   //         await video.save();
   //         await movieJobService.update(job._id, { status, error: job.error });
   //       } catch (error) {
@@ -267,7 +257,6 @@ export default class DiscoverController {
   //       tvShow.numberEpisode = numberEpisode || undefined;
 
   //       try {
-  //         // @ts-ignore
   //         await tvShow.save();
   //       } catch (error) {
   //         console.error("not saved", error);

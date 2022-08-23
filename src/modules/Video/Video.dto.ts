@@ -4,6 +4,7 @@ import baseDTO from "../../utils/BaseDTO";
 import { TvShow } from "../TvShow/TvShow.entity";
 import { Watched } from "../Watched/Watched.entity";
 import { VideoTypeEnum } from "./Video.entity";
+import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
 
 export class VideoDTO extends baseDTO<TVideo> {
   id: number;
@@ -30,13 +31,14 @@ export class VideoDTO extends baseDTO<TVideo> {
   posterPath: string[];
   video?: Video;
   tvShow?: TvShow;
+  movieDbJob?: MovieDbJob;
   userWatchedVideo?: Watched[];
   createdAt: Date;
   updatedAt: Date;
 
   constructor(data: TVideo) {
     super();
-    for (let el in data) {
+    for (const el in data) {
       this[el] = data[el];
     }
   }

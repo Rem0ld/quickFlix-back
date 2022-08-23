@@ -1,11 +1,11 @@
-import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
+import { DeepPartial, DeleteResult, EntityManager, IsNull, Not } from "typeorm";
 import { BaseRepository, TResultService } from "../../types";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { MovieDbJobDTO } from "./MovieDbJob.dto";
 import { MovieDbJob } from "./MovieDbJob.entity";
 
 export class MovieDbJobRepository implements BaseRepository<MovieDbJobDTO> {
-  constructor(private manager: EntityManager) { }
+  constructor(private manager: EntityManager) {}
 
   async getCount(): Promise<number> {
     return this.manager.count(MovieDbJob);
@@ -17,6 +17,10 @@ export class MovieDbJobRepository implements BaseRepository<MovieDbJobDTO> {
     rest: Record<string, any>
   ): Promise<TResultService<MovieDbJobDTO>> {
     const result = await dynamicQueryBuilder(rest, MovieDbJob, "movie_db_job")
+      .leftJoinAndSelect("movie_db_job.video", "video")
+      // .where("movie_db_job.video_id IS NOT NULL")
+      .leftJoinAndSelect("movie_db_job.tvShow", "tvShow")
+      // .where("movie_db_job.tv_show_id IS NOT NULL")
       .take(limit)
       .skip(skip)
       .getManyAndCount();
@@ -63,5 +67,9 @@ export class MovieDbJobRepository implements BaseRepository<MovieDbJobDTO> {
       .delete()
       .where("id= :id", { id })
       .execute();
+  }
+
+  async deleteAll(): Promise<DeleteResult> {
+    return this.manager.getRepository(MovieDbJob).delete({});
   }
 }

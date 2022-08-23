@@ -8,7 +8,7 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
   constructor(
     private manager: EntityManager,
     private name: string = "tv_show"
-  ) { }
+  ) {}
 
   async getCount() {
     return this.manager.count(TvShow);
@@ -21,7 +21,7 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
     const result = await this.manager
       .getRepository(TvShow)
       .createQueryBuilder(this.name)
-      .leftJoinAndSelect("tv_show.videos", "video")
+      .leftJoinAndSelect("tv_show.videos", "videos")
       .take(limit)
       .skip(skip)
       .getManyAndCount();
@@ -36,11 +36,9 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
   }
 
   async findByName(name: string): Promise<TvShowDTO> {
-    const result = await dynamicQueryBuilder(
-      { name },
-      TvShow,
-      "tv_show"
-    ).getOne();
+    const result = await dynamicQueryBuilder({ name }, TvShow, "tv_show")
+      .leftJoinAndSelect("tv_show.videos", "videos")
+      .getOne();
 
     return new TvShowDTO(result);
   }

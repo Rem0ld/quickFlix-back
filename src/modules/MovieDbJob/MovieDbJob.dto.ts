@@ -1,6 +1,7 @@
 import { TMovieDbJob } from "../../types";
 import baseDTO from "../../utils/BaseDTO";
 import { jobStatusType } from "../EncodingJob/EncodingJob.entity";
+import { TvShow } from "../TvShow/TvShow.entity";
 import { Video, VideoTypeEnum } from "../Video/Video.entity";
 
 export class MovieDbJobDTO extends baseDTO<TMovieDbJob> {
@@ -8,14 +9,14 @@ export class MovieDbJobDTO extends baseDTO<TMovieDbJob> {
   status: jobStatusType;
   errors?: string[];
   type: VideoTypeEnum;
-  videoId?: number;
-  tvShowId?: number;
+  video?: Video;
+  tvShow?: TvShow;
   createdAt: Date;
   updatedAt: Date;
 
   constructor(data: TMovieDbJob) {
     super();
-    for (let el in data) {
+    for (const el in data) {
       this[el] = data[el];
     }
   }

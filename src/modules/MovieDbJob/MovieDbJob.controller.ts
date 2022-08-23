@@ -1,6 +1,16 @@
 import { defaultLimit } from "../../config/defaultConfig";
-import { Request, Response, NextFunction } from 'express';
-import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware, Patch } from "@overnightjs/core"
+import { Request, Response, NextFunction } from "express";
+import {
+  Controller,
+  Middleware,
+  ErrorMiddleware,
+  Get,
+  Post,
+  Put,
+  Delete,
+  ClassErrorMiddleware,
+  Patch,
+} from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import { TVideo } from "../../types";
 import MovieDbJobService from "./MovieDbJob.service";
@@ -8,22 +18,23 @@ import MovieDbJobService from "./MovieDbJob.service";
 @Controller("movie-job")
 @ClassErrorMiddleware(errorHandler)
 export default class MovieDbJobController {
-  constructor(private service: MovieDbJobService) { }
+  constructor(private service: MovieDbJobService) {}
 
   @Get()
   async find(req: Request, res: Response, next: NextFunction): Promise<void> {
     const { limit = defaultLimit, skip = 0, ...rest } = req.query;
 
-    const [result, error] = await this.service.find(+limit, +skip, rest)
+    const [result, error] = await this.service.find(+limit, +skip, rest);
     if (error) {
-      next(error)
+      next(error);
+      return;
     }
 
     res.json({
-      total: result.total,
+      total: result?.total || 0,
       limit: +limit,
       skip: +skip,
-      data: result.data,
+      data: result?.data || [],
     });
   }
 
@@ -93,10 +104,17 @@ export default class MovieDbJobController {
   //   res.json("ok");
   // }
 
-  // @Delete()
-  // async deleteAll(req: Request, res: Response, next: NextFunction): Promise<void> {
-  //   const movieJob = await movieDbJobModel.deleteMany();
+  @Delete()
+  async deleteAll(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const [result, error] = await this.service.delete();
+    if (error) {
+      next(error);
+    }
 
-  //   res.json(movieJob.deletedCount + " deleted")
-  // }
+    res.json(result.affected + " deleted");
+  }
 }

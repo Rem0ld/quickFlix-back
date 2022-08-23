@@ -7,7 +7,7 @@ import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { VideoDTO } from "./Video.dto";
 
 export default class VideoRepository implements BaseRepository<VideoDTO> {
-  constructor(private manager: EntityManager) { }
+  constructor(private manager: EntityManager) {}
 
   async getCount(): Promise<number> {
     return this.manager.count(Video);
@@ -52,7 +52,7 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
   async findByFields(
     data: RequestBuilder,
     limit: number = defaultLimit,
-    skip: number = 0
+    skip = 0
   ): Promise<TResultService<VideoDTO>> {
     const result = await dynamicQueryBuilder(data, Video, "video")
       .take(limit)
