@@ -3,7 +3,6 @@ import baseDTO from "../../utils/BaseDTO";
 import { Watched } from "../Watched/Watched.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
-
 export class UserDTO extends baseDTO<TUser> {
   id: number;
   pseudo: string;
@@ -17,13 +16,15 @@ export class UserDTO extends baseDTO<TUser> {
 
   constructor(data: TUser) {
     super();
-    for (let el in data) {
-      this[el] = data[el];
+    for (const el in data) {
+      if (data[el] !== null) {
+        this[el] = data[el];
+      }
     }
   }
 
   protectPassword() {
-    delete this.password
+    delete this.password;
     return this;
   }
 }

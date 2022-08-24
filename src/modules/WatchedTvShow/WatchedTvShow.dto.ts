@@ -14,8 +14,10 @@ export class WatchedTvShowDTO extends baseDTO<TWatchedTvShow> {
 
   constructor(data: TWatchedTvShow) {
     super();
-    for (let el in data) {
-      this[el] = data[el];
+    for (const el in data) {
+      if (data[el] !== null) {
+        this[el] = data[el];
+      }
     }
   }
 }

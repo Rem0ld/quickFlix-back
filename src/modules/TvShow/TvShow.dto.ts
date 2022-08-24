@@ -1,6 +1,7 @@
-import { TTvShow } from "../../types";
+import { TTvShow, TVideoSorted } from "../../types";
 import baseDTO from "../../utils/BaseDTO";
 import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
+import { VideoDTO } from "../Video/Video.dto";
 import { Video } from "../Video/Video.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
@@ -29,7 +30,9 @@ export class TvShowDTO extends baseDTO<TTvShow> {
   constructor(data: TTvShow) {
     super();
     for (const el in data) {
-      this[el] = data[el];
+      if (data[el] !== null) {
+        this[el] = data[el];
+      }
     }
   }
 }

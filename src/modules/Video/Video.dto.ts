@@ -39,7 +39,9 @@ export class VideoDTO extends baseDTO<TVideo> {
   constructor(data: TVideo) {
     super();
     for (const el in data) {
-      this[el] = data[el];
+      if (data[el] !== null) {
+        this[el] = data[el];
+      }
     }
   }
 }

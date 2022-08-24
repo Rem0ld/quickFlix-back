@@ -17,7 +17,9 @@ export class MovieDbJobDTO extends baseDTO<TMovieDbJob> {
   constructor(data: TMovieDbJob) {
     super();
     for (const el in data) {
-      this[el] = data[el];
+      if (data[el] !== null) {
+        this[el] = data[el];
+      }
     }
   }
 }
