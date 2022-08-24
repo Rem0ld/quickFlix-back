@@ -1,8 +1,14 @@
 import fetch from "node-fetch";
 import path from "path";
+import { UnderlyingSink } from "stream/web";
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import { logger } from "../../libs/logger";
-import { getGenres, getImages, getVideoPath } from "../../services/apiService";
+import {
+  getGenres,
+  getImages,
+  getTvShowDetails,
+  getVideoPath,
+} from "../../services/apiService";
 import { err, ok } from "../../services/Error";
 import { go } from "../../services/miscelleneaous";
 import { promisifier } from "../../services/promisifier";
@@ -15,6 +21,7 @@ import {
 } from "../../utils/regexes";
 import { parseBasename } from "../../utils/stringManipulation";
 import { jobStatusType } from "../EncodingJob/EncodingJob.entity";
+import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
 import MovieDbJobService from "../MovieDbJob/MovieDbJob.service";
 import { TvShowDTO } from "../TvShow/TvShow.dto";
 import TvShowService from "../TvShow/TvShow.service";
@@ -22,6 +29,9 @@ import { VideoDTO } from "../Video/Video.dto";
 import { Video, VideoTypeEnum } from "../Video/Video.entity";
 import VideoService from "../Video/Video.service";
 
+type Success = {
+  message: "done";
+};
 export default class DiscoverService {
   videoSer: VideoService;
   tvShowSer: TvShowService;
@@ -42,7 +52,9 @@ export default class DiscoverService {
     this.tempFile = basePath + path.sep + "temp";
   }
 
-  async findInDirectory() {
+  async findInDirectory(): Promise<
+    Result<{ total: number; data: VideoDTO[] }, Error>
+  > {
     const result = await go(
       basePath + path.sep + this.pathVideos,
       this.tempFile,
@@ -52,10 +64,10 @@ export default class DiscoverService {
 
     const [data, error] = await this.addEntries(result);
     if (error) {
-      err(error);
+      return err(error);
     }
 
-    return { total: data.length, data };
+    return ok({ total: data.length, data });
   }
 
   async addEntries(
@@ -190,7 +202,7 @@ export default class DiscoverService {
    * then we call on `https://api.themoviedb.org/3/tv/${movieId}/videos${apiKey}`
    *
    */
-  async getDetailsFromExternalApi() {
+  async getDetailsFromExternalApi(): Promise<Result<Success, Error>> {
     const [movieJobs, error] = await this.mvJobSer.find(0, 0, {
       status: "todo",
       type: "movie",
@@ -217,6 +229,14 @@ export default class DiscoverService {
       const { results } = await response.json();
       if (!results.length) {
         logger.error(`No result for ${job.video.basename}`);
+        const errorData = {
+          status: jobStatusType.ERROR,
+          errors: `{${"no result"}}`,
+        };
+        this.mvJobSer.patch(
+          job.id.toString(),
+          errorData as unknown as MovieDbJob
+        );
         continue;
       }
 
@@ -241,7 +261,7 @@ export default class DiscoverService {
       const posterPath = job.video.posterPath || [];
 
       if (result?.poster_path) {
-        const exists = posterPath?.filter(el => el === result.poster_path);
+        const exists = posterPath.filter(el => el === result.poster_path);
         if (!exists.length) {
           getImages(result.poster_path);
           posterPath.push(result.poster_path);
@@ -257,12 +277,12 @@ export default class DiscoverService {
         trailerYtCode: `{${trailerYtCode.join(",")}}`,
         posterPath: `{${posterPath.join(",")}}`,
       };
-      const video = await this.videoSer.patch(
+      this.videoSer.patch(
         job.video.id.toString(),
         data as unknown as Partial<Video>
       );
-      await this.mvJobSer.patch(job.id.toString(), {
-        status: jobStatusType.TODO,
+      this.mvJobSer.patch(job.id.toString(), {
+        status: jobStatusType.DONE,
       });
     }
 
@@ -277,6 +297,69 @@ export default class DiscoverService {
     }
 
     for (const job of tvShowJobs.data) {
+      const [response, error] = await promisifier<any>(
+        fetch(movieDbUrl + job.tvShow.name)
+      );
+
+      if (error) {
+        logger.error(error);
+        continue;
+      }
+
+      const { results } = await response.json();
+
+      if (!results.length) {
+        logger.error(`No result for ${job.tvShow.name}`);
+        const errorData = {
+          status: jobStatusType.ERROR,
+          errors: `{${"no result"}}`,
+        };
+        this.mvJobSer.patch(
+          job.id.toString(),
+          errorData as unknown as MovieDbJob
+        );
+        continue;
+      }
+
+      const result: any = results[0];
+      const {
+        genres,
+        ongoing,
+        originCountry = [],
+        numberEpisode = null,
+        numberSeason = null,
+      } = await getTvShowDetails(result.id);
+      const trailerYtCode = await getVideoPath(result.id, "tv");
+      const posterPath = job.tvShow.posterPath || [];
+
+      if (result?.poster_path) {
+        const exists = posterPath.filter(el => el === result.poster_path);
+        if (!exists.length) {
+          getImages(result.poster_path);
+          posterPath.push(result.poster_path);
+        }
+      }
+
+      const data = {
+        idMovieDb: result.id,
+        resume: result.overview,
+        score: result.vote_average,
+        firstAirDate: result.first_air_date,
+        ongoing,
+        numberEpisode,
+        numberSeason,
+        originCountry: `{${originCountry.join(",")}}`,
+        trailerYtCode: `{${trailerYtCode.join(",")}}`,
+        genres: `{${genres.join(",")}}`,
+        posterPath: `{${posterPath.join(",")}}`,
+      };
+      this.tvShowSer.patch(
+        job.tvShow.id.toString(),
+        data as unknown as MovieDbJob
+      );
+      this.mvJobSer.patch(job.id.toString(), { status: jobStatusType.DONE });
     }
+
+    return ok({ message: "done" });
   }
 }

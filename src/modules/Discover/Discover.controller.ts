@@ -15,8 +15,12 @@ export default class DiscoverController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const list = await this.service.findInDirectory();
-    res.json(list);
+    const [result, error] = await this.service.findInDirectory();
+    if (error) {
+      next(error);
+      return;
+    }
+    res.json(result);
   }
 
   @Get("details")
@@ -25,7 +29,13 @@ export default class DiscoverController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const jobs = await this.service.getDetailsFromExternalApi();
+    const [result, error] = await this.service.getDetailsFromExternalApi();
+    if (error) {
+      next(error);
+      return;
+    }
+
+    res.json(result.message);
   }
 
   // @Get("subtitles")
@@ -113,167 +123,6 @@ export default class DiscoverController {
 
   //   res.json({
   //     countSubtitleCreated,
-  //   });
-  // }
-
-  // @Get("details")
-  // private async details(
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ): Promise<void> {
-  //   let count = 0,
-  //     errorCount = 0;
-
-  //   // Movies
-  //   const movieJobs = await movieJobService.findActive({ type: "movie" });
-
-  //   if (movieJobs?.length) {
-  //     for (const job of movieJobs) {
-  //       const video: Video = (await videoModel.findById(job.video)) as Video;
-  //       const yearMovie = new Date(video.year).getFullYear();
-  //       let status: MovieJobStatus = "done";
-
-  //       // API Call
-  //       const response = await fetch(movieDbUrl + video.basename);
-  //       const { results } = await response.json();
-
-  //       if (!results || !results.length) {
-  //         logger.error(`No result for ${video.basename}`);
-  //         continue;
-  //       }
-
-  //       let result: any;
-
-  //       // In case of several movies with the same name we look for the release date
-  //       // not bullet proof but will do the job
-  //       if (yearMovie) {
-  //         for (const el of results) {
-  //           const yearResult = new Date(el.release_date).getFullYear();
-
-  //           if (yearMovie === yearResult) {
-  //             result = el;
-  //             break;
-  //           }
-  //         }
-  //       }
-
-  //       // In the case dates are not correct
-  //       if (!yearMovie || !result) {
-  //         result = results[0];
-  //       }
-
-  //       // Making the new video object
-  //       video.idMovieDb = result.id;
-  //       video.resume = result.overview;
-  //       video.releaseDate = result.release_date;
-  //       video.score = result.vote_average;
-
-  //       try {
-  //         video.genres = await getGenres(result.id);
-  //         video.trailerYtCode = await getVideoPath(result.id, "movie");
-
-  //         if (result?.poster_path) {
-  //           // Getting image if doesn't exists
-  //           getImages(result?.poster_path);
-
-  //           const exist = video.posterPath.filter(
-  //             el => el !== result.poster_path
-  //           );
-
-  //           // Checking if document already have this image on BDD
-  //           if (!video.posterPath.length || !exist.length) {
-  //             video.posterPath.push(result.poster_path);
-  //           }
-  //         }
-  //       } catch (error) {
-  //         console.log(error);
-  //       }
-
-  //       try {
-  //         await video.save();
-  //         await movieJobService.update(job._id, { status, error: job.error });
-  //       } catch (error) {
-  //         console.error("not saved", error);
-  //         status = "error";
-  //         job.error.push(error as string);
-  //         await movieJobService.update(job._id, { status, error: job.error });
-  //         errorCount++;
-  //       } finally {
-  //         await new Promise(r => setTimeout(r, 2000));
-  //         count++;
-  //       }
-  //     }
-  //   }
-
-  //   // TvShows
-  //   const tvJobs = await movieJobService.findActive({ type: "tv" });
-
-  //   if (tvJobs) {
-  //     for (const job of tvJobs) {
-  //       if (!job.video.basename) {
-  //         continue;
-  //       }
-  //       const tvShow = (await TvShowService.findByName(
-  //         job.video.basename
-  //       )) as TvShow;
-  //       let status: MovieJobStatus = "done";
-
-  //       const response = await fetch(movieDbUrl + tvShow.name);
-  //       const { results } = await response.json();
-
-  //       if (!results || !results.length) {
-  //         logger.error(`No result for ${tvShow}`);
-  //         continue;
-  //       }
-
-  //       let result = results[0];
-
-  //       if (result.poster_path) {
-  //         getImages(result.poster_path);
-
-  //         const exist = tvShow.posterPath.filter(
-  //           el => el !== result.poster_path
-  //         );
-
-  //         if (!tvShow.posterPath.length || !exist) {
-  //           tvShow.posterPath.push(result.poster_path);
-  //         }
-  //       }
-
-  //       tvShow.idMovieDb = result.id;
-  //       tvShow.resume = result.overview;
-  //       tvShow.score = result.vote_average;
-  //       tvShow.firstAirDate = result.first_air_date;
-  //       tvShow.trailerYtCode = await getVideoPath(result.id, "tv");
-
-  //       const { genres, ongoing, originCountry, numberEpisode, numberSeason } =
-  //         await getTvShowDetails(result.id);
-
-  //       tvShow.genres = genres || [];
-  //       tvShow.ongoing = ongoing || undefined;
-  //       tvShow.originCountry = originCountry || [];
-  //       tvShow.numberSeason = numberSeason || undefined;
-  //       tvShow.numberEpisode = numberEpisode || undefined;
-
-  //       try {
-  //         await tvShow.save();
-  //       } catch (error) {
-  //         console.error("not saved", error);
-  //         status = "error";
-  //         job.error.push(error as string);
-  //         errorCount++;
-  //       }
-
-  //       movieJobService.update(job._id, { status, error: job.error });
-  //       count++;
-  //       await new Promise(r => setTimeout(r, 2000));
-  //     }
-  //   }
-
-  //   res.json({
-  //     errorCount,
-  //     count,
   //   });
   // }
 
