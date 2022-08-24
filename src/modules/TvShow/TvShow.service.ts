@@ -2,13 +2,15 @@ import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
 import { MissingDataPayloadException, err, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
-import { Result, TResultService, TTvShow } from "../../types";
+import { Result, TResultService, TTvShow, TVideoSorted } from "../../types";
+import { VideoDTO } from "../Video/Video.dto";
+import { Video } from "../Video/Video.entity";
 import { TvShowDTO } from "./TvShow.dto";
 import { TvShow } from "./TvShow.entity";
 import { TvShowRepository } from "./TvShow.repository";
 
 export default class TvShowService {
-  constructor(private repo: TvShowRepository) { }
+  constructor(private repo: TvShowRepository) {}
 
   async findById(id: string): Promise<Result<TvShowDTO, Error>> {
     if (!id?.length) {
@@ -26,16 +28,19 @@ export default class TvShowService {
 
   async findAll(
     limit: number = defaultLimit,
-    skip: number = 0
+    skip = 0
   ): Promise<Result<TResultService<TvShowDTO>, Error>> {
-    const total = await this.repo.getCount();
     const [result, error] = await promisifier<TResultService<TvShowDTO>>(
       this.repo.findAll(limit, skip)
     );
     if (error) {
       return err(new Error(error));
     }
-    return ok(result);
+    const test = result.data.map((tvShow: TvShowDTO) => {
+      tvShow.videos = tvShow.formatVideos() as unknown as Video[];
+      return tvShow;
+    });
+    return ok({ data: test, total: result.total });
   }
 
   async findByName(name: string): Promise<Result<TvShowDTO, Error>> {
@@ -53,8 +58,7 @@ export default class TvShowService {
   }
 
   async create(
-    data: DeepPartial<TvShowDTO>,
-    params?: { movieJob: boolean; id: string }
+    data: DeepPartial<TvShowDTO>
   ): Promise<Result<TvShowDTO, Error>> {
     // TODO: Add more validation here
     if (!Object.keys(data).length) {

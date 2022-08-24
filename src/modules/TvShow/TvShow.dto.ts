@@ -35,4 +35,14 @@ export class TvShowDTO extends baseDTO<TTvShow> {
       }
     }
   }
+
+  formatVideos() {
+    return this.videos.reduce((acc: TVideoSorted, el: Video) => {
+      if (!acc[el.season]) {
+        acc[el.season] = {};
+      }
+      acc[el.season][el.episode] = new VideoDTO(el);
+      return acc;
+    }, {});
+  }
 }
