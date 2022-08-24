@@ -123,9 +123,8 @@ export default class VideoService {
   }
 
   async create(
-    data: DeepPartial<VideoDTO>,
-    params?: { movieJob: boolean }
-  ): Promise<Result<VideoDTO, MissingDataPayloadException | Error>> {
+    data: DeepPartial<VideoDTO>
+  ): Promise<Result<VideoDTO, MissingDataPayloadException>> {
     // TODO: validation to make sure video has everything needed
     if (!data?.name?.length) {
       return err(new MissingDataPayloadException("name", data));
@@ -133,10 +132,6 @@ export default class VideoService {
     const [result, error] = await promisifier<VideoDTO>(this.repo.create(data));
     if (error) {
       return err(new Error(error));
-    }
-
-    if (params?.movieJob) {
-      // await movieJobService.create({ id: video._id });
     }
 
     return ok(result);

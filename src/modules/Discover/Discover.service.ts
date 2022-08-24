@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import path from "path";
-import { UnderlyingSink } from "stream/web";
 import { basePath, movieDbUrl } from "../../config/defaultConfig";
 import { logger } from "../../libs/logger";
 import {
