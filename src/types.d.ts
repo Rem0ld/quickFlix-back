@@ -6,6 +6,7 @@ import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { WatchedTvShow } from "./modules/WatchedTvShow/WatchedTvShow.entity";
 import { User } from "./modules/User/User.entity";
 import { UserDTO } from "./modules/User/User.dto";
+import { VideoDTO } from "./modules/Video/Video.dto";
 
 export interface IReader<T> {
   getCount(): Promise<number>;
@@ -80,12 +81,18 @@ export type RequestBuilder = {
 
 export type EpisodeTvShow = {
   number: string | number;
-  ref: String;
+  ref: string;
 };
 
 export type SeasonTvShow = {
   number: string | number;
   episodes: EpisodeTvShow[];
+};
+
+export type TVideoSorted = {
+  [x: number | string]: {
+    [x: number | string]: VideoDTO;
+  };
 };
 
 export type TTvShow = {
