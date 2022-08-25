@@ -3,7 +3,7 @@ import { logger } from "../libs/logger";
 
 const connection = {
   async create() {
-    return AppDataSource.initialize()
+    return AppDataSource.initialize();
   },
 
   async close() {
@@ -13,13 +13,13 @@ const connection = {
   async clear() {
     const entities = AppDataSource.entityMetadatas;
     const promises = [];
-    for (let entity of entities) {
+    for (const entity of entities) {
       const repository = AppDataSource.getRepository(entity.name);
       promises.push(
         repository.query(`delete from "${entity.tableName}" CASCADE;`)
       );
     }
-    return Promise.all(promises).catch(error => console.log(error));
+    return Promise.all(promises).catch(error => logger.error(error));
   },
 };
 

@@ -20,6 +20,14 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
     return new VideoDTO(result);
   }
 
+  async findByUuid(uuid: string): Promise<VideoDTO> {
+    const result = await this.manager.findOneBy(Video, {
+      uuid,
+    });
+
+    return new VideoDTO(result);
+  }
+
   async findAll(
     limit: number,
     skip: number,

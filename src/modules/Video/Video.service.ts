@@ -40,6 +40,26 @@ export default class VideoService {
     return ok(result);
   }
 
+  async findByUuid(
+    id: string
+  ): Promise<Result<VideoDTO, MissingDataPayloadException | Error>> {
+    if (!id.length) {
+      return err(new MissingDataPayloadException("uuid"));
+    }
+
+    const [result, error] = await promisifier<VideoDTO>(
+      this.repo.findByUuid(id)
+    );
+    if (error) {
+      return err(new Error(error));
+    }
+    if (!Object.keys(result).length) {
+      return err(new ResourceNotExist(id));
+    }
+
+    return ok(result);
+  }
+
   async findAll(
     limit: number,
     skip: number,

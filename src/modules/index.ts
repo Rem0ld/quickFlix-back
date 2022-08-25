@@ -5,6 +5,7 @@ import authController from "./Authentication/index";
 import discoverController from "./Discover/index";
 import movieDbJobController from "./MovieDbJob/index";
 import imageController from "./Image/index";
+import streamController from "./Stream/index";
 
 const routes = [
   videoController,
@@ -14,6 +15,7 @@ const routes = [
   discoverController,
   movieDbJobController,
   imageController,
+  streamController,
 ];
 
 export default routes;
