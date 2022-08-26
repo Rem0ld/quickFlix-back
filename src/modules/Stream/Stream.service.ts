@@ -12,10 +12,6 @@ export default class StreamService {
     }
 
     const [result, error] = await this.vs.findByUuid(id);
-    console.log(
-      "🚀 ~ file: Stream.service.ts ~ line 15 ~ StreamService ~ findVideo ~ result",
-      result
-    );
     if (error) {
       return err(error);
     }
