@@ -1,9 +1,9 @@
 export default class baseDTO<T> {
-  constructor() { }
+  constructor() {}
   serialize() {
     const result: Partial<this> = {};
     const parsed = JSON.parse(JSON.stringify(this));
-    for (let el in parsed) {
+    for (const el in parsed) {
       if (this[el] !== null) {
         result[el] = this[el];
       }
@@ -12,6 +12,6 @@ export default class baseDTO<T> {
   }
 
   deserialize() {
-    return this
+    return this;
   }
 }

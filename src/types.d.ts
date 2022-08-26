@@ -91,7 +91,7 @@ export type SeasonTvShow = {
 
 export type TVideoSorted = {
   [x: number | string]: {
-    [x: number | string]: VideoDTO;
+    [x: number | string]: DeepPartial<VideoDTO>;
   };
 };
 

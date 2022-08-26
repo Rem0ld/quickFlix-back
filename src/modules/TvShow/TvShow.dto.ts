@@ -30,9 +30,7 @@ export class TvShowDTO extends baseDTO<TTvShow> {
   constructor(data: TTvShow) {
     super();
     for (const el in data) {
-      if (data[el] !== null) {
-        this[el] = data[el];
-      }
+      this[el] = data[el];
     }
   }
 
@@ -41,7 +39,7 @@ export class TvShowDTO extends baseDTO<TTvShow> {
       if (!acc[el.season]) {
         acc[el.season] = {};
       }
-      acc[el.season][el.episode] = new VideoDTO(el);
+      acc[el.season][el.episode] = new VideoDTO(el).serialize();
       return acc;
     }, {});
   }

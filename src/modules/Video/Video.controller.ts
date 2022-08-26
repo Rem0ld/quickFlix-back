@@ -27,7 +27,7 @@ type body = {
 // @ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
 export default class VideoController {
-  constructor(private service: VideoService) { }
+  constructor(private service: VideoService) {}
 
   @Get()
   private async find(
@@ -35,7 +35,7 @@ export default class VideoController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    let { limit = defaultLimit, skip = 0, ...rest } = req.query;
+    const { limit = defaultLimit, skip = 0, ...rest } = req.query;
 
     const [result, error] = await this.service.findAll(+limit, +skip, rest);
     if (error) {
@@ -91,7 +91,7 @@ export default class VideoController {
     res.json({
       total: result.total,
       limit: +limit,
-      skip: +skip,
+      skip: +skip + +limit,
       data: result?.data ? result.data.map(el => el.serialize()) : [],
     });
   }
