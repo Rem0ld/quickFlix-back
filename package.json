@@ -6,6 +6,7 @@
    "license": "MIT",
    "dependencies": {
       "@overnightjs/core": "^1.7.6",
+      "@types/joi": "^17.2.3",
       "babel-node": "^0.0.1-security",
       "bcryptjs": "^2.4.3",
       "cookie-parser": "^1.4.6",
@@ -17,6 +18,7 @@
       "eslint-plugin-promise": "^4.2.1",
       "express": "^4.17.1",
       "fluent-ffmpeg": "^2.1.2",
+      "joi": "^17.6.0",
       "jsonwebtoken": "^8.5.1",
       "mime": "^3.0.0",
       "morgan": "^1.10.0",
