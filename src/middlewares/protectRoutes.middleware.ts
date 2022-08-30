@@ -9,16 +9,21 @@ export default function protectRoutes(
   const { accessToken } = req.cookies;
 
   if (!accessToken) {
-    res.status(401).json("Missing jwt");
+    res.status(401).json("Missing cookies auth");
+    return;
   }
 
-  // I'm throwing error from AuthService so no need to use if..else
-  try {
-    AuthService.verifyToken(accessToken);
-    next();
-  } catch (error) {
-    next(error);
+  const [result, error] = AuthService.verifyToken(accessToken);
+  if (error) {
+    res.status(401).json("Not authenticated");
+    return;
   }
 
+  if (!result) {
+    res.status(401).json("JWT expired");
+    return;
+  }
+
+  next();
   return;
 }
