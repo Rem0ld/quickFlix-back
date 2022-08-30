@@ -33,7 +33,7 @@ CREATE TABLE "watched"(
 DROP TABLE IF EXISTS "video" CASCADE;
 CREATE TABLE "video" (
   "id" SERIAL PRIMARY KEY,
-  "uuid" varchar UNIQUE,
+  "uuid" varchar,
   "name" varchar,
   "basename" varchar,
   "filename" varchar,
@@ -63,7 +63,7 @@ CREATE TABLE "video" (
 DROP TABLE IF EXISTS "tv_show" CASCADE;
 CREATE TABLE "tv_show" (
   "id" SERIAL PRIMARY KEY,
-  "uuid" varchar UNIQUE,
+  "uuid" varchar,
   "id_movie_db" varchar,
   "name" varchar,
   "location" varchar,
@@ -80,17 +80,6 @@ CREATE TABLE "tv_show" (
   "average_length" float,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
-);
-
-DROP TABLE IF EXISTS "watched_tv_show" CASCADE;
-CREATE TABLE "watched_tv_show" (
-  "id" SERIAL,
-  "tv_show_id" int,
-  "user_id" int,
-  "watched_id" int,
-  "created_at" timestamp NOT NULL DEFAULT now(),
-  "updated_at" timestamp NOT NULL DEFAULT  now(),
-  PRIMARY KEY ("tv_show_id", "user_id", "watched_id")
 );
 
 DROP TABLE IF EXISTS "encoding_job" CASCADE;
@@ -145,12 +134,6 @@ ALTER TABLE "watched" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON 
 ALTER TABLE "video" ADD FOREIGN KEY ("video_id_ref") REFERENCES "video" ("id") ON DELETE SET NULL;
 
 ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE SET NULL;
-
-ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("watched_id") REFERENCES "watched" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "watched_tv_show" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "encoding_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
 
