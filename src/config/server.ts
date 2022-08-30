@@ -30,7 +30,6 @@ export default class MyServer extends Server {
     this.app.listen(port, () => {
       logger.info(`Listening on ${port}`);
       logger.info(`Environment is ${process.env.NODE_ENV}`);
-      // log(`Db string is ${process.env.DB_CONNECTION_STRING}`)
     });
   }
 }

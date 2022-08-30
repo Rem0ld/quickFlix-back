@@ -63,8 +63,8 @@ export type TVideo = {
   actors?: string[];
   trailer?: Video[];
   genres: string[];
-  trailerYtCode: string[];
-  posterPath: string[];
+  trailerYtCode?: string[];
+  posterPath?: string[];
   tvShow?: TvShow;
   video?: Video;
   userWatchedVideo?: Watched[];
