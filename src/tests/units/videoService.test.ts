@@ -14,22 +14,21 @@ configJest();
 describe("Video service unit test", () => {
   describe("add a video", () => {
     it("should create a video with the given properties", async () => {
-      const video = await videoService.create(mockVideo, { movieJob: false });
+      const [video] = await videoService.create(mockVideo);
       expect(video.name).toBe("game of thrones");
     });
   });
 
   describe("should miss parameter to create video", () => {
     it("should not pass", async () => {
-      await expect(
-        videoService.create({} as TVideo, { movieJob: false })
-      ).rejects.toThrowError("invalid video object, missing name");
+      const [result, error] = await videoService.create({} as TVideo);
+      expect(error.message).toContain("missing data");
     });
   });
 
   describe("get all videos", () => {
     it("should get the video we created", async () => {
-      const videos = await videoService.findAll(20, 0);
+      const [videos] = await videoService.findAll(20, 0);
       expect(videos.total).toBeGreaterThanOrEqual(1);
     });
   });
@@ -60,17 +59,17 @@ describe("Video service unit test", () => {
 
     describe("Update one video", () => {
       it("should update video with the given properties", async () => {
-        const { data }: TResultService<Video> = await videoService.findByFields(
-          {
-            name: "game of thrones",
-          }
-        );
+        const [response] = await videoService.findByFields({
+          name: "game of thrones",
+        });
         const result = await videoService.patch(
-          data[0].id.toString(),
+          response.data[0].id.toString(),
           mockUpdateVideo
         );
         // expect(result.affected).toBe(1);
-        const video: Video = await videoService.findById(data[0].id.toString());
+        const [video] = await videoService.findById(
+          response.data[0].id.toString()
+        );
 
         expect(video.basename).toBe("game");
       });
@@ -78,11 +77,13 @@ describe("Video service unit test", () => {
 
     describe("Delete one video", () => {
       it("should retrieve video and delete it", async () => {
-        const video = await videoService.findAll(20, 0);
-        expect(video.total).toBeGreaterThanOrEqual(1);
-        await videoService.deleteOneById(video.data[0].id.toString());
-        const result = await videoService.findById(video.data[0].id.toString());
-        expect(result).toBeNull();
+        const [result] = await videoService.findAll(20, 0);
+        expect(result.total).toBeGreaterThanOrEqual(1);
+        await videoService.deleteOneById(result.data[0].id.toString());
+        const [response] = await videoService.findById(
+          result.data[0].id.toString()
+        );
+        expect(response).toBeNull();
       });
     });
   });

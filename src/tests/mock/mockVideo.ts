@@ -16,8 +16,8 @@ export const mockVideo: Omit<TVideo, "id"> = {
   year: new Date("02/14/2003"),
   releaseDate: new Date("02/14/2003"),
   genres: ["action"],
-  trailerYtCode: [],
-  posterPath: [],
+  // trailerYtCode: [],
+  // posterPath: [],
 };
 
 export const mockVideoDTO: TVideo = {
