@@ -13,6 +13,7 @@ import { TTvShow } from "../../types";
 import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
 import { Video } from "../Video/Video.entity";
 import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
+import { v4 as uuidv4 } from "uuid";
 
 @Entity({ name: "tv_show" })
 export class TvShow implements TTvShow {
@@ -21,6 +22,10 @@ export class TvShow implements TTvShow {
 
   @Column({ name: "id_movie_db", nullable: true })
   idMovieDb: string;
+
+  @Index()
+  @Column({ default: uuidv4() })
+  uuid: string;
 
   @Index()
   @Column()

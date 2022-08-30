@@ -2,23 +2,11 @@ import { DeepPartial, DeleteResult, EntityManager } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
 import { BaseRepository, RequestBuilder, TResultService } from "../../types";
 import { Video } from "./Video.entity";
-import { v4 as uuidv4 } from "uuid";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { VideoDTO } from "./Video.dto";
 
 export default class VideoRepository implements BaseRepository<VideoDTO> {
   constructor(private manager: EntityManager) {}
-
-  async getCount(): Promise<number> {
-    return this.manager.count(Video);
-  }
-
-  async findById(id: number): Promise<VideoDTO> {
-    const result = await this.manager.findOneBy(Video, {
-      id,
-    });
-    return new VideoDTO(result);
-  }
 
   async findByUuid(uuid: string): Promise<VideoDTO> {
     const result = await this.manager.findOneBy(Video, {
@@ -70,11 +58,8 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
     return { data: result[0].map(el => new VideoDTO(el)), total: result[1] };
   }
 
-  async create(videoEntity: DeepPartial<Video>) {
-    const result = await this.manager.save(Video, {
-      ...videoEntity,
-      uuid: uuidv4(),
-    });
+  async create(data: DeepPartial<Video>) {
+    const result = await this.manager.save(Video, data);
     return new VideoDTO(result);
   }
 
@@ -98,5 +83,16 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
 
   async deleteAll(): Promise<DeleteResult> {
     return this.manager.getRepository(Video).delete({});
+  }
+
+  async getCount(): Promise<number> {
+    return this.manager.count(Video);
+  }
+
+  async findById(id: number): Promise<VideoDTO> {
+    const result = await this.manager.findOneBy(Video, {
+      id,
+    });
+    return new VideoDTO(result);
   }
 }

@@ -25,7 +25,7 @@ export enum VideoTypeEnum {
 }
 
 @Entity()
-@Unique(["uuid", "name", "filename"])
+@Unique(["name"])
 export class Video implements TVideo {
   @PrimaryGeneratedColumn()
   id: number;
@@ -42,7 +42,7 @@ export class Video implements TVideo {
   @Column()
   basename: string;
 
-  @Column({ unique: true })
+  @Column()
   filename: string;
 
   @Column({

@@ -7,10 +7,12 @@ import {
   Patch,
   Delete,
   ClassErrorMiddleware,
+  ClassMiddleware,
 } from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
 import { VideoTypeEnum } from "./Video.entity";
+import protectRoutes from "../../middlewares/protectRoutes.middleware";
 
 type query = {
   limit: string;
@@ -23,8 +25,9 @@ type body = {
   season?: string;
   type?: VideoTypeEnum[];
 };
+
 @Controller("video")
-// @ClassMiddleware([protectRoutes])
+@ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
 export default class VideoController {
   constructor(private service: VideoService) {}

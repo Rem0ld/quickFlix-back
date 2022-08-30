@@ -1,5 +1,6 @@
 import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
+import Joi from "joi";
 import {
   MissingDataPayloadException,
   ok,
@@ -10,7 +11,9 @@ import { promisifier } from "../../services/promisifier";
 import { TResultService, RequestBuilder, Result } from "../../types";
 import { VideoDTO } from "./Video.dto";
 import { Video, VideoTypeEnum } from "./Video.entity";
+import { v4 as uuidv4, validate } from "uuid";
 import VideoRepository from "./Video.repository";
+import { videoSchema } from "./Video.Validation";
 
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
@@ -18,6 +21,24 @@ export default class VideoService {
   repo: VideoRepository;
   constructor(videoRepository: VideoRepository) {
     this.repo = videoRepository;
+  }
+
+  async findAll(
+    limit: number,
+    skip: number,
+    rest?: Record<string, any>
+  ): Promise<Result<TResultService<VideoDTO>, Error>> {
+    if (limit === 0) {
+      skip = 0;
+    }
+    const [result, error] = await promisifier<TResultService<VideoDTO>>(
+      this.repo.findAll(limit, skip, rest)
+    );
+    if (error) {
+      return err(new Error(error));
+    }
+
+    return ok(result);
   }
 
   async findById(
@@ -55,24 +76,6 @@ export default class VideoService {
     }
     if (!Object.keys(result).length) {
       return err(new ResourceNotExist(id));
-    }
-
-    return ok(result);
-  }
-
-  async findAll(
-    limit: number,
-    skip: number,
-    rest: Record<string, any>
-  ): Promise<Result<TResultService<VideoDTO>, Error>> {
-    if (limit === 0) {
-      skip = 0;
-    }
-    const [result, error] = await promisifier<TResultService<VideoDTO>>(
-      this.repo.findAll(limit, skip, rest)
-    );
-    if (error) {
-      return err(new Error(error));
     }
 
     return ok(result);
@@ -145,10 +148,12 @@ export default class VideoService {
   async create(
     data: DeepPartial<VideoDTO>
   ): Promise<Result<VideoDTO, MissingDataPayloadException>> {
-    // TODO: validation to make sure video has everything needed
-    if (!data?.name?.length) {
-      return err(new MissingDataPayloadException("name", data));
+    const valid = videoSchema.validate(data);
+    if (valid.error) {
+      return err(new MissingDataPayloadException(valid.value));
     }
+
+    data.uuid = uuidv4();
     const [result, error] = await promisifier<VideoDTO>(this.repo.create(data));
     if (error) {
       return err(new Error(error));
