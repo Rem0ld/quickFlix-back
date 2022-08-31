@@ -166,7 +166,7 @@ export default class DiscoverService {
       filename: el.name,
       location: el.dir,
       ext: el.ext,
-      tvShow: tvShow,
+      tvShow: tvShow || null,
       type: isTvShow ? VideoTypeEnum.TV : VideoTypeEnum.MOVIE,
       season: +season || null,
       episode: +episode || null,

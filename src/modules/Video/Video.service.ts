@@ -150,7 +150,7 @@ export default class VideoService {
   ): Promise<Result<VideoDTO, MissingDataPayloadException>> {
     const valid = videoSchema.validate(data);
     if (valid.error) {
-      return err(new MissingDataPayloadException(valid.value));
+      return err(new MissingDataPayloadException(valid.error.message));
     }
 
     if (!data.uuid) {
