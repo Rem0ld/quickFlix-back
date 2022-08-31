@@ -31,12 +31,11 @@ export default class WatchedService {
 
   async findAll(
     limit: number = defaultLimit,
-    skip: number = 0,
-    id: string
+    skip = 0,
+    rest?: Record<string, any>
   ): Promise<Result<TResultService<WatchedDTO>, Error>> {
-    const total = await this.repo.getCount();
     const [result, error] = await promisifier<TResultService<WatchedDTO>>(
-      this.repo.findAll(limit, skip, +id)
+      this.repo.findAll(limit, skip, rest)
     );
     if (error) {
       return err(new Error(error));

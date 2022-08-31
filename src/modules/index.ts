@@ -6,6 +6,7 @@ import discoverController from "./Discover/index";
 import movieDbJobController from "./MovieDbJob/index";
 import imageController from "./Image/index";
 import streamController from "./Stream/index";
+import watchedController from "./Watched/index";
 
 const routes = [
   videoController,
@@ -16,6 +17,7 @@ const routes = [
   movieDbJobController,
   imageController,
   streamController,
+  watchedController,
 ];
 
 export default routes;

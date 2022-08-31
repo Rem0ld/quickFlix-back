@@ -7,7 +7,7 @@ export default class WatchedRepository implements BaseRepository<WatchedDTO> {
   constructor(
     private manager: EntityManager,
     private name: string = "watched"
-  ) { }
+  ) {}
 
   async getCount(): Promise<number> {
     return this.manager.count(Watched);
@@ -16,12 +16,12 @@ export default class WatchedRepository implements BaseRepository<WatchedDTO> {
   async findAll(
     limit: number,
     skip: number,
-    id: number
+    rest: Record<string, any>
   ): Promise<TResultService<WatchedDTO>> {
     const result = await this.manager
       .getRepository(Watched)
       .createQueryBuilder(this.name)
-      .where(`${this.name}.user = :id`, { id })
+      .where(`${this.name}.user = :id`, { id: +rest.id })
       .leftJoinAndSelect(`${this.name}.video`, "video")
       .take(limit)
       .skip(skip)

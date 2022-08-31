@@ -9,13 +9,12 @@ import {
 } from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import WatchedService from "./Watched.service";
-import WatchedTvShowService from "../WatchedTvShow/WatchedTvShow.service";
-import { logger } from "../../libs/logger";
+import { defaultLimit } from "../../config/defaultConfig";
 
 @Controller("watched")
 @ClassErrorMiddleware(errorHandler)
 export default class WatchedController {
-  constructor(private service: WatchedService) { }
+  constructor(private service: WatchedService) {}
 
   @Get()
   private async find(
@@ -23,6 +22,20 @@ export default class WatchedController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    const { limit = defaultLimit, skip = 0 } = req.query;
+    const [result, error] = await this.service.findAll(+limit, +skip, {
+      id: 15,
+    });
+    if (error) {
+      next(error);
+    }
+
+    res.json({
+      total: result.total,
+      skip: +limit + +skip,
+      limit: limit,
+      data: result?.data ? result.data.map(el => el.serialize()) : [],
+    });
   }
 
   @Get(":id")
@@ -30,8 +43,7 @@ export default class WatchedController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> {
-  }
+  ): Promise<void> {}
 
   @Post()
   private async create(
@@ -39,6 +51,12 @@ export default class WatchedController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    const [result, error] = await this.service.create(req.body);
+    if (error) {
+      next(error);
+    }
+
+    res.json(result);
   }
 
   @Post("by-video")
@@ -46,24 +64,21 @@ export default class WatchedController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> {
-  }
+  ): Promise<void> {}
 
   @Patch(":id")
   private async patch(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> {
-  }
+  ): Promise<void> {}
 
   @Delete(":id")
   private async delete(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> {
-  }
+  ): Promise<void> {}
 
   // TODO: middleware to check if admin
   @Delete()
@@ -71,6 +86,5 @@ export default class WatchedController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> {
-  }
+  ): Promise<void> {}
 }

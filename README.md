@@ -20,6 +20,8 @@
       - [ ] with pathname as argument
       - [ ] connected with node so node can send action
       - [ ] make node able to read logs to update jobs in bdd
-- [ ] Make aggregation for tvShows
 - [ ] Extract subtitles
 - [ ] websocket
+- [ ] seed with user PierrotLeFou
+- [ ] join video with watched
+- [ ] use cookie to get user from the requests

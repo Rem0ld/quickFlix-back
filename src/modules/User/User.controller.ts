@@ -16,7 +16,7 @@ import { defaultLimit } from "../../config/defaultConfig";
 @Controller("user")
 @ClassErrorMiddleware(errorHandler)
 export default class UserController {
-  constructor(private service: UserService) { }
+  constructor(private service: UserService) {}
 
   @Get()
   private async find(
@@ -24,19 +24,19 @@ export default class UserController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    let { limit = defaultLimit, skip = 0 } = req.query;
+    const { limit = defaultLimit, skip = 0 } = req.query;
 
-    const [result, error] = await this.service.findAll(+limit, +skip)
+    const [result, error] = await this.service.findAll(+limit, +skip);
     if (error) {
-      next(error)
+      next(error);
     }
 
     res.json({
       total: result.total,
       limit: +limit,
       skip: +skip,
-      data: result?.data ? result.data.map(el => el.serialize()) : []
-    })
+      data: result?.data ? result.data.map(el => el.serialize()) : [],
+    });
   }
 
   @Get(":id")
@@ -44,28 +44,36 @@ export default class UserController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {}
 
   @Post()
   private async create(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {
+    const [result, error] = await this.service.create(req.body);
+    if (error) {
+      next(error);
+    }
+
+    res.json(result);
+    return;
+  }
 
   @Patch(":id")
   private async patch(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {}
 
   @Delete(":id")
   private async delete(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {}
 
   // TODO: middleware to check if admin
   @Delete()
@@ -73,5 +81,5 @@ export default class UserController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {}
 }

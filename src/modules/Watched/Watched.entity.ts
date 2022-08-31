@@ -18,7 +18,7 @@ export class Watched {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "times_watched", type: "float" })
+  @Column({ name: "times_watched", type: "float", default: 0.0 })
   timesWatched: number;
 
   @Column({ default: false })
