@@ -97,7 +97,8 @@ export type TVideoSorted = {
 
 export type TTvShow = {
   id: number;
-  idMovieDb?: string; // id
+  uuid: string;
+  idMovieDb?: string;
   name: string;
   location: string;
   numberSeason: number;
@@ -123,8 +124,8 @@ export type TWatched = {
   length?: number;
   finished: boolean;
   stoppedAt?: number;
-  video: Video;
-  user: User;
+  video: Video | number;
+  user: User | number;
 };
 
 export type TWatchedTvShow = {

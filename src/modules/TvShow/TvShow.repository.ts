@@ -44,7 +44,7 @@ export class TvShowRepository implements BaseRepository<TvShowDTO> {
   }
 
   async create(data: DeepPartial<TvShowDTO>): Promise<TvShowDTO> {
-    const result = await this.manager.save(TvShow, { ...data });
+    const result = await this.manager.save(TvShow, data);
 
     return new TvShowDTO(result);
   }

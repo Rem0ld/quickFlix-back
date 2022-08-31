@@ -19,7 +19,7 @@ import { promisifier } from "../../services/promisifier";
 @Controller("tv-show")
 @ClassErrorMiddleware(errorHandler)
 export default class TvShowController {
-  constructor(private service: TvShowService) { }
+  constructor(private service: TvShowService) {}
 
   @Get()
   private async find(
@@ -78,7 +78,17 @@ export default class TvShowController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {
+    const [result, error] = await this.service.create(req.body);
+    if (error) {
+      next(error);
+      return;
+    }
+
+    res.json({
+      result,
+    });
+  }
 
   // @Patch(":id")
   // private async patch(
@@ -104,7 +114,7 @@ export default class TvShowController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {}
 
   // TODO: middleware to check if admin
   @Delete()

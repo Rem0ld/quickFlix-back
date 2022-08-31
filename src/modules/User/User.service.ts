@@ -4,11 +4,7 @@ import jwt from "jsonwebtoken";
 import { UserDTO } from "./User.dto";
 import { promisifier } from "../../services/promisifier";
 import { MissingDataPayloadException, err, ok } from "../../services/Error";
-import {
-  Result,
-  TResultService,
-  TUserWithToken,
-} from "../../types";
+import { Result, TResultService, TUserWithToken } from "../../types";
 
 export default class UserService {
   repo: UserRepository;
@@ -20,7 +16,7 @@ export default class UserService {
     limit: number,
     skip: number
   ): Promise<Result<TResultService<UserDTO>, Error>> {
-    if ((limit = 0)) {
+    if (limit === 0) {
       skip = 0;
     }
     const [result, error] = await promisifier<TResultService<UserDTO>>(
@@ -56,14 +52,14 @@ export default class UserService {
     return ok(result);
   }
 
-  async update(id: string, data: Partial<User>) { }
-  async delete(id: string) { }
+  async update(id: string, data: Partial<User>) {}
+  async delete(id: string) {}
 
   async authenticate(
     pseudo: string,
     password: string
   ): Promise<Result<TUserWithToken, Error>> {
-    const [user, error] = await promisifier<UserDTO>(this.findByPseudo(pseudo));
+    const [user, error] = await this.findByPseudo(pseudo);
     if (error) {
       return err(new Error("no user found with this pseudo"));
     }
@@ -81,8 +77,8 @@ export default class UserService {
     });
   }
 
-  generateToken(user: Partial<Omit<User, "password">>) {
-    return jwt.sign(user, process.env.SECRET, {
+  generateToken(user: UserDTO) {
+    return jwt.sign(Object.assign({}, user), process.env.SECRET, {
       expiresIn: "10d",
     });
   }

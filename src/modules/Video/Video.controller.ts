@@ -27,7 +27,7 @@ type body = {
 };
 
 @Controller("video")
-@ClassMiddleware([protectRoutes])
+// @ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
 export default class VideoController {
   constructor(private service: VideoService) {}

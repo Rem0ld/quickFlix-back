@@ -24,10 +24,6 @@ export default class StreamController {
       next(error);
     }
     const videoPath = video.location + path.sep + video.filename + video.ext;
-    console.log(
-      "🚀 ~ file: Stream.controller.ts ~ line 27 ~ StreamController ~ videoPath",
-      videoPath
-    );
 
     fs.stat(videoPath, async function (_, stats: Stats) {
       const range = req.headers.range;

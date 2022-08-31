@@ -1,14 +1,13 @@
-import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
+import { DeepPartial, DeleteResult } from "typeorm";
 import { defaultLimit } from "../../config/defaultConfig";
 import { MissingDataPayloadException, err, ok } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
-import { Result, TResultService, TTvShow, TVideoSorted } from "../../types";
-import { VideoDTO } from "../Video/Video.dto";
+import { Result, TResultService } from "../../types";
 import { Video } from "../Video/Video.entity";
 import { TvShowDTO } from "./TvShow.dto";
 import { TvShow } from "./TvShow.entity";
 import { TvShowRepository } from "./TvShow.repository";
-
+import { v4 as uuidv4 } from "uuid";
 export default class TvShowService {
   constructor(private repo: TvShowRepository) {}
 
@@ -63,6 +62,14 @@ export default class TvShowService {
     // TODO: Add more validation here
     if (!Object.keys(data).length) {
       return err(new MissingDataPayloadException("data"));
+    }
+
+    if (typeof data.firstAirDate === "string") {
+      data.firstAirDate = new Date(data.firstAirDate);
+    }
+
+    if (!data.uuid) {
+      data.uuid = uuidv4();
     }
 
     const [result, error] = await promisifier<TvShowDTO>(

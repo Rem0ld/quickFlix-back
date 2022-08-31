@@ -7,6 +7,7 @@ import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
 export class TvShowDTO extends baseDTO<TTvShow> {
   id: number;
+  uuid: string;
   idMovieDb?: string;
   name: string;
   location: string;

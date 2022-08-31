@@ -7,11 +7,12 @@ import {
 } from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import AuthenticationService from "./Authentication.service";
+import { MissingDataPayloadException } from "../../services/Error";
 
 @Controller("authentication")
 @ClassErrorMiddleware(errorHandler)
 export default class AuthenticationController {
-  constructor(private service: AuthenticationService) { }
+  constructor(private service: AuthenticationService) {}
 
   @Post()
   private async create(
@@ -19,18 +20,17 @@ export default class AuthenticationController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try {
-      const { pseudo, password } = req.body;
-      if (!pseudo || !password) {
-        throw new Error("missing parameters");
-      }
-      const user = await this.service.authenticate(pseudo, password);
-      res.json(user);
-    } catch (error) {
+    const { pseudo, password } = req.body;
+    if (!pseudo || !password) {
+      next(new MissingDataPayloadException("pseudo, password"));
+    }
+    const [user, error] = await this.service.authenticate(pseudo, password);
+    if (error) {
       next(error);
-    } finally {
       return;
     }
+
+    res.json(user);
   }
 
   @Post("check")
@@ -39,17 +39,13 @@ export default class AuthenticationController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try {
-      const { token } = req.body;
-      if (!token) {
-        throw new Error("missing parameter");
-      }
-      const result = this.service.parseToken(token);
-
-      res.json(result);
-    } catch (error) {
-      next(error);
+    const { token } = req.body;
+    if (!token) {
+      next(new MissingDataPayloadException("token"));
     }
+    const result = this.service.parseToken(token);
+
+    res.json(result);
   }
 
   @Post("new-token")
@@ -58,17 +54,17 @@ export default class AuthenticationController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try {
-      const { token } = req.body;
-      if (!token) {
-        throw new Error("missing parameter");
-      }
-      const newToken = await this.service.generateNewToken(token);
-      console.log(newToken)
-      res.json(newToken);
-    } catch (error) {
-      next(error);
+    const { token } = req.body;
+    if (!token) {
+      next(new MissingDataPayloadException("token"));
     }
+    const [newToken, error] = await this.service.generateNewToken(token);
+    if (error) {
+      next(error);
+      return;
+    }
+
+    res.json(newToken);
   }
 
   @Delete(":id")
@@ -76,5 +72,5 @@ export default class AuthenticationController {
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> { }
+  ): Promise<void> {}
 }

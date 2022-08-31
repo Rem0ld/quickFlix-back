@@ -153,7 +153,10 @@ export default class VideoService {
       return err(new MissingDataPayloadException(valid.value));
     }
 
-    data.uuid = uuidv4();
+    if (!data.uuid) {
+      data.uuid = uuidv4();
+    }
+
     const [result, error] = await promisifier<VideoDTO>(this.repo.create(data));
     if (error) {
       return err(new Error(error));
