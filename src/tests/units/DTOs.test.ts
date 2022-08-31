@@ -1,4 +1,4 @@
-import { configJest } from ".";
+import { configJest } from "..";
 import { TvShowDTO } from "../../modules/TvShow/TvShow.dto";
 import { VideoDTO } from "../../modules/Video/Video.dto";
 import { WatchedDTO } from "../../modules/Watched/Watched.dto";

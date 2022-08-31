@@ -6,5 +6,5 @@ export const mockWatched: TWatched = {
   timesWatched: 201.45,
   finished: false,
   user: 2,
-  video: 2
-}
+  video: 2,
+};
