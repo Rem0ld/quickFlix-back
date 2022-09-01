@@ -5,6 +5,7 @@ import { UserDTO } from "./User.dto";
 import { promisifier } from "../../services/promisifier";
 import { MissingDataPayloadException, err, ok } from "../../services/Error";
 import { Result, TResultService, TUserWithToken } from "../../types";
+import cookieParser from "cookie-parser";
 
 export default class UserService {
   repo: UserRepository;
@@ -36,7 +37,7 @@ export default class UserService {
     const [result, error] = await promisifier<UserDTO>(
       this.repo.findByPseudo(pseudo)
     );
-    if (error) {
+    if (error || !Object.keys(result).length) {
       return err(new Error(error));
     }
 

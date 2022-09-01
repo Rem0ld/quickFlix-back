@@ -24,13 +24,20 @@ export default class AuthenticationController {
     if (!pseudo || !password) {
       next(new MissingDataPayloadException("pseudo, password"));
     }
-    const [user, error] = await this.service.authenticate(pseudo, password);
+    const [result, error] = await this.service.authenticate(pseudo, password);
     if (error) {
       next(error);
       return;
     }
-
-    res.json(user);
+    res
+      .cookie("access_token", result.token, {
+        maxAge: 1000 * 3600 * 24 * 365,
+        httpOnly: true,
+        secure: true,
+        signed: true,
+      })
+      .json(result.user);
+    return;
   }
 
   @Post("check")

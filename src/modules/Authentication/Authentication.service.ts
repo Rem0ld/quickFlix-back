@@ -4,7 +4,7 @@ import { Timestamp } from "typeorm";
 import { User } from "../User/User.entity";
 import { UserDTO } from "../User/User.dto";
 import { err, ok, MissingDataPayloadException } from "../../services/Error";
-import { Result } from "../../types";
+import { Result, TUserWithToken } from "../../types";
 import { promisifier } from "../../services/promisifier";
 
 export default class AuthenticationService {
@@ -13,7 +13,10 @@ export default class AuthenticationService {
     this.fiveDays = 1000 * 3600 * 24 * 5;
   }
 
-  async authenticate(pseudo: string, password: string) {
+  async authenticate(
+    pseudo: string,
+    password: string
+  ): Promise<Result<TUserWithToken, Error>> {
     if (!pseudo.length || !password.length) {
       return err(new MissingDataPayloadException("pseudo or password"));
     }

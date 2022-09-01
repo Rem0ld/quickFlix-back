@@ -6,7 +6,7 @@ export default function protectRoutes(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { accessToken } = req.cookies;
+  const { access_token: accessToken } = req.signedCookies;
 
   if (!accessToken) {
     res.status(401).json("Missing cookies auth");

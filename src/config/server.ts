@@ -15,7 +15,7 @@ export default class MyServer extends Server {
     this.showLogs = true;
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: false }));
-    this.app.use(cookieParser());
+    this.app.use(cookieParser(process.env.COOKIE_SECRET));
     this.app.use(morgan("combined"));
     this.app.use(cors());
     this.setupController();

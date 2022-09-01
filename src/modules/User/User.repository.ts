@@ -5,7 +5,7 @@ import { BaseRepository, TResultService } from "../../types";
 import { UserDTO } from "./User.dto";
 
 class UserRepository implements BaseRepository<UserDTO> {
-  constructor(private manager: EntityManager) { }
+  constructor(private manager: EntityManager) {}
 
   async getCount(): Promise<number> {
     return this.manager.count(User);
@@ -23,6 +23,10 @@ class UserRepository implements BaseRepository<UserDTO> {
   }
 
   async findByPseudo(pseudo: string) {
+    console.log(
+      "🚀 ~ file: User.repository.ts ~ line 26 ~ UserRepository ~ pseudo",
+      pseudo
+    );
     const result = await this.manager.findOne(User, {
       where: {
         pseudo,
