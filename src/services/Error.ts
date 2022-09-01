@@ -3,9 +3,8 @@ import { Result } from "../types";
 export class MissingDataPayloadException extends Error {
   constructor(missing?: string, data: any = {}) {
     super();
-    this.message = `missing data in payload, ${missing.length ? missing : ""}\n
-    data received: ${JSON.stringify(data)}
-    `;
+    this.message = `missing data in payload, ${missing.length ? missing : ""}
+    data received: ${JSON.stringify(data)}`;
   }
 }
 
