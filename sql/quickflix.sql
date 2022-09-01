@@ -1,19 +1,11 @@
 
-DROP TYPE IF EXISTS "type_video" CASCADE;
-CREATE TYPE "type_video" AS ENUM (
-  'movie',
-  'tv',
-  'trailer',
-  'teaser'
-);
-
 DROP TABLE IF EXISTS "user" CASCADE;
 CREATE TABLE "user" (
   "id" SERIAL PRIMARY KEY,
   "pseudo" varchar(40) UNIQUE,
   "email" varchar,
   "password" varchar,
-  "is_admin" boolean,
+  "is_admin" boolean DEFAULT false,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
 );
@@ -37,13 +29,13 @@ CREATE TABLE "video" (
   "name" varchar,
   "basename" varchar,
   "filename" varchar,
-  "ext" varchar(3),
+  "ext" varchar,
   "location" varchar,
   "episode" integer,
   "season" integer,
   "year" date,
   "release_date" date,
-  "type" type_video,
+  "type" varchar,
   "score" int,
   "resume" varchar,
   "length" float,
@@ -85,7 +77,7 @@ CREATE TABLE "tv_show" (
 DROP TABLE IF EXISTS "encoding_job" CASCADE;
 CREATE TABLE "encoding_job" (
   "id" SERIAL PRIMARY KEY,
-  "status" varchar,
+  "status" varchar DEFAULT 'todo' 
   "type" varchar,
   "path" varchar,
   "errors" varchar[],
@@ -97,7 +89,7 @@ CREATE TABLE "encoding_job" (
 DROP TABLE IF EXISTS "movie_db_job" CASCADE;
 CREATE TABLE "movie_db_job" (
   "id" SERIAL PRIMARY KEY,
-  "status" varchar,
+  "status" varchar DEFAULT 'todo',
   "type" varchar,
   "video_id" int,
   "created_at" timestamp NOT NULL DEFAULT now(),
