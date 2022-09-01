@@ -7,6 +7,7 @@ import movieDbJobController from "./MovieDbJob/index";
 import imageController from "./Image/index";
 import streamController from "./Stream/index";
 import watchedController from "./Watched/index";
+import ffmpegController from "./FfmpegWorker/index";
 
 const routes = [
   videoController,
@@ -18,6 +19,7 @@ const routes = [
   imageController,
   streamController,
   watchedController,
+  ffmpegController,
 ];
 
 export default routes;

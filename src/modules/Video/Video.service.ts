@@ -14,6 +14,7 @@ import { Video, VideoTypeEnum } from "./Video.entity";
 import { v4 as uuidv4, validate } from "uuid";
 import VideoRepository from "./Video.repository";
 import { videoSchema } from "./Video.Validation";
+import path from "path";
 
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
@@ -21,6 +22,16 @@ export default class VideoService {
   repo: VideoRepository;
   constructor(videoRepository: VideoRepository) {
     this.repo = videoRepository;
+  }
+
+  async getPath(uuid: string): Promise<Result<string, Error>> {
+    const [result, error] = await this.findByUuid(uuid);
+    if (error) {
+      return err(error);
+    }
+
+    const pathname = result.location + path.sep + result.filename + result.ext;
+    return ok(pathname);
   }
 
   async findAll(

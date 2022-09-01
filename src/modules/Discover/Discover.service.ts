@@ -20,6 +20,7 @@ import {
 } from "../../utils/regexes";
 import { parseBasename } from "../../utils/stringManipulation";
 import { jobStatusType } from "../EncodingJob/EncodingJob.entity";
+import FfmpegWorkerService from "../FfmpegWorker/FfmpegWorker.service";
 import { MovieDbJob } from "../MovieDbJob/MovieDbJob.entity";
 import MovieDbJobService from "../MovieDbJob/MovieDbJob.service";
 import { TvShowDTO } from "../TvShow/TvShow.dto";
@@ -35,16 +36,23 @@ export default class DiscoverService {
   videoSer: VideoService;
   tvShowSer: TvShowService;
   mvJobSer: MovieDbJobService;
+  ffprobeSer: FfmpegWorkerService;
   pathVideos: string;
   pathTvShows: string;
   tempFile: string;
   regVideo: RegExp = regexVideo;
   regTvShow: RegExp = regexTvShow;
 
-  constructor(vs: VideoService, ts: TvShowService, ms: MovieDbJobService) {
+  constructor(
+    vs: VideoService,
+    ts: TvShowService,
+    ms: MovieDbJobService,
+    ffs: FfmpegWorkerService
+  ) {
     this.videoSer = vs;
     this.tvShowSer = ts;
     this.mvJobSer = ms;
+    this.ffprobeSer = ffs;
     this.pathVideos =
       process.env.NODE_ENV === "development" ? "videos" : "Videos";
     this.pathTvShows = process.env.NODE_ENV === "development" ? null : "Series";
@@ -160,6 +168,10 @@ export default class DiscoverService {
     }
 
     const year = el.name.match(regexYearDate);
+    const pathname = el.dir + path.sep + el.name + el.ext;
+    const [ffProbeData] = await this.ffprobeSer.getInfoVideoWithPathname(
+      pathname
+    );
     const [data, error2] = await this.videoSer.create({
       name: name,
       basename: name,
@@ -171,6 +183,7 @@ export default class DiscoverService {
       season: +season || null,
       episode: +episode || null,
       year: year?.length ? new Date(year[0]) : null,
+      length: ffProbeData.format.duration,
     });
     if (error2) {
       return err(error2);

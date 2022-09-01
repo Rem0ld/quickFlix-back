@@ -45,9 +45,7 @@ export class Video implements TVideo {
   @Column()
   filename: string;
 
-  @Column({
-    length: 5,
-  })
+  @Column()
   ext: string;
 
   @Column()
