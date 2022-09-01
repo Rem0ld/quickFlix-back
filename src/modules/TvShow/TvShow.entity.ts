@@ -85,7 +85,7 @@ export class TvShow implements TTvShow {
     nullable: true,
     onDelete: "CASCADE",
   })
-  @JoinColumn()
+  @JoinColumn({ name: "movie_db_job_id" })
   movieDbJob: MovieDbJob;
 
   @CreateDateColumn({ name: "created_at" })

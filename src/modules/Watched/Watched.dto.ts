@@ -6,10 +6,10 @@ import { WatchedTvShow } from "../WatchedTvShow/WatchedTvShow.entity";
 
 export class WatchedDTO extends baseDTO<TWatched> {
   id: number;
-  timesWatched: number;
+  timeWatched: number;
   finished: boolean;
-  video: Video;
-  user: User;
+  video?: Video;
+  user?: User;
   userWatchedTvShow: WatchedTvShow[];
   createdAt: Date;
   updatedAt: Date;

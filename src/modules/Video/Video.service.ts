@@ -159,10 +159,10 @@ export default class VideoService {
   async create(
     data: DeepPartial<VideoDTO>
   ): Promise<Result<VideoDTO, MissingDataPayloadException>> {
-    const valid = videoSchema.validate(data);
-    if (valid.error) {
-      return err(new MissingDataPayloadException(valid.error.message));
-    }
+    // const valid = videoSchema.validate(data);
+    // if (valid.error) {
+    //   return err(new MissingDataPayloadException(valid.error.message));
+    // }
 
     if (!data.uuid) {
       data.uuid = uuidv4();

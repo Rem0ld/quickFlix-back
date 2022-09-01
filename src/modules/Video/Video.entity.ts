@@ -124,7 +124,7 @@ export class Video implements TVideo {
     nullable: true,
     onDelete: "CASCADE",
   })
-  @JoinColumn()
+  @JoinColumn({ name: "movie_db_job_id" })
   movieDbJob: MovieDbJob;
 
   @OneToMany(() => Watched, watched => watched.video)

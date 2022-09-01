@@ -59,19 +59,21 @@ export default class WatchedController {
     res.json(result);
   }
 
-  @Post("by-video")
-  private async findByVideoId(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {}
-
   @Patch(":id")
   private async patch(
     req: Request,
     res: Response,
     next: NextFunction
-  ): Promise<void> {}
+  ): Promise<void> {
+    const { id } = req.params;
+
+    const [result, error] = await this.service.update(id, req.body);
+    if (error) {
+      next(error);
+    }
+
+    res.json(result);
+  }
 
   @Delete(":id")
   private async delete(

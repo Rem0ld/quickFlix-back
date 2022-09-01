@@ -46,7 +46,7 @@ export default class WatchedService {
 
   async create(data: DeepPartial<Watched>): Promise<Result<WatchedDTO, Error>> {
     if (!data.video || !data.user) {
-      throw new MissingDataPayloadException("video | user");
+      return err(new MissingDataPayloadException("video | user"));
     }
 
     const [result, error] = await promisifier<WatchedDTO>(
@@ -59,9 +59,23 @@ export default class WatchedService {
     return ok(result);
   }
 
-  // async update(id: string, data: DeepPartial<Watched>){
-  //   return
-  // }
+  async update(
+    id: string,
+    data: Partial<Watched>
+  ): Promise<Result<WatchedDTO, Error>> {
+    if (!id || !data) {
+      return err(new MissingDataPayloadException("id or data", data));
+    }
+
+    const [result, error] = await promisifier<WatchedDTO>(
+      this.repo.update(+id, data)
+    );
+    if (error) {
+      return err(new Error(error));
+    }
+
+    return ok(result);
+  }
 
   async delete(id: string): Promise<Result<DeleteResult, Error>> {
     if (!id.length) {

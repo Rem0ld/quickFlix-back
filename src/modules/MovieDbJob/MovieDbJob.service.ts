@@ -47,11 +47,6 @@ export default class MovieDbJobService {
     return ok(result);
   }
 
-  // async findBy(data: {
-  //   video?: string;
-  //   type?: VideoType;
-  // }): Promise<Result<TResultService<MovieDbJobDTO>, Error>> { }
-
   async create(
     payload: VideoDTO | TvShowDTO,
     type: VideoTypeEnum = VideoTypeEnum.MOVIE

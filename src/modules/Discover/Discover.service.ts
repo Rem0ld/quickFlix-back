@@ -12,6 +12,7 @@ import { err, ok } from "../../services/Error";
 import { go } from "../../services/miscelleneaous";
 import { promisifier } from "../../services/promisifier";
 import { Result } from "../../types";
+import { twoDecimalsFormatter } from "../../utils/numberManipulation";
 import {
   regExBasename,
   regexTvShow,
@@ -107,7 +108,10 @@ export default class DiscoverService {
     el: path.ParsedPath
   ): Promise<Result<TvShowDTO, Error>> {
     const splitDir = el.dir.split(path.sep);
-    const name = splitDir.find((_, i, arr) => arr[i - 1] === this.pathVideos);
+    let name = splitDir.find((_, i, arr) => arr[i - 1] === this.pathVideos);
+    if (name.includes("Cosmos")) {
+      name = name.split("-")[0].trimEnd();
+    }
 
     let [result, error] = await this.tvShowSer.findByName(name);
     if (error) {
@@ -142,7 +146,9 @@ export default class DiscoverService {
     tvShow: TvShowDTO | undefined
   ): Promise<Result<VideoDTO, Error>> {
     const isTvShow = el.name.match(regexTvShow);
-    const [result, error] = await this.videoSer.findByFields({ name: el.name });
+    const [result, error] = await this.videoSer.findAll(0, 0, {
+      name: el.name,
+    });
     if (error) {
       return err(error);
     }
@@ -183,7 +189,7 @@ export default class DiscoverService {
       season: +season || null,
       episode: +episode || null,
       year: year?.length ? new Date(year[0]) : null,
-      length: ffProbeData.format.duration,
+      length: +ffProbeData.format.duration.toFixed(2),
     });
     if (error2) {
       return err(error2);
@@ -216,7 +222,7 @@ export default class DiscoverService {
    */
   async getDetailsFromExternalApi(): Promise<Result<Success, Error>> {
     const [movieJobs, error] = await this.mvJobSer.find(0, 0, {
-      status: "todo",
+      status: ["todo", "error"],
       type: "movie",
     });
 
@@ -289,17 +295,21 @@ export default class DiscoverService {
         trailerYtCode: `{${trailerYtCode.join(",")}}`,
         posterPath: `{${posterPath.join(",")}}`,
       };
-      this.videoSer.patch(
+      const [_, errorPatch] = await this.videoSer.patch(
         job.video.id.toString(),
         data as unknown as Partial<Video>
       );
+      let status = jobStatusType.DONE;
+      if (errorPatch) {
+        status = jobStatusType.ERROR;
+      }
       this.mvJobSer.patch(job.id.toString(), {
-        status: jobStatusType.DONE,
+        status,
       });
     }
 
     const [tvShowJobs, errorTv] = await this.mvJobSer.find(0, 0, {
-      status: "todo",
+      status: ["todo", "error"],
       type: "tv",
     });
 
@@ -365,11 +375,15 @@ export default class DiscoverService {
         genres: `{${genres.join(",")}}`,
         posterPath: `{${posterPath.join(",")}}`,
       };
-      this.tvShowSer.patch(
+      const [_, errorPatch] = await this.tvShowSer.patch(
         job.tvShow.id.toString(),
         data as unknown as MovieDbJob
       );
-      this.mvJobSer.patch(job.id.toString(), { status: jobStatusType.DONE });
+      let status = jobStatusType.DONE;
+      if (errorPatch) {
+        status = jobStatusType.ERROR;
+      }
+      this.mvJobSer.patch(job.id.toString(), { status });
     }
 
     return ok({ message: "done" });

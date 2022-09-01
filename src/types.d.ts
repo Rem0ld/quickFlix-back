@@ -120,7 +120,7 @@ export type TTvShow = {
 
 export type TWatched = {
   id: number;
-  timesWatched: number;
+  timeWatched: number;
   length?: number;
   finished: boolean;
   stoppedAt?: number;
