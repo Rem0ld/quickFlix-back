@@ -15,7 +15,7 @@ CREATE TABLE "watched"(
   "id" SERIAL UNIQUE,
   "video_id" int,
   "user_id" int,
-  "times_watched" float DEFAULT 0.00,
+  "time_watched" float DEFAULT 0.00,
   "finished" boolean DEFAULT false,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now(),
@@ -36,7 +36,7 @@ CREATE TABLE "video" (
   "year" date,
   "release_date" date,
   "type" varchar,
-  "score" int,
+  "score" real,
   "resume" varchar,
   "length" float,
   "id_movie_db" varchar,
@@ -48,6 +48,7 @@ CREATE TABLE "video" (
   "trailer_yt_code" varchar[],
   "poster_path" varchar[],
   "tv_show_id" int,
+  "movie_db_job_id" int,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
 );
@@ -64,12 +65,13 @@ CREATE TABLE "tv_show" (
   "ongoing" boolean,
   "origin_country" varchar[],
   "poster_path" varchar[],
-  "resume" varchar[],
-  "score" int,
+  "resume" varchar,
+  "score" real,
   "genres" varchar[],
   "first_air_date" timestamp,
   "trailer_yt_code" varchar[],
   "average_length" float,
+  "movie_db_job_id" int,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
 );
@@ -77,7 +79,7 @@ CREATE TABLE "tv_show" (
 DROP TABLE IF EXISTS "encoding_job" CASCADE;
 CREATE TABLE "encoding_job" (
   "id" SERIAL PRIMARY KEY,
-  "status" varchar DEFAULT 'todo' 
+  "status" varchar DEFAULT 'todo',
   "type" varchar,
   "path" varchar,
   "errors" varchar[],
@@ -91,7 +93,9 @@ CREATE TABLE "movie_db_job" (
   "id" SERIAL PRIMARY KEY,
   "status" varchar DEFAULT 'todo',
   "type" varchar,
-  "video_id" int,
+  "errors" varchar[] NULL,
+  "video_id" int NULL,
+  "tv_show_id" int NULL,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
 );
@@ -127,6 +131,12 @@ ALTER TABLE "video" ADD FOREIGN KEY ("video_id_ref") REFERENCES "video" ("id") O
 
 ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE SET NULL;
 
+ALTER TABLE "video" ADD FOREIGN KEY ("movie_db_job_id") REFERENCES "movie_db_job" ("id") ON DELETE SET NULL;
+
+ALTER TABLE "tv_show" ADD FOREIGN KEY ("movie_db_job_id") REFERENCES "movie_db_job" ("id") ON DELETE SET NULL;
+
 ALTER TABLE "encoding_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "movie_db_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "movie_db_job" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
