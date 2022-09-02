@@ -127,17 +127,18 @@ export default class DiscoverController {
   // }
 
   @Get("drive")
-  private async accessDrive(req: Request, res: Response): Promise<void> {
+  private async accessDrive(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const folderPath = req.query.folderPath;
-
-    if (!folderPath) {
-      res.json("Missing folderPath");
-      return;
+    const [result, error] = this.service.checkAccess(folderPath as string);
+    if (error) {
+      next(error);
     }
-    console.log(folderPath);
-    const response = accessFolder(folderPath as string);
 
-    res.json({ access: response });
+    res.json({ access: result });
   }
 
   // @Get("audio")

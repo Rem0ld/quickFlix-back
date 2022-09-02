@@ -8,11 +8,11 @@ import {
   getTvShowDetails,
   getVideoPath,
 } from "../../services/apiService";
-import { err, ok } from "../../services/Error";
+import { err, MissingDataPayloadException, ok } from "../../services/Error";
 import { go } from "../../services/miscelleneaous";
 import { promisifier } from "../../services/promisifier";
 import { Result } from "../../types";
-import { twoDecimalsFormatter } from "../../utils/numberManipulation";
+import { accessFolder } from "../../utils/fileManipulation";
 import {
   regExBasename,
   regexTvShow,
@@ -58,6 +58,15 @@ export default class DiscoverService {
       process.env.NODE_ENV === "development" ? "videos" : "Videos";
     this.pathTvShows = process.env.NODE_ENV === "development" ? null : "Series";
     this.tempFile = basePath + path.sep + "temp";
+  }
+
+  checkAccess(folderPath: string) {
+    if (!folderPath) {
+      return err(new MissingDataPayloadException("folderPath"));
+    }
+    const response = accessFolder(folderPath as string);
+
+    return ok(response);
   }
 
   async findInDirectory(): Promise<
