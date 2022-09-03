@@ -1,3 +1,4 @@
+CREATE DATABASE db_quickflix;
 
 DROP TABLE IF EXISTS "user" CASCADE;
 CREATE TABLE "user" (
