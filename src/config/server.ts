@@ -17,7 +17,12 @@ export default class MyServer extends Server {
     this.app.use(express.urlencoded({ extended: false }));
     this.app.use(cookieParser(process.env.COOKIE_SECRET));
     this.app.use(morgan("combined"));
-    this.app.use(cors());
+    this.app.use(
+      cors({
+        credentials: true,
+        origin: "http://localhost:3005",
+      })
+    );
     this.setupController();
   }
 

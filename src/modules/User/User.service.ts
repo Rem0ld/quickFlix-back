@@ -5,7 +5,6 @@ import { UserDTO } from "./User.dto";
 import { promisifier } from "../../services/promisifier";
 import { MissingDataPayloadException, err, ok } from "../../services/Error";
 import { Result, TResultService, TUserWithToken } from "../../types";
-import cookieParser from "cookie-parser";
 
 export default class UserService {
   repo: UserRepository;
