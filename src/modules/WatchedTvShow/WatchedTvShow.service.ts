@@ -30,7 +30,7 @@ export default class WatchedTvShowService {
 
   async findAll(
     limit: number = defaultLimit,
-    skip: number = 0,
+    skip = 0,
     id: string
   ): Promise<Result<TResultService<WatchedTvShow>, Error>> {
     const total = await this.repo.getCount();

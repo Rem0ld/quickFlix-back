@@ -3,7 +3,7 @@ import { TWatched } from "../../types";
 
 export const mockWatched: TWatched = {
   id: 1,
-  timesWatched: 201.45,
+  timeWatched: 201.45,
   finished: false,
   user: 2,
   video: 2,
