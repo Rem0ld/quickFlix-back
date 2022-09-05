@@ -20,7 +20,7 @@ export default class MyServer extends Server {
     this.app.use(
       cors({
         credentials: true,
-        origin: "http://localhost:3005",
+        origin: process.env.CORS_ORIGIN,
       })
     );
     this.setupController();
