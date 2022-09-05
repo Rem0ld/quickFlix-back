@@ -1,7 +1,17 @@
 import path from "path";
-import { Controller, Middleware, ErrorMiddleware, Get, Post, Put, Delete, ClassErrorMiddleware, Patch } from "@overnightjs/core"
+import {
+  Controller,
+  Middleware,
+  ErrorMiddleware,
+  Get,
+  Post,
+  Put,
+  Delete,
+  ClassErrorMiddleware,
+  Patch,
+} from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from "express";
 import { logger } from "../../libs/logger";
 
 @Controller("images")
@@ -26,19 +36,18 @@ export default class ImageController {
 
     res.sendFile(`images/${filepath}`, options, err => {
       if (err) next(err);
-      logger.info(`Image: ${filepath} sent`)
     });
     return;
   }
   @Patch(":id")
-  async patch(req: Request, res: Response, next: NextFunction) { }
+  async patch(req: Request, res: Response, next: NextFunction) {}
   @Post()
-  async create(req: Request, res: Response, next: NextFunction) { }
+  async create(req: Request, res: Response, next: NextFunction) {}
   @Get()
-  async find(req: Request, res: Response, next: NextFunction) { }
+  async find(req: Request, res: Response, next: NextFunction) {}
   @Delete(":id")
-  async delete(req: Request, res: Response, next: NextFunction) { }
+  async delete(req: Request, res: Response, next: NextFunction) {}
   // TODO: add middleware to authorized admin only
   @Delete()
-  async deleteAll(req: Request, res: Response, next: NextFunction) { }
+  async deleteAll(req: Request, res: Response, next: NextFunction) {}
 }
