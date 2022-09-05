@@ -33,7 +33,6 @@ export default class AuthenticationController {
       .cookie("access_token", result.token, {
         maxAge: 1000 * 3600 * 24 * 365,
         httpOnly: true,
-        secure: true,
         signed: true,
         domain: process.env.DOMAIN,
       })
