@@ -35,6 +35,7 @@ export default class AuthenticationController {
         httpOnly: true,
         secure: true,
         signed: true,
+        domain: process.env.DOMAIN,
       })
       .json(result.user);
     return;
