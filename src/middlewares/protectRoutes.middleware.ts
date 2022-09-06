@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { service as AuthService } from "../modules/Authentication";
+import { UserDTO } from "../modules/User/User.dto";
 
 export default function protectRoutes(
   req: Request,
@@ -13,9 +14,9 @@ export default function protectRoutes(
     return;
   }
 
-  const [result, error] = AuthService.verifyToken(accessToken);
+  const [result, error] = AuthService.parseToken(accessToken);
   if (error) {
-    res.status(401).json("Not authenticated");
+    res.status(401).json(error);
     return;
   }
 
@@ -24,6 +25,7 @@ export default function protectRoutes(
     return;
   }
 
+  req.query.user = JSON.stringify(result);
   next();
   return;
 }
