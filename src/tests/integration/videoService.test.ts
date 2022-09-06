@@ -28,7 +28,7 @@ describe("Video service unit test", () => {
 
   describe("get all videos", () => {
     it("should get the video we created", async () => {
-      const [videos] = await videoService.findAll(20, 0);
+      const [videos] = await videoService.findAll(20, 0, null);
       expect(videos.total).toBeGreaterThanOrEqual(1);
     });
   });
@@ -57,27 +57,9 @@ describe("Video service unit test", () => {
       });
     });
 
-    describe("Update one video", () => {
-      it("should update video with the given properties", async () => {
-        const [response] = await videoService.findByFields({
-          name: "game of thrones",
-        });
-        const result = await videoService.patch(
-          response.data[0].id.toString(),
-          mockUpdateVideo
-        );
-        // expect(result.affected).toBe(1);
-        const [video] = await videoService.findById(
-          response.data[0].id.toString()
-        );
-
-        expect(video.basename).toBe("game");
-      });
-    });
-
     describe("Delete one video", () => {
       it("should retrieve video and delete it", async () => {
-        const [result] = await videoService.findAll(20, 0);
+        const [result] = await videoService.findAll(20, 0, null);
         expect(result.total).toBeGreaterThanOrEqual(1);
         await videoService.deleteOneById(result.data[0].id.toString());
         const [response] = await videoService.findById(

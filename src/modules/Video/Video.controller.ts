@@ -14,18 +14,6 @@ import VideoService from "./Video.service";
 import { VideoTypeEnum } from "./Video.entity";
 import protectRoutes from "../../middlewares/protectRoutes.middleware";
 
-type query = {
-  limit: string;
-  skip: string;
-};
-
-type body = {
-  name?: string;
-  episode?: string;
-  season?: string;
-  type?: VideoTypeEnum[];
-};
-
 @Controller("video")
 @ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
@@ -38,9 +26,14 @@ export default class VideoController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const { limit = defaultLimit, skip = 0, ...rest } = req.query;
+    const { limit = defaultLimit, skip = 0, user, ...rest } = req.query;
 
-    const [result, error] = await this.service.findAll(+limit, +skip, rest);
+    const [result, error] = await this.service.findAll(
+      +limit,
+      +skip,
+      user as string,
+      rest
+    );
     if (error) {
       next(error);
     }
@@ -51,6 +44,23 @@ export default class VideoController {
       skip: +skip,
       data: result?.data ? result.data.map(el => el.serialize()) : [],
     });
+  }
+
+  @Get("uuid/:uuid")
+  private async findByUuid(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const { uuid } = req.params;
+    const { user } = req.query;
+
+    const [result, error] = await this.service.findByUuid(uuid, user as string);
+    if (error) {
+      next(error);
+    }
+
+    res.json(result.serialize());
   }
 
   @Get(":id")
@@ -67,36 +77,6 @@ export default class VideoController {
     }
 
     res.json(result.serialize());
-  }
-
-  @Post("by-fields")
-  private async findOneByFields(
-    req: Request<unknown, unknown, body, query>,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    const { limit = defaultLimit, skip = 0 } = req.query;
-    const { name, episode, season, type } = req.body;
-
-    const [result, error] = await this.service.findByFields({
-      name: name,
-      episode: episode,
-      season: season,
-      type: type,
-      limit: +limit,
-      skip: +skip,
-    });
-
-    if (error) {
-      next(error);
-    }
-
-    res.json({
-      total: result.total,
-      limit: +limit,
-      skip: +skip + +limit,
-      data: result?.data ? result.data.map(el => el.serialize()) : [],
-    });
   }
 
   @Post()

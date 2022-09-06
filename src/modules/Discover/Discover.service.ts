@@ -155,7 +155,7 @@ export default class DiscoverService {
     tvShow: TvShowDTO | undefined
   ): Promise<Result<VideoDTO, Error>> {
     const isTvShow = el.name.match(regexTvShow);
-    const [result, error] = await this.videoSer.findAll(0, 0, {
+    const [result, error] = await this.videoSer.findAll(0, 0, null, {
       name: el.name,
     });
     if (error) {

@@ -15,6 +15,7 @@ import { v4 as uuidv4, validate } from "uuid";
 import VideoRepository from "./Video.repository";
 import { videoSchema } from "./Video.Validation";
 import path from "path";
+import { UserDTO } from "../User/User.dto";
 
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
@@ -37,13 +38,14 @@ export default class VideoService {
   async findAll(
     limit: number,
     skip: number,
+    user: string,
     rest?: Record<string, any>
   ): Promise<Result<TResultService<VideoDTO>, Error>> {
     if (limit === 0) {
       skip = 0;
     }
     const [result, error] = await promisifier<TResultService<VideoDTO>>(
-      this.repo.findAll(limit, skip, rest)
+      this.repo.findAll(limit, skip, new UserDTO(JSON.parse(user)), rest)
     );
     if (error) {
       return err(new Error(error));
@@ -73,62 +75,21 @@ export default class VideoService {
   }
 
   async findByUuid(
-    id: string
+    id: string,
+    user?: string
   ): Promise<Result<VideoDTO, MissingDataPayloadException | Error>> {
     if (!id.length) {
       return err(new MissingDataPayloadException("uuid"));
     }
 
     const [result, error] = await promisifier<VideoDTO>(
-      this.repo.findByUuid(id)
+      this.repo.findByUuid(id, new UserDTO(JSON.parse(user)))
     );
     if (error) {
       return err(new Error(error));
     }
     if (!Object.keys(result).length) {
       return err(new ResourceNotExist(id));
-    }
-
-    return ok(result);
-  }
-
-  async findByFields({
-    name,
-    episode,
-    season,
-    type,
-    limit = defaultLimit,
-    skip = 0,
-  }: {
-    name?: string;
-    episode?: string;
-    season?: string;
-    type?: VideoTypeEnum[];
-    limit?: number;
-    skip?: number;
-  }): Promise<
-    Result<TResultService<VideoDTO>, MissingDataPayloadException | Error>
-  > {
-    const request: RequestBuilder = {};
-
-    if (name) {
-      request.name = name;
-    }
-    if (episode) {
-      request.episode = +episode;
-    }
-    if (season) {
-      request.season = +season;
-    }
-    if (type) {
-      request.type = type;
-    }
-
-    const [result, error] = await promisifier<TResultService<VideoDTO>>(
-      this.repo.findByFields(request, limit, skip)
-    );
-    if (error) {
-      return err(new Error(error));
     }
 
     return ok(result);

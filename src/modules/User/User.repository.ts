@@ -23,10 +23,6 @@ class UserRepository implements BaseRepository<UserDTO> {
   }
 
   async findByPseudo(pseudo: string) {
-    console.log(
-      "🚀 ~ file: User.repository.ts ~ line 26 ~ UserRepository ~ pseudo",
-      pseudo
-    );
     const result = await this.manager.findOne(User, {
       where: {
         pseudo,

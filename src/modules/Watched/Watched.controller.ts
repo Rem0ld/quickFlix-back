@@ -54,9 +54,11 @@ export default class WatchedController {
     const [result, error] = await this.service.create(req.body);
     if (error) {
       next(error);
+      return;
     }
 
     res.json(result);
+    return;
   }
 
   @Patch(":id")

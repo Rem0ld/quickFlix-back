@@ -1,12 +1,20 @@
 import fs, { Stats } from "fs";
 import { NextFunction, Request, Response } from "express";
-import { Controller, ErrorMiddleware, Get } from "@overnightjs/core";
+import {
+  ClassMiddleware,
+  Controller,
+  ErrorMiddleware,
+  Get,
+} from "@overnightjs/core";
 import path from "path";
 import mime from "mime";
 import errorHandler from "../../services/errorHandler";
 import StreamService from "./Stream.service";
+import protectRoutes from "../../middlewares/protectRoutes.middleware";
+import { UserDTO } from "../User/User.dto";
 
 @Controller("stream")
+@ClassMiddleware([protectRoutes])
 export default class StreamController {
   constructor(private service: StreamService) {}
 
@@ -18,8 +26,9 @@ export default class StreamController {
     next: NextFunction
   ): Promise<void> {
     const { id } = req.params;
+    const { user } = req.query;
 
-    const [video, error] = await this.service.findVideo(id);
+    const [video, error] = await this.service.findVideo(id, user as string);
     if (error) {
       next(error);
     }

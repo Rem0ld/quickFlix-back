@@ -4,24 +4,38 @@ import { BaseRepository, RequestBuilder, TResultService } from "../../types";
 import { Video } from "./Video.entity";
 import dynamicQueryBuilder from "../../utils/queryBuilder";
 import { VideoDTO } from "./Video.dto";
+import { UserDTO } from "../User/User.dto";
 
 export default class VideoRepository implements BaseRepository<VideoDTO> {
   constructor(private manager: EntityManager) {}
 
-  async findByUuid(uuid: string): Promise<VideoDTO> {
-    const result = await this.manager.findOneBy(Video, {
-      uuid,
-    });
-
+  async findByUuid(uuid: string, user?: UserDTO): Promise<VideoDTO> {
+    const result = await this.manager
+      .createQueryBuilder(Video, "video")
+      .where({ uuid })
+      .leftJoinAndSelect(
+        "video.userWatchedVideo",
+        "watched",
+        "watched.user_id = :id",
+        { id: user?.id || null }
+      )
+      .getOne();
     return new VideoDTO(result);
   }
 
   async findAll(
     limit: number,
     skip: number,
+    user: UserDTO | null,
     rest: Record<string, any>
   ): Promise<TResultService<VideoDTO>> {
     const result = await dynamicQueryBuilder(rest, Video, "video")
+      .leftJoinAndSelect(
+        "video.userWatchedVideo",
+        "watched",
+        "watched.user_id = :id",
+        { id: user?.id || null }
+      )
       .take(limit)
       .skip(skip)
       .getManyAndCount();
@@ -43,19 +57,6 @@ export default class VideoRepository implements BaseRepository<VideoDTO> {
     });
 
     return result.map(el => new VideoDTO(el));
-  }
-
-  async findByFields(
-    data: RequestBuilder,
-    limit: number = defaultLimit,
-    skip = 0
-  ): Promise<TResultService<VideoDTO>> {
-    const result = await dynamicQueryBuilder(data, Video, "video")
-      .take(limit)
-      .skip(skip)
-      .getManyAndCount();
-
-    return { data: result[0].map(el => new VideoDTO(el)), total: result[1] };
   }
 
   async create(data: DeepPartial<Video>) {

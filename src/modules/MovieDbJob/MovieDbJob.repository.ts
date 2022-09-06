@@ -18,9 +18,7 @@ export class MovieDbJobRepository implements BaseRepository<MovieDbJobDTO> {
   ): Promise<TResultService<MovieDbJobDTO>> {
     const result = await dynamicQueryBuilder(rest, MovieDbJob, "movie_db_job")
       .leftJoinAndSelect("movie_db_job.video", "video")
-      // .where("movie_db_job.video_id IS NOT NULL")
       .leftJoinAndSelect("movie_db_job.tvShow", "tvShow")
-      // .where("movie_db_job.tv_show_id IS NOT NULL")
       .take(limit)
       .skip(skip)
       .getManyAndCount();

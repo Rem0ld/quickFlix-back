@@ -4,7 +4,7 @@ import { Timestamp } from "typeorm";
 import { User } from "../User/User.entity";
 import { UserDTO } from "../User/User.dto";
 import { err, ok, MissingDataPayloadException } from "../../services/Error";
-import { Result, TUserWithToken } from "../../types";
+import { Result, TUser, TUserWithToken } from "../../types";
 import { promisifier } from "../../services/promisifier";
 
 export default class AuthenticationService {
@@ -46,7 +46,7 @@ export default class AuthenticationService {
   }
 
   // Should return the token decoded
-  parseToken(token: string) {
+  parseToken(token: string): Result<string | JwtPayload, Error> {
     const [isValid, error] = this.verifyToken(token);
     if (error) {
       return err(error);
@@ -57,7 +57,7 @@ export default class AuthenticationService {
     }
 
     const decoded = this.decodeToken(token);
-    return decoded;
+    return ok(decoded);
   }
 
   async generateNewToken(token: string) {

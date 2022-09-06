@@ -13,6 +13,7 @@ export interface IReader<T> {
   findAll(
     limit: number,
     skip: number,
+    user?: UserDTO,
     rest?: Record<string, any>
   ): Promise<TResultService<T>>;
   findById(id: number): Promise<T>;
