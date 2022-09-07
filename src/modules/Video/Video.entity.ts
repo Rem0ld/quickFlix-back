@@ -25,7 +25,6 @@ export enum VideoTypeEnum {
 }
 
 @Entity()
-@Unique(["name"])
 export class Video implements TVideo {
   @PrimaryGeneratedColumn()
   id: number;
