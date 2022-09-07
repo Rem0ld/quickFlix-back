@@ -103,6 +103,14 @@ export default class VideoController {
     next: NextFunction
   ): Promise<void> {
     const { id } = req.params;
+    const [result, error] = await this.service.patch(id, req.body);
+    if (error) {
+      next(error);
+      return;
+    }
+
+    res.json(result);
+    return;
   }
 
   @Delete(":id")
