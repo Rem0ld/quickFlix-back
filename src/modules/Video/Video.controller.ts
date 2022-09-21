@@ -8,11 +8,12 @@ import {
   Delete,
   ClassErrorMiddleware,
   ClassMiddleware,
+  Middleware,
 } from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import VideoService from "./Video.service";
-import { VideoTypeEnum } from "./Video.entity";
 import protectRoutes from "../../middlewares/protectRoutes.middleware";
+import verifyAdmin from "../../middlewares/verifyAdmin.middleware";
 
 @Controller("video")
 @ClassMiddleware([protectRoutes])
@@ -96,6 +97,7 @@ export default class VideoController {
     });
   }
 
+  @Middleware([verifyAdmin])
   @Patch(":id")
   private async patch(
     req: Request,
@@ -113,6 +115,7 @@ export default class VideoController {
     return;
   }
 
+  @Middleware([verifyAdmin])
   @Delete(":id")
   private async delete(
     req: Request,
@@ -120,18 +123,15 @@ export default class VideoController {
     next: NextFunction
   ): Promise<void> {
     const { id } = req.params;
-
-    try {
-      const video = await this.service.deleteOneById(id);
-      res.json(video);
-    } catch (error) {
+    const [result, error] = await this.service.deleteOneById(id);
+    if (error) {
       next(error);
+      return;
     }
-
-    return;
+    res.json(result);
   }
 
-  // TODO: middleware to check if admin
+  @Middleware([verifyAdmin])
   @Delete()
   private async deleteAll(
     req: Request,
@@ -141,6 +141,7 @@ export default class VideoController {
     const [result, error] = await this.service.deleteAll();
     if (error) {
       next(error);
+      return;
     }
     res.json(result);
   }
