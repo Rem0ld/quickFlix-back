@@ -14,8 +14,8 @@ CREATE TABLE "user" (
 DROP TABLE IF EXISTS "watched" CASCADE;
 CREATE TABLE "watched"(
   "id" SERIAL UNIQUE,
-  "video_id" int,
-  "user_id" int,
+  "video_id" uuid,
+  "user_id" uuid,
   "time_watched" float DEFAULT 0.00,
   "finished" boolean DEFAULT false,
   "created_at" timestamp NOT NULL DEFAULT now(),
@@ -25,8 +25,8 @@ CREATE TABLE "watched"(
 
 DROP TABLE IF EXISTS "video" CASCADE;
 CREATE TABLE "video" (
-  "id" SERIAL PRIMARY KEY,
-  "uuid" varchar,
+  "id" SERIAL, 
+  "uuid" uuid PRIMARY KEY,
   "name" varchar,
   "basename" varchar,
   "filename" varchar,
@@ -48,7 +48,7 @@ CREATE TABLE "video" (
   "genres" varchar[],
   "trailer_yt_code" varchar[],
   "poster_path" varchar[],
-  "tv_show_id" int,
+  "tv_show_id" uuid,
   "movie_db_job_id" int,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
@@ -56,8 +56,8 @@ CREATE TABLE "video" (
 
 DROP TABLE IF EXISTS "tv_show" CASCADE;
 CREATE TABLE "tv_show" (
-  "id" SERIAL PRIMARY KEY,
-  "uuid" varchar,
+  "id" SERIAL,
+  "uuid" uuid PRIMARY KEY,
   "id_movie_db" varchar,
   "name" varchar,
   "location" varchar,
@@ -84,7 +84,7 @@ CREATE TABLE "encoding_job" (
   "type" varchar,
   "path" varchar,
   "errors" varchar[],
-  "video_id" int,
+  "video_id" uuid,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
 );
@@ -95,8 +95,8 @@ CREATE TABLE "movie_db_job" (
   "status" varchar DEFAULT 'todo',
   "type" varchar,
   "errors" varchar[] NULL,
-  "video_id" int NULL,
-  "tv_show_id" int NULL,
+  "video_id" uuid NULL,
+  "tv_show_id" uuid NULL,
   "created_at" timestamp NOT NULL DEFAULT now(),
   "updated_at" timestamp NOT NULL DEFAULT  now()
 );
@@ -107,13 +107,9 @@ CREATE INDEX ON "video" ("basename");
 
 CREATE INDEX ON "video" ("genres");
 
-CREATE INDEX ON "video" ("uuid");
-
 CREATE INDEX ON "tv_show" ("name");
 
 CREATE INDEX ON "tv_show" ("genres");
-
-CREATE INDEX ON "tv_show" ("uuid");
 
 CREATE INDEX ON "encoding_job" ("type");
 
@@ -124,20 +120,20 @@ CREATE INDEX ON "movie_db_job" ("status");
 CREATE INDEX ON "movie_db_job" ("type");
 
 
-ALTER TABLE "watched" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
+ALTER TABLE "watched" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
-ALTER TABLE "watched" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
+ALTER TABLE "watched" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("uuid");
 
-ALTER TABLE "video" ADD FOREIGN KEY ("video_id_ref") REFERENCES "video" ("id") ON DELETE SET NULL;
+ALTER TABLE "video" ADD FOREIGN KEY ("video_id_ref") REFERENCES "video" ("uuid");
 
-ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE SET NULL;
+ALTER TABLE "video" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("uuid");
 
-ALTER TABLE "video" ADD FOREIGN KEY ("movie_db_job_id") REFERENCES "movie_db_job" ("id") ON DELETE SET NULL;
+ALTER TABLE "video" ADD FOREIGN KEY ("movie_db_job_id") REFERENCES "movie_db_job" ("id");
 
-ALTER TABLE "tv_show" ADD FOREIGN KEY ("movie_db_job_id") REFERENCES "movie_db_job" ("id") ON DELETE SET NULL;
+ALTER TABLE "tv_show" ADD FOREIGN KEY ("movie_db_job_id") REFERENCES "movie_db_job" ("id");
 
-ALTER TABLE "encoding_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
+ALTER TABLE "encoding_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("uuid");
 
-ALTER TABLE "movie_db_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("id") ON DELETE CASCADE;
+ALTER TABLE "movie_db_job" ADD FOREIGN KEY ("video_id") REFERENCES "video" ("uuid");
 
-ALTER TABLE "movie_db_job" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("id") ON DELETE CASCADE;
+ALTER TABLE "movie_db_job" ADD FOREIGN KEY ("tv_show_id") REFERENCES "tv_show" ("uuid");
