@@ -1,6 +1,4 @@
-import { DeepPartial, DeleteResult, UpdateResult } from "typeorm";
-import { defaultLimit } from "../../config/defaultConfig";
-import Joi from "joi";
+import { DeepPartial, DeleteResult } from "typeorm";
 import {
   MissingDataPayloadException,
   ok,
@@ -8,22 +6,23 @@ import {
   ResourceNotExist,
 } from "../../services/Error";
 import { promisifier } from "../../services/promisifier";
-import { TResultService, RequestBuilder, Result } from "../../types";
+import { TResultService, Result } from "../../types";
 import { VideoDTO } from "./Video.dto";
-import { Video, VideoTypeEnum } from "./Video.entity";
-import { v4 as uuidv4, validate } from "uuid";
+import { Video } from "./Video.entity";
+import { v4 as uuidv4 } from "uuid";
 import VideoRepository from "./Video.repository";
-import { videoSchema } from "./Video.Validation";
+import { patchVideoSchema, videoSchema } from "./Video.Validation";
 import path from "path";
 import { UserDTO } from "../User/User.dto";
+import MovieDbJobService from "../MovieDbJob/MovieDbJob.service";
 
 // import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
 
 export default class VideoService {
-  repo: VideoRepository;
-  constructor(videoRepository: VideoRepository) {
-    this.repo = videoRepository;
-  }
+  constructor(
+    private repo: VideoRepository,
+    private movieJobService: MovieDbJobService
+  ) {}
 
   async getPath(uuid: string): Promise<Result<string, Error>> {
     const [result, error] = await this.findByUuid(uuid);
@@ -102,9 +101,9 @@ export default class VideoService {
     if (!id.length) {
       return err(new MissingDataPayloadException("id", data));
     }
-
-    if (!Object.keys(data).length) {
-      return err(new MissingDataPayloadException("data", data));
+    const valid = patchVideoSchema.validate(data);
+    if (valid.error) {
+      return err(new MissingDataPayloadException(valid.error.message));
     }
 
     const [result, error] = await promisifier<VideoDTO>(
@@ -120,10 +119,10 @@ export default class VideoService {
   async create(
     data: DeepPartial<VideoDTO>
   ): Promise<Result<VideoDTO, MissingDataPayloadException>> {
-    // const valid = videoSchema.validate(data);
-    // if (valid.error) {
-    //   return err(new MissingDataPayloadException(valid.error.message));
-    // }
+    const valid = videoSchema.validate(data);
+    if (valid.error) {
+      return err(new MissingDataPayloadException(valid.error.message));
+    }
 
     if (!data.uuid) {
       data.uuid = uuidv4();
@@ -144,14 +143,18 @@ export default class VideoService {
       return err(new MissingDataPayloadException("id"));
     }
 
+    const [movieJob, errorMovieJob] = await this.movieJobService.findAndDelete(
+      id
+    );
+    if (errorMovieJob) {
+      return err(errorMovieJob);
+    }
     const [result, error] = await promisifier<DeleteResult>(
       this.repo.delete(+id)
     );
     if (error) {
       return err(new Error(error));
     }
-
-    // await movieJobService.deletOneByVideoId(id);
 
     return ok(result);
   }

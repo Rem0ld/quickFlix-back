@@ -37,6 +37,13 @@ export class MovieDbJobRepository implements BaseRepository<MovieDbJobDTO> {
     return new MovieDbJobDTO(result);
   }
 
+  async findAndDelete(videoId: number): Promise<DeleteResult> {
+    const result = await this.manager.delete(MovieDbJob, {
+      video: videoId,
+    });
+    return result;
+  }
+
   async create(data: DeepPartial<MovieDbJobDTO>): Promise<MovieDbJobDTO> {
     const result = await this.manager.save(MovieDbJob, { ...data });
     return new MovieDbJobDTO(result);

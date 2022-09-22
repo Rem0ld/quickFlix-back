@@ -109,6 +109,21 @@ export default class MovieDbJobService {
     return ok(result);
   }
 
+  async findAndDelete(videoId: string): Promise<Result<DeleteResult, Error>> {
+    if (!videoId.length) {
+      return err(new MissingDataPayloadException("videoId", videoId));
+    }
+
+    const [result, error] = await promisifier<DeleteResult>(
+      this.repo.findAndDelete(+videoId)
+    );
+    if (error) {
+      return err(new Error(error));
+    }
+
+    return ok(result);
+  }
+
   async delete(): Promise<Result<DeleteResult, Error>> {
     const [result, error] = await promisifier<DeleteResult>(
       this.repo.deleteAll()
