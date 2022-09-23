@@ -40,6 +40,10 @@ describe("update tvShow", () => {
       videos: [video as unknown as Video],
     });
     const [updated] = await tvShowService.findAll();
+    console.log(
+      "🚀 ~ file: TvShowService.test.ts ~ line 43 ~ it ~ updated",
+      updated
+    );
     expect(updated.data[0].videos).toHaveProperty("1.1.basename");
   });
 });

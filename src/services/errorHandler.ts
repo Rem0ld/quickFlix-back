@@ -7,7 +7,7 @@ export default (
   next: NextFunction
 ) => {
   if (error.message.includes("exists")) {
-    res.status(404).json(error.message);
+    res.status(409).json(error.message);
     return;
   }
 

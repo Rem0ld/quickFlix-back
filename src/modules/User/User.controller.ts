@@ -29,6 +29,7 @@ export default class UserController {
     const [result, error] = await this.service.findAll(+limit, +skip);
     if (error) {
       next(error);
+      return;
     }
 
     res.json({
@@ -55,8 +56,8 @@ export default class UserController {
     const [result, error] = await this.service.create(req.body);
     if (error) {
       next(error);
+      return;
     }
-
     res.json(result);
     return;
   }

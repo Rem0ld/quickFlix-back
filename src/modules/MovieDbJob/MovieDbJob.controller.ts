@@ -113,6 +113,7 @@ export default class MovieDbJobController {
     const [result, error] = await this.service.delete();
     if (error) {
       next(error);
+      return;
     }
 
     res.json(result.affected + " deleted");

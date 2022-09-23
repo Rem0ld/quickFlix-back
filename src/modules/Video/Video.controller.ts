@@ -37,6 +37,7 @@ export default class VideoController {
     );
     if (error) {
       next(error);
+      return;
     }
 
     res.json({
@@ -59,6 +60,7 @@ export default class VideoController {
     const [result, error] = await this.service.findByUuid(uuid, user as string);
     if (error) {
       next(error);
+      return;
     }
 
     res.json(result.serialize());
@@ -75,6 +77,7 @@ export default class VideoController {
     const [result, error] = await this.service.findById(id);
     if (error) {
       next(error);
+      return;
     }
 
     res.json(result.serialize());

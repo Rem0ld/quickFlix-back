@@ -44,12 +44,16 @@ export default class UserService {
   }
 
   async create(data: Partial<User>): Promise<Result<UserDTO, Error>> {
+    const [user] = await this.findByPseudo(data.pseudo);
+    if (user) {
+      return err(new Error("pseudo already exists"));
+    }
     const [result, error] = await promisifier<UserDTO>(this.repo.create(data));
     if (error) {
       return err(new Error(error));
     }
 
-    return ok(result);
+    return ok(result.protectPassword());
   }
 
   async update(id: string, data: Partial<User>) {}

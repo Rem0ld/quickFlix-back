@@ -136,6 +136,7 @@ export default class DiscoverController {
     const [result, error] = this.service.checkAccess(folderPath as string);
     if (error) {
       next(error);
+      return;
     }
 
     res.json({ access: result });

@@ -28,6 +28,7 @@ export default class WatchedController {
     });
     if (error) {
       next(error);
+      return;
     }
 
     res.json({
@@ -72,6 +73,7 @@ export default class WatchedController {
     const [result, error] = await this.service.update(id, req.body);
     if (error) {
       next(error);
+      return;
     }
 
     res.json(result);

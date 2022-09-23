@@ -32,6 +32,7 @@ export default class TvShowController {
     const [result, error] = await this.service.findAll(+limit, +skip);
     if (error) {
       next(error);
+      return;
     }
 
     res.json({
@@ -53,6 +54,7 @@ export default class TvShowController {
     const [result, error] = await this.service.findById(id);
     if (error) {
       next(error);
+      return;
     }
     res.json(result.serialize());
   }
@@ -68,6 +70,7 @@ export default class TvShowController {
     const [result, error] = await this.service.findByName(name);
     if (error) {
       next(error);
+      return;
     }
 
     res.json(result.serialize());
@@ -126,6 +129,7 @@ export default class TvShowController {
     const [result, error] = await this.service.deleteAll();
     if (error) {
       next(error);
+      return;
     }
 
     res.json(result);

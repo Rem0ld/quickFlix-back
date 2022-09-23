@@ -31,6 +31,7 @@ export default class StreamController {
     const [video, error] = await this.service.findVideo(id, user as string);
     if (error) {
       next(error);
+      return;
     }
     const videoPath = video.location + path.sep + video.filename + video.ext;
 
