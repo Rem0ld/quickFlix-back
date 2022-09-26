@@ -1,12 +1,5 @@
-import { opendir, readFile, rm } from "fs/promises";
-import { appendFile, Dir, Dirent, opendirSync, readSync } from "fs";
+import { Dirent, opendirSync } from "fs";
 import path, { ParsedPath } from "path";
-import { findBaseFolder } from "../utils/fileManipulation";
-import TvShowService from "../modules/TvShow/TvShow.service";
-import VideoService from "../modules/Video/Video.service";
-import { regExBasename, regexTvShow, regexYearDate } from "../utils/regexes";
-import { parseBasename } from "../utils/stringManipulation";
-import { ExtSubtitle, ExtVideo, TTvShow, TVideo } from "../types";
 import { logger } from "../libs/logger";
 
 /**
@@ -40,4 +33,21 @@ export async function go(
   } catch (err) {
     logger.error(err);
   }
+}
+
+export function showDir(root: string) {
+  const dir = opendirSync(root);
+  const list = [];
+  let dirent: Dirent;
+
+  while ((dirent = dir.readSync()) !== null) {
+    console.log(dirent);
+    if (dirent.isDirectory()) {
+      list.push(dirent.name);
+    }
+  }
+  dir.closeSync();
+
+  console.log(list);
+  return list;
 }

@@ -1,9 +1,16 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller, Get, ClassErrorMiddleware } from "@overnightjs/core";
+import {
+  Controller,
+  Get,
+  ClassErrorMiddleware,
+  ClassMiddleware,
+} from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
 import DiscoverService from "./Discover.service";
+import protectRoutes from "../../middlewares/protectRoutes.middleware";
 
 @Controller("discover")
+@ClassMiddleware([protectRoutes])
 @ClassErrorMiddleware(errorHandler)
 export default class DiscoverController {
   constructor(private service: DiscoverService) {}
@@ -14,7 +21,16 @@ export default class DiscoverController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const [result, error] = await this.service.findInDirectory();
+    const { dir, user } = req.query;
+    if (!dir || !dir.length) {
+      next(new Error("missing parameter"));
+      return;
+    }
+
+    const [result, error] = await this.service.findInDirectory(
+      dir as string,
+      user as string
+    );
     if (error) {
       next(error);
       return;
@@ -35,6 +51,20 @@ export default class DiscoverController {
     }
 
     res.json(result.message);
+  }
+
+  @Get("dir")
+  private async getDir(req: Request, res: Response, next: NextFunction) {
+    const { folder } = req.query;
+    if (!folder || !folder.length) {
+      next(new Error("missing parameter"));
+      return;
+    }
+
+    const response = this.service.getDir(folder as string);
+
+    res.json(response);
+    return;
   }
 
   // @Get("subtitles")

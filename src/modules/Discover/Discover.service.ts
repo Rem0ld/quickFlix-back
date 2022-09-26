@@ -9,7 +9,7 @@ import {
   getVideoPath,
 } from "../../services/apiService";
 import { err, MissingDataPayloadException, ok } from "../../services/Error";
-import { go } from "../../services/miscelleneaous";
+import { go, showDir } from "../../services/miscelleneaous";
 import { promisifier } from "../../services/promisifier";
 import { Result } from "../../types";
 import { accessFolder } from "../../utils/fileManipulation";
@@ -39,7 +39,6 @@ export default class DiscoverService {
   mvJobSer: MovieDbJobService;
   ffprobeSer: FfmpegWorkerService;
   pathVideos: string;
-  pathTvShows: string;
   tempFile: string;
   regVideo: RegExp = regexVideo;
   regTvShow: RegExp = regexTvShow;
@@ -54,9 +53,6 @@ export default class DiscoverService {
     this.tvShowSer = ts;
     this.mvJobSer = ms;
     this.ffprobeSer = ffs;
-    this.pathVideos =
-      process.env.NODE_ENV === "development" ? "videos" : "Videos";
-    this.pathTvShows = process.env.NODE_ENV === "development" ? null : "Series";
     this.tempFile = basePath + path.sep + "temp";
   }
 
@@ -69,9 +65,11 @@ export default class DiscoverService {
     return ok(response);
   }
 
-  async findInDirectory(): Promise<
-    Result<{ total: number; data: VideoDTO[] }, Error>
-  > {
+  async findInDirectory(
+    dir: string,
+    user: string
+  ): Promise<Result<{ total: number; data: VideoDTO[] }, Error>> {
+    this.pathVideos = dir;
     const result = await go(
       basePath + path.sep + this.pathVideos,
       this.tempFile,
@@ -79,16 +77,19 @@ export default class DiscoverService {
       []
     );
 
-    const [data, error] = await this.addEntries(result);
+    const [data, error] = await this.addEntries(result, user);
     if (error) {
       return err(error);
     }
+
+    this.pathVideos = "";
 
     return ok({ total: data.length, data });
   }
 
   async addEntries(
-    list: path.ParsedPath[]
+    list: path.ParsedPath[],
+    user: string
   ): Promise<Result<VideoDTO[], Error>> {
     const result: VideoDTO[] = [];
 
@@ -103,11 +104,14 @@ export default class DiscoverService {
         tvShow = result;
       }
 
-      const [data, error] = await this.addEntry(el, tvShow);
+      const [data, error] = await this.addEntry(el, tvShow, user);
       if (error) {
         logger.error(error);
       }
-      result.push(data);
+      // If data is null, video most likely already exists
+      if (data) {
+        result.push(data);
+      }
     }
 
     return ok(result);
@@ -152,17 +156,19 @@ export default class DiscoverService {
 
   async addEntry(
     el: path.ParsedPath,
-    tvShow: TvShowDTO | undefined
-  ): Promise<Result<VideoDTO, Error>> {
+    tvShow: TvShowDTO | undefined,
+    user: string
+  ): Promise<Result<VideoDTO | null, Error>> {
     const isTvShow = el.name.match(regexTvShow);
-    const [result, error] = await this.videoSer.findAll(0, 0, null, {
-      name: el.name,
+    // Change to filename and it shouldn't add mutliple copy of the same video
+    const [result, error] = await this.videoSer.findAll(0, 0, user, {
+      filename: el.name,
     });
     if (error) {
       return err(error);
     }
     if (result.data.length) {
-      return ok(result.data[0]);
+      return ok(null);
     }
 
     let name = "",
@@ -396,5 +402,11 @@ export default class DiscoverService {
     }
 
     return ok({ message: "done" });
+  }
+
+  getDir(root: string) {
+    const response = showDir(root);
+
+    return response;
   }
 }
