@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Controller, Get, ClassErrorMiddleware } from "@overnightjs/core";
 import errorHandler from "../../services/errorHandler";
-import { accessFolder } from "../../utils/fileManipulation";
 import DiscoverService from "./Discover.service";
 
 @Controller("discover")
