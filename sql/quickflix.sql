@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS "watched" CASCADE;
 CREATE TABLE "watched"(
   "id" SERIAL UNIQUE,
   "video_id" uuid,
-  "user_id" uuid,
+  "user_id" id,
   "time_watched" float DEFAULT 0.00,
   "finished" boolean DEFAULT false,
   "created_at" timestamp NOT NULL DEFAULT now(),
