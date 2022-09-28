@@ -16,8 +16,6 @@ import path from "path";
 import { UserDTO } from "../User/User.dto";
 import MovieDbJobService from "../MovieDbJob/MovieDbJob.service";
 
-// import { movieJobService } from "../MovieDbJob/MovieDbJob.service";
-
 export default class VideoService {
   constructor(
     private repo: VideoRepository,

@@ -33,7 +33,6 @@ export default class AuthenticationService {
     return jwt.verify(token, process.env.SECRET);
   }
 
-  // Should check if token is still valid
   verifyToken(token: string): Result<boolean, Error> {
     const decoded: any = this.decodeToken(token);
 
@@ -45,7 +44,6 @@ export default class AuthenticationService {
     return ok(decoded.exp > now / 1000);
   }
 
-  // Should return the token decoded
   parseToken(token: string): Result<string | JwtPayload, Error> {
     const [isValid, error] = this.verifyToken(token);
     if (error) {
